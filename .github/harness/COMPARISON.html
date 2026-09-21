@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>比較 — copilot-sdlc-harness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f8fd;
+    --bg2: #eef2fa;
+    --card: #ffffff;
+    --border: #dfe6f3;
+    --text: #1b2437;
+    --muted: #5d6b8a;
+    --accent: #2f6fed;
+    --accent2: #0d9e94;
+    --accent3: #7c4dff;
+    --warn: #d97a06;
+    --deny: #d43a3a;
+    --grad: linear-gradient(135deg, #2f6fed 0%, #0d9e94 100%);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", "Noto Sans JP", "Hiragino Sans", "Segoe UI", sans-serif;
+    font-feature-settings: "palt";
+    letter-spacing: .015em;
+    line-height: 1.75;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .stat b { font-family: "Inter", "Noto Sans JP", "Hiragino Sans", "Segoe UI", sans-serif; font-feature-settings: "palt"; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+  /* 共通ナビ */
+  .top { background:#fff; border-bottom:1px solid var(--border); padding:14px 0; }
+  .top .wrap { display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
+  .top b { font-size:15px; }
+  .top nav { display:flex; gap:16px; flex-wrap:wrap; }
+  .top a { color:var(--muted); text-decoration:none; font-size:13.5px; font-weight:600; }
+  .top a:hover { color:var(--accent); }
+  .top a.here { color:var(--accent); border-bottom:2px solid var(--accent); }
+
+  /* ヒーロー */
+  .hero {
+    position: relative;
+    padding: 76px 0 64px;
+    background:
+      radial-gradient(ellipse 800px 420px at 15% -10%, rgba(47,111,237,.10), transparent),
+      radial-gradient(ellipse 700px 420px at 90% 5%, rgba(13,158,148,.10), transparent),
+      linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .12em; color: var(--accent2); font-weight: 700;
+    border: 1px solid rgba(13,158,148,.35); border-radius: 999px;
+    padding: 5px 14px; margin-bottom: 22px; background: rgba(13,158,148,.07);
+  }
+  .hero h1 { font-size: clamp(28px, 4.6vw, 46px); font-weight: 900; letter-spacing: -.015em; line-height: 1.3; margin-bottom: 18px; }
+  .hero h1 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero ol.sum { max-width: 780px; margin: 0 0 26px 1.3em; color: var(--muted); font-size: 15.5px; }
+  .hero ol.sum li { margin-bottom: 8px; }
+  .hero ol.sum b { color: var(--text); }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; font-size: 13.5px; font-weight: 600;
+    box-shadow: 0 1px 3px rgba(27,36,55,.06);
+  }
+
+  /* 統計 */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 14px; margin: -36px auto 0; position: relative; }
+  .stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px 20px; text-align: center;
+    box-shadow: 0 10px 28px rgba(31,58,120,.10);
+  }
+  .stat b { display: block; font-size: 30px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stat span { font-size: 12.5px; color: var(--muted); }
+
+  /* セクション */
+  section { padding: 64px 0 8px; }
+  .sec-label { font-size: 12.5px; letter-spacing: .18em; color: var(--accent); font-weight: 800; margin-bottom: 8px; }
+  h2 { font-size: clamp(22px, 3vw, 30px); font-weight: 800; margin-bottom: 12px; letter-spacing: -.01em; }
+  .sec-desc { color: var(--muted); max-width: 780px; margin-bottom: 32px; font-size: 15px; }
+  .sec-desc b { color: var(--text); }
+  h3.sub { font-size: 17px; font-weight: 800; margin: 26px 0 12px; }
+
+  /* テーブル */
+  table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 18px rgba(31,58,120,.07); margin-bottom: 14px; }
+  th, td { padding: 12px 14px; text-align: left; font-size: 13.5px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--bg2); font-size: 12px; letter-spacing: .06em; color: var(--muted); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  td b { font-weight: 700; }
+  code { background: var(--bg2); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; font-size: 12.5px; font-family: Consolas, Menlo, monospace; }
+  .scroll { overflow-x: auto; }
+  .scroll table { min-width: 860px; }
+  .scroll table.wide { min-width: 1180px; }
+
+  /* カードグリッド */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 16px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px; transition: transform .15s, border-color .15s, box-shadow .15s;
+    box-shadow: 0 2px 8px rgba(31,58,120,.05);
+  }
+  .card:hover { transform: translateY(-3px); border-color: rgba(47,111,237,.45); box-shadow: 0 10px 26px rgba(31,58,120,.12); }
+  .card h3 { font-size: 16.5px; font-weight: 700; margin-bottom: 8px; }
+  .card p { font-size: 13.8px; color: var(--muted); }
+  .card p b { color: var(--text); font-weight: 700; }
+
+  /* 判定ピル */
+  .pill { display: inline-block; border-radius: 999px; padding: 2px 12px; font-size: 12.5px; font-weight: 800; white-space: nowrap; }
+  .pill.pass { background: rgba(13,158,148,.12); color: var(--accent2); }
+  .pill.fail { background: rgba(212,58,58,.10); color: var(--deny); }
+  .pill.lead-pill { background: rgba(124,77,255,.10); color: var(--accent3); font-weight: 700; }
+
+  /* 実測A/Bカード */
+  .versus { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px,1fr)); gap: 16px; margin-bottom: 16px; }
+  .arm { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 18px rgba(31,58,120,.07); }
+  .arm .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .arm .head b { font-size: 15.5px; }
+  .arm.fail-arm .head { background: rgba(212,58,58,.05); }
+  .arm.pass-arm .head { background: rgba(13,158,148,.06); }
+  .arm .nums { display: grid; grid-template-columns: repeat(3,1fr); border-bottom: 1px solid var(--border); }
+  .arm .nums div { padding: 12px 8px; text-align: center; border-right: 1px solid var(--border); }
+  .arm .nums div:last-child { border-right: none; }
+  .arm .nums b { display: block; font-size: 19px; font-weight: 800; }
+  .arm .nums span { font-size: 11.5px; color: var(--muted); }
+  .arm ul { list-style: none; padding: 14px 20px 18px; }
+  .arm ul li { font-size: 13.3px; color: var(--muted); padding: 4px 0 4px 22px; position: relative; }
+  .arm ul li b { color: var(--text); }
+  .arm ul li::before { content: ""; position: absolute; left: 0; top: 11px; width: 12px; height: 12px; border-radius: 50%; }
+  .arm ul li.ok::before { background: rgba(13,158,148,.15); box-shadow: inset 0 0 0 4px rgba(13,158,148,.55); }
+  .arm ul li.ng::before { background: rgba(212,58,58,.12); box-shadow: inset 0 0 0 4px rgba(212,58,58,.55); }
+
+  /* 小型3連カード（todo-cli） */
+  .mini3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 14px; margin-bottom: 16px; }
+  .mini { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(31,58,120,.05); }
+  .mini .t { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .mini .t b { font-size: 14px; }
+  .mini .n { font-size: 24px; font-weight: 800; }
+  .mini p { font-size: 12.5px; color: var(--muted); }
+
+  /* ノート */
+  .note { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent2); border-radius: 10px; padding: 14px 18px; font-size: 13.5px; color: var(--muted); margin-bottom: 14px; }
+  .note b { color: var(--text); }
+  .note.warn { border-left-color: var(--warn); }
+  .note.purple { border-left-color: var(--accent3); }
+
+  /* フッター */
+  footer { margin-top: 72px; border-top: 1px solid var(--border); padding: 36px 0 48px; background: var(--bg2); }
+  footer .links { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 14px; }
+  footer a { color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 600; }
+  footer a:hover { text-decoration: underline; }
+  footer p { color: var(--muted); font-size: 12.5px; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 52px 0 48px; }
+    section { padding: 44px 0 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <b>copilot-sdlc-harness</b>
+  <nav>
+    <a href="overview.html">概要</a>
+    <a href="agents.html">エージェント</a>
+    <a href="skills.html">スキル</a>
+    <a href="commands.html">コマンド</a>
+    <a href="guardrails.html">ガードレール</a>
+    <a class="here" href="COMPARISON.html">比較</a>
+  </nav>
+</div></div>
+
+<!-- ============ ヒーロー ============ -->
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 17V7m5.5 10V4M15 17v-6m5 6V9" stroke="#0d9e94" stroke-width="2" stroke-linecap="round"/></svg>
+      WHY THIS HARNESS — 実測と構造で説明する
+    </div>
+    <h1>なぜこのハーネスか。<br><span class="grad">形容詞ではなく、失敗モードと実測で答える。</span></h1>
+    <ol class="sum">
+      <li>「AIに開発させると何が壊れるか」という<b>失敗モードの一つひとつに、指示文ではなく機構</b>（フック・検証ツール・台帳）を対応させた SDLC ハーネスです。</li>
+      <li>全設計決定（件数は下の統計タイル＝DECISIONS.md の静的計数）が「観測された失敗 → 対策」の対で記録され、<b>Copilot と Claude Code の両方で実機の通し動作を確認</b>し、フック自己テスト
+<!-- BEGIN GENERATED: selftest-counts -->
+<span class="gen-count">sh 404 / ps1 376 ケース（静的計数。pass/fail の正は各 selftest の実行結果）</span>
+<!-- END GENERATED: selftest-counts -->
+      と構成整合検査で自分自身を検証しています（version 1.2.0。2 OS の CI は導入以来赤でしたが 2026-09-10 に初めて全ジョブ緑（run 34406967789）。CI 緑を確認するまで「全PASS」は書きません＝D079）。</li>
+      <li>優位でない軸・未測定の領域は<b>このページ内で正直に列挙</b>します——曖昧仕様の実測A/Bでは、素の Claude Code が仕様矛盾を残したまま完了した課題を、本ハーネスは検出・解決して変更要求と回帰まで完遂しました。</li>
+    </ol>
+    <div class="badges">
+      <span class="badge">📏 数値はすべて <code>evaluation/results/</code> の実測JSON</span>
+      <span class="badge">🔍 比較の根拠は監査記録の範囲のみ（記録が無い軸は「—」）</span>
+      <span class="badge">⚖️ 誇張なし・優位でない軸も明記</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 統計 ============ -->
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><b>2/2</b><span>主戦場課題の合格ステージ<br>（素の Claude Code は 0/2。参考値: n=2・装置 v1・比較条件不成立。v2 で n=5）</span></div>
+    <div class="stat"><b>117</b><span>変更要求後の全テスト通過<br>（回帰ゼロ・実測）</span></div>
+<!-- BEGIN GENERATED: decision-count-stat -->
+    <div class="stat"><b>97</b><span>根拠つき設計決定<br>（DECISIONS.md D001〜D097。静的計数）</span></div>
+<!-- END GENERATED: decision-count-stat -->
+    <div class="stat"><b>4</b><span>敵対的な独立監査<br>（+内部総点検2本）</span></div>
+    <div class="stat"><b>7</b><span>失敗モード × 機構<br>（下表で対応を明示）</span></div>
+  </div>
+</div>
+
+<!-- ============ 失敗モード対応表 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-label">FAILURE MODES</div>
+    <h2>失敗モードの一つひとつに、機構を対応させる</h2>
+    <p class="sec-desc">
+      AIエージェント開発の失敗は「指示が足りない」よりも<b>構造の欠落</b>から生じる——これが中心の設計判断です
+      （D003・D043「モデルに繰り返し指示して守らせるより、Hooksで機械的に強制する方がコストと確実性の両面で優れる」）。
+      下表の各行は、<b>実際に観測された失敗</b>（自プロジェクトの実測・監査の敵対的検証・業界で報告された実害）に対して
+      後から機構を建てたものです。先回りの機能追加は原則行いません。
+    </p>
+    <div class="scroll">
+    <table>
+      <tr><th>失敗モード</th><th>何が起きるか</th><th>指示文ではなく、機構で対応（実体ファイル）</th></tr>
+      <tr>
+        <td><b>早すぎる完了宣言</b></td>
+        <td>テスト未実施のまま「完了しました」と申告し、欠陥が下流に滞留する</td>
+        <td>done契約: タスクごとに完了条件（検証コマンド＋実行時確認）を <code>tasks.md</code> に必須化し、task-worker は<b>証拠つきでのみ</b> <code>[x]</code> を付ける。<code>golden-eval.py</code> が完了宣言と成果物実態の整合を決定論的に測る（D046/D048）</td>
+      </tr>
+      <tr>
+        <td><b>context rot</b></td>
+        <td>会話が伸びるほど初期の決定・制約を忘れ、品質が劣化する</td>
+        <td>1タスク=1独立コンテキスト（task-worker委譲）。記憶は会話でなく docs/（docs-as-memory）。<code>inject-progress.sh</code> が SessionStart / PreCompact でゲート状態と教訓を再注入（D011/D018）</td>
+      </tr>
+      <tr>
+        <td><b>ゲート改竄</b></td>
+        <td>承認を得ずに GATE_STATUS を done にする・<code>[x]</code> を根拠なく増やす</td>
+        <td><code>warn-gate-tamper</code> フックが done 遷移と <code>[x]</code> 追加を検知して警告。<code>golden-eval.py</code> が宣言と実態の食い違いを検査。ゲート承認自体は必ず人間（D048）</td>
+      </tr>
+      <tr>
+        <td><b>修正の伝播漏れ<br>（N面鏡問題）</b></td>
+        <td>正しい修正が、同じ内容を映す別ファイル（アダプタ・.sh/.ps1 両系統）へ伝わらず矛盾が残る</td>
+        <td>アダプタは <code>generate-adapters.py</code> で機械生成（手書きしない）。<code>validate-harness.py</code> が乖離を機械検査、フック selftest（sh・ps1）が取り残し型の回帰を検知（D048/D052。CI 2 OS 常時実行は構成済み・緑化は P0 対応中）</td>
+      </tr>
+      <tr>
+        <td><b>自己権限昇格</b></td>
+        <td>プロンプトインジェクション等でエージェント自身が保護設定を書き換える</td>
+        <td><code>permissions.deny</code> と <code>guard-harness-config-edit</code> フックの二層でハーネス設定への自動編集を拒否。保守は対話入力必須の専用ツール経由のみ（エージェントは実行不可）。CODEOWNERS で人間レビュー（D006/D026/D043/D048）</td>
+      </tr>
+      <tr>
+        <td><b>入口の不在</b></td>
+        <td>普通のチャットの依頼にフェーズの行き先が無く、場当たり作業に落ちる</td>
+        <td>受付ルーチン: <code>route-request.sh</code> が<b>依頼のたび</b>に受付ルール（分類/入口/影響の宣言→入口の自己起動）を注入し、エージェントが分類/入口を冒頭宣言して自分で入る。<code>guard-phase-scope</code> がフェーズ外編集を機械的に確認（D043）</td>
+      </tr>
+      <tr>
+        <td><b>停止の不可視</b></td>
+        <td>承認待ち・エスカレーションで無言のまま止まり、ユーザーが気づけない</td>
+        <td><code>notify</code> フック（ローカル通知）＋有界 Stop 番犬 <code>watchdog-continue.py</code>（opt-in・反復上限つき）。セッション境界の案内は固定様式に統一（D047/D048）</td>
+      </tr>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 実測A/B ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-label">MEASURED A/B</div>
+    <h2>同じ課題・同じ発話数で、素の Claude Code と走らせ比べた</h2>
+    <p class="sec-desc">
+      <code>tools/e2e-run.py</code> が同一の要件メモ・同数のスクリプト発話・決定論チェッカー（<code>check.py</code>）で
+      両アーム（<b>bare</b>＝素の Claude Code だけで走らせる対照群 / <b>harness</b>＝本ハーネスを適用して走らせる側）を実走行させます（2026-08-22〜29 実施）。結果JSONは <code>evaluation/results/</code> に全走行分が保存され、
+      <b>再実行可能</b>です。金額は Claude Code の API 課金実測値。<b>比較対象は素の Claude Code のみ</b>で、
+      他ハーネスとの性能A/Bはまだ存在しません（後述）。なお 2026-08-31 の再監査で<b>アーム間の予算が非対等</b>
+      （bare＝素の Claude Code 側 $40 / harness 側 $60）だったことが判明しており、2026-09-09 の再監査ではさらに
+      <b>全 10 走行が Claude Code 2.1.201（予算のサブエージェント合算なし）で採取され、harness の $69.06 は上限 $60 超過</b>（EV-3/CC-1）と
+      判定されました。したがって本節の数値はすべて<b>参考値（装置 v1・比較条件不成立）</b>であり、装置 v2 での n=5 再走行（A6-16、下記ロードマップ P2）までは
+      「同一条件の比較」とは主張しません。
+    </p>
+
+    <h3 class="sub">主戦場: 曖昧仕様 + 変更要求 + 回帰リスク（経費精算 Web アプリ・2ステージ）</h3>
+    <p class="sec-desc" style="margin-bottom:18px">
+      要件メモには「月末締め」と「25日締め」の<b>矛盾を意図的に仕込み</b>、完成後に運用中の変更依頼
+      （承認済み金額の修正履歴つき直接編集）を投入。合否は「矛盾をどちらかに決めて<b>記録した</b>か」
+      「既存機能を壊さず変更を完遂したか」等を機械判定します。
+    </p>
+    <div class="versus">
+      <div class="arm fail-arm">
+        <div class="head"><b>素の Claude Code（bare）</b><span class="pill fail">FAIL（両ステージ）</span></div>
+        <div class="nums">
+          <div><b>$14.14</b><span>コスト</span></div>
+          <div><b>1,069秒</b><span>時間</span></div>
+          <div><b>84</b><span>テスト（全通過）</span></div>
+        </div>
+        <ul>
+          <li class="ng">締め日の矛盾に応答文では触れたが、<b>ユーザーに確認せず独断で片方を採用</b>。成果物に決定記録が残らず「矛盾未解決」で不合格</li>
+          <li class="ng">要件・設計・トレーサビリティ・レビュー履歴の文書は<b>一切なし</b>（会話に書いた解釈は流れて消える）</li>
+          <li class="ok">実装と変更要求対応は完了し、テスト84件は全通過（実装力の問題ではない）</li>
+          <li class="ng">= <b>テストが全部通っていても、仕様の正しさは検証されていない</b>ことを実測が示した</li>
+        </ul>
+      </div>
+      <div class="arm pass-arm">
+        <div class="head"><b>本ハーネス</b><span class="pill pass">PASS（両ステージ）</span></div>
+        <div class="nums">
+          <div><b>$69.06</b><span>コスト</span></div>
+          <div><b>4,698秒</b><span>時間</span></div>
+          <div><b>117</b><span>テスト（全通過）</span></div>
+        </div>
+        <ul>
+          <li class="ok">要件ヒアリングの初回応答で矛盾を<b>検出してユーザーに確認</b>し、解消の経緯を要件文書（A-001）に記録</li>
+          <li class="ok">独立レビュー（spec-critic / reviewer）が仕様と実装を別コンテキストで監査。指摘は文書とテストに反映</li>
+          <li class="ok">変更要求は /12 の差分再ゲートで処理し、<b>既存機能（承認フロー・月次集計）の回帰ゼロ</b>を確認して全117件パス（旧仕様を固定検証していた1アサーションのみ新設計に追随更新・経緯記録つき）</li>
+          <li class="ok">要件・設計・タスク（証拠つき）・テスト計画/レポート・リリースチェックリストが<b>全部残る</b></li>
+        </ul>
+      </div>
+    </div>
+    <div class="note">
+      <b>何が差を分けたか:</b> 実装力ではなく<b>構造</b>です。素の Claude Code も矛盾に「気づく」ことはできました。
+      しかし確認せず進める・記録を残さないことを止める仕組みがなく、未確認の解釈のまま84テストを揃えて完了宣言しました。
+      本ハーネスは「ヒアリングで確認する」「決定を文書に記録する」「独立レビューを通す」が<b>工程として強制</b>されるため、
+      同じモデルが同じ課題で合格まで到達します。なおコストは $14.14 vs $69.06（各 n=1・参考値。比は作りません）です——高くつく分で何を買うかは、次の実測が示します。
+    </div>
+
+    <h3 class="sub">対照実験: 小規模・仕様明確な課題（CLI TODO ツール）——本ハーネスが不利な実測も隠さない</h3>
+    <div class="mini3">
+      <div class="mini">
+        <div class="t"><b>素の Claude Code</b><span class="pill pass">PASS</span></div>
+        <div class="n">$3.22 <span style="font-size:13px;color:var(--muted);font-weight:600">/ 237秒</span></div>
+        <p>テスト11件。小さく明確な課題では<b style="color:var(--text)">圧倒的に安く速い</b>。</p>
+      </div>
+      <div class="mini">
+        <div class="t"><b>本ハーネス（ライトパス）</b><span class="pill pass">PASS</span></div>
+        <div class="n">$24.72 <span style="font-size:13px;color:var(--muted);font-weight:600">/ 1,611秒</span></div>
+        <p>テスト16件。承認2回に圧縮しつつ done契約・独立レビューは維持。</p>
+      </div>
+      <div class="mini">
+        <div class="t"><b>本ハーネス（フルパス）</b><span class="pill fail">DNF（参考値）</span></div>
+        <div class="n">$45.47 <span style="font-size:13px;color:var(--muted);font-weight:600">/ 2,971秒</span></div>
+        <p>テスト26件＋文書一式。check.py は PASS だが合計上限 $40 を超過（9/10 発話）＝verdict は DNF_BUDGET_TOTAL（再監査 2026-09-09 EV-3）。この課題には<b style="color:var(--text)">明らかに過剰</b>。</p>
+      </div>
+    </div>
+    <div class="note warn">
+      <b>正直な解釈:</b> 小規模で仕様が明確な単発課題では、素の Claude Code が圧倒的に安い（$3.22 vs $45.47＝DNF 参考値。各 n=1。比は作らず実額で示す＝再監査 2026-09-09 §6）。これは本ハーネス自身の適用範囲宣言
+      （「小さな作業には過剰。対象外の作業に使わせないことが一番の防御」）を実測で裏付けました。この結果を受けて
+      <b>小規模新規開発にはライトパス（fast-track）を新設・既定化</b>し、規模判定はエージェントが行います。
+      本ハーネスが価値を持つのは、上の主戦場のような<b>曖昧仕様・複数機能・変更要求・長期保守</b>の領域です。
+    </div>
+
+<!-- BEGIN GENERATED: comparison-measured -->
+    <h3 class="sub">走行ごとの verdict・費用（<code>evaluation/REPORT.md</code> からの機械転記）</h3>
+    <p class="sec-desc">結果 JSON 10 本（装置 v2: 0 / 装置 v1・参考値: 10）、比較可能（valid_for_comparison=true かつ系列条件充足）: 0 本（最終結果 2026-08-30T19:42:35）。 比較可能な走行が無いため、本表から優位・費用比は主張しません（装置 v1 は比較条件不成立）。</p>
+    <div class="scroll"><table>
+      <tr><th>装置</th><th>課題</th><th>アーム</th><th>n</th><th>PASS</th><th>FAIL</th><th>DNF（種別:件数）</th><th>費用 min / median / max（USD）</th></tr>
+      <tr><td>v1（参考値）</td><td>expense-webapp</td><td>bare</td><td>2</td><td>0</td><td>2</td><td>0</td><td>14.14 / 15.19 / 16.23</td></tr>
+      <tr><td>v1（参考値）</td><td>expense-webapp</td><td>harness</td><td>3</td><td>1</td><td>0</td><td>DNF_BUDGET_TOTAL:1, DNF_QUOTA:1</td><td>33.66 / 49.10 / 69.06</td></tr>
+      <tr><td>v1（参考値）</td><td>todo-cli</td><td>bare</td><td>1</td><td>1</td><td>0</td><td>0</td><td>3.22 / 3.22 / 3.22</td></tr>
+      <tr><td>v1（参考値）</td><td>todo-cli</td><td>harness</td><td>4</td><td>1</td><td>0</td><td>DNF_BUDGET_TOTAL:3</td><td>13.75 / 19.45 / 45.47</td></tr>
+    </table></div>
+<!-- END GENERATED: comparison-measured -->
+  </div>
+</section>
+
+<!-- ============ 10軸比較表 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-label">STRUCTURAL COMPARISON</div>
+    <h2>公開ハーネスとの10軸比較（監査記録の範囲のみ）</h2>
+    <p class="sec-desc">
+      比較先は、本リポジトリの監査記録（外部監査 2026-08-19 / 第3回監査 2026-08-22）に調査記録がある範囲だけを根拠に記載します。
+      <b>「—」= 監査記録にその軸の調査記録が無い</b>（優劣を主張しない）。superpowers は直接の調査記録が無いため全軸「—」とし、
+      未調査であること自体を明示するために列を残しています。不確かな外部数値（スター数等）は書きません。
+    </p>
+    <div class="scroll">
+    <table class="wide">
+      <tr><th>軸</th><th>本ハーネス</th><th>Spec Kit</th><th>BMAD</th><th>Kiro</th><th>OpenSpec</th><th>GSD</th><th>superpowers</th><th>OMC</th><th>ECC</th></tr>
+      <tr><td><b>フェーズゲートの機械強制</b></td><td>フック層で強制（guard-phase-scope・route-request 毎ターン注入・warn-stale-gate）＋人間ゲート</td><td>人間ゲートあり。機械強制の記録なし。コマンド暗記前提</td><td>文書受け渡し＋人間ゲート。機械強制の記録なし。コマンド暗記前提</td><td>spec駆動をIDEとして提供。強制層の詳細は記録なし</td><td>—</td><td>—</td><td>—</td><td>—（実行加速層でフェーズゲートの概念が異なる）</td><td>—</td></tr>
+      <tr><td><b>決定論検証（ハーネス自身の）</b></td><td>validate-harness / golden-eval / trace-check / フック selftest（sh・ps1）の検査スイートを完備（CI 常時実行は構成済み・緑化 P0 対応中）</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><b>ループ制御</b></td><td>done契約＋retry/replan/escalate の3状態・試行記録の docs 外部化・有界番犬（opt-in）・予算3層規律</td><td>—</td><td>—</td><td>—</td><td>—</td><td>fresh context の自動化で先行（下記）</td><td>—</td><td>証拠鮮度規律・委譲エンフォーサで先行（下記）</td><td>—</td></tr>
+      <tr><td><b>学習ループ</b></td><td>learnings 自動注入＋/10 振り返り＋/90 本体還流＋/91 逆同期（監査時点で公開等価物なし）</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>インスティンクト学習（自動蓄積）で先行（下記）</td></tr>
+      <tr><td><b>計測</b></td><td>受領書（.github/hooks/logs/usage。工程・エージェント・モデル・キャッシュ別トークン記録＋host 推定費用・GATE 遷移）＋golden-eval KPI</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><b>セキュリティ多層</b></td><td>deny＋フック＋保守モードツール＋CODEOWNERS＋サプライチェーン統制手順＋Rule of Two 判定語彙＋sandbox委譲方針</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><b>brownfield（既存コードベース）</b></td><td>/11 逆起こし＋整合検証＋導入は sync-harness の自動判定注入</td><td>converge（コードとspecの突き合わせ）の概念で先行</td><td>対応あり</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><b>マルチ環境</b></td><td>正1か所＋機械生成アダプタ＋乖離検出＋劣化モードの明文化（実機検証済みは Copilot / Claude Code の2環境。Antigravity アダプタは同梱のみ・検証凍結＝D057）</td><td>—</td><td>—</td><td>専用IDE（単一環境）</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><b>変更管理（運用中）</b></td><td>/12 の4分類＋変更請求台帳＋該当フェーズのみ再ゲート＋/13 収束監査</td><td>greenfield（新規開発）偏重・反復に弱いとの外部批判が監査に記録。converge は v1.0 で提供</td><td>—</td><td>—</td><td>delta spec を保有（監査は「同等以上」と評価）</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><b>自己監査文化</b></td><td>独立監査4回＋提案台帳（PROPOSALS.md）＋「まだ世界最高を名乗れない」自己判定の公開記録</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    </table>
+    </div>
+
+    <h3 class="sub">彼らが先行している点（正直な注記と取込計画）</h3>
+    <p class="sec-desc" style="margin-bottom:18px">
+      比較は「勝っている表」を作るためではなく、<b>取り込むべきものを特定するため</b>に行っています。
+      監査記録上、他ハーネスが先行していると判定された点は次のとおりです。
+    </p>
+    <div class="scroll">
+    <table>
+      <tr><th>先行しているハーネス</th><th>先行している点（監査記録より）</th><th>本ハーネスの現状と取込計画</th></tr>
+      <tr><td><b>GSD</b></td><td>サブエージェントによる<b>自動 fresh context</b>（セッション境界をユーザーでなくツール側が自動で切る）。潮流はこちら側</td><td>本ハーネスは「新しいチャットをユーザーに開かせる」方式。実装→テスト間は同一セッション自動継続（D048/D049）で部分的に自動化済み</td></tr>
+      <tr><td><b>OMC</b></td><td><b>証拠鮮度規律</b>（5分以内の実コマンド出力のみ完了証拠と認める）・<b>委譲エンフォーサ</b>・PreCompact ノートパッド</td><td>証拠鮮度規律（D054）と PreCompact ノートパッド（D065）は導入済み。残るは委譲エンフォーサ＝A3-8（open。SubagentStart フックでの機械強制を予定）</td></tr>
+      <tr><td><b>ECC</b></td><td><b>インスティンクト学習</b>（セッション内の知見を自動で蓄積）</td><td>本ハーネスの learnings.md は起草自体は自動化されていない。A3-9 として登録済み（open）</td></tr>
+      <tr><td><b>Spec Kit</b></td><td><b>converge</b>（specとコードの突き合わせ）と constitution 分離の先行元</td><td>/13-converge と AGENTS.md 憲法化で同型を適用済み——概念の出所は正直に Spec Kit にある</td></tr>
+      <tr><td><b>BMAD / Kiro</b></td><td><b>規模適応</b>（Level 0-4 / Quick Spec）。小さな作業に重いプロセスを課さない段階設計</td><td>ライトパス（fast-track）と /12 の4分類で部分対応。フル段階制は未実装</td></tr>
+      <tr><td><b>Kiro</b></td><td>EARS 記法を中核に採用し spec の形を業界標準化</td><td>本ハーネスも EARS 採用済み（D015）。この軸は<b>同等</b>（標準化への寄与は Kiro のもの）</td></tr>
+    </table>
+    </div>
+    <div class="note warn">
+      <b>重要な限定:</b> 性能（同一課題での成果物品質・コスト）の<b>対他ハーネス A/B 測定はまだ存在しません</b>。
+      上の実測A/Bの比較対象は素の Claude Code のみです。どのハーネスに対しても「測定で勝った」とは主張しません。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 固有資産 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-label">UNIQUE ASSETS</div>
+    <h2>監査が「公開等価物なし」と評価した固有資産</h2>
+    <p class="sec-desc">
+      第3回監査（2026-08-22）は、比較先のどのハーネスも持たない固有資産として
+      「根拠つき決定台帳・敵対的自己監査・正1か所のマルチ環境等価・運用中意味論・工数会計」を挙げました（D053）。
+      機能一覧の差ではなく<b>運用の深さの差</b>である代表5つを紹介します。
+    </p>
+    <div class="grid">
+      <div class="card">
+<!-- BEGIN GENERATED: decision-count -->
+        <h3>決定台帳（DECISIONS.md・97件）</h3>
+<!-- END GENERATED: decision-count -->
+        <p>D001 からの全決定が「決定 / 根拠・出典 / 捨てた選択肢」の形式で記録。重要なのは件数ではなく<b>運用</b>——ほぼすべての決定が観測された失敗を出典に持ち、同じ議論の繰り返しと直したバグの再導入を防ぐ装置として機能しています。監査記録の範囲では、この規律を全決定分実装済みの公開例は確認されていません。</p>
+      </div>
+      <div class="card">
+        <h3>敵対的自己監査（audits/）</h3>
+        <p>独立監査4回＋内部総点検2本＋<b>コミット前の敵対的検証5回</b>（自作機構自身のバグを出荷前に捕捉）＋仕様監査1回。指摘は<b>反証を試みてから</b>採録します。実例: セキュリティガードを機械化した翌日、その機構自身に別経路のすり抜け（パストラバーサル・一括編集の切り詰め）を検証が発見し、出荷前に封鎖しました。最新の再監査（2026-08-31・41エージェント）は自らの CI・ガード・評価装置の欠陥 177 件を実測つきで暴いています。</p>
+      </div>
+      <div class="card">
+        <h3>done契約（完了は宣言ではなく証拠）</h3>
+        <p>着手前に完了条件を定義し、<b>証拠つきでのみ</b> <code>[x]</code> を付ける。失敗は retry → replan → escalate の3状態で昇格し、試行記録を docs に外部化してセッションをまたいでも回数制限が消えない。<code>golden-eval.py</code> が宣言と実態の食い違いを機械検査します。</p>
+      </div>
+      <div class="card">
+        <h3>受付ルーチン（入口はエージェントが入る）</h3>
+        <p>多くのハーネスは<b>ユーザーがコマンドを覚えて正しく起動すること</b>が前提。本ハーネスは依頼のたびにフックが受付ルールを注入し、エージェントが分類を冒頭宣言して入口コマンドを自分で起動します。「ハーネスを持ち込んだのに機能しなかった」という実際の利用報告（D043）への対策として生まれ、E2E実走行で検証済みです（D049）。</p>
+      </div>
+      <div class="card">
+        <h3>成長ループ（ファイルで実装された学習）</h3>
+        <p>教訓はフックで<b>全セッションに自動注入</b>（「注入されない記録は存在しないのと同じ」D017）。振り返り → 本体テンプレート還流 → 運用中プロジェクトへの逆同期のループは<b>実際に6周</b>回っており、その適用記録自体が DECISIONS.md に残っています。監査は「最大の差別化要素。公開等価物なし」と評価しました。</p>
+      </div>
+      <div class="card">
+        <h3>マルチ環境等価（正は1か所）</h3>
+        <p>振る舞いの正は AGENTS.md + .github/ の1か所。各環境には<b>ポインタだけの薄いアダプタを機械生成</b>し、乖離は <code>validate-harness.py</code> が検出。実機で通し検証済みなのは Copilot / Claude Code の2環境で、Antigravity アダプタは同梱のみ・検証凍結（D057）。環境ごとのガード強度差（劣化モード）も隠さず文書化しています。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 正直な現在地 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-label">HONEST STATUS</div>
+    <h2>正直な現在地——まだ証明できていないこと</h2>
+    <p class="sec-desc">
+      目標は「測定した機能・非機能の性能で優位を証明できる状態」であり、現時点でそこに<b>まだ達していません</b>。
+      到達済みは「両環境で実機動作し、素の Claude Code に対する主戦場の優位を n=2 で実測し、自己整合を機械で維持している」まで。
+      残る核心は<b>他ハーネスとの直接 A/B が未実施</b>であることです。
+    </p>
+    <div class="scroll">
+    <table>
+      <tr><th>未証明・未了の領域</th><th>現状</th></tr>
+      <tr><td><b>他ハーネスとの直接 A/B が未実施</b></td><td>実測比較の相手は現状すべて素の Claude Code のみ。Spec Kit / BMAD / OMC 等との同一課題実走はゼロ。「他ハーネスへの優位の証明」の核心的な残ギャップです（superpowers は全軸未調査）</td></tr>
+      <tr><td><b>修正網羅性の構造欠陥（2026-08-31 再監査）</b></td><td>41エージェントの再監査が「applied と記録した修正が N 面のうち 1 面にしか適用されていない」型の欠陥を <b>177 件</b>指摘（CRITICAL 2 件＝CI が導入以来未緑／設定ガードにインタプリタ経由の書き込みバイパス。いずれも実測再現済み）。A/B 予算の非対等（bare $40 / harness $60）も判明。下記ロードマップの P0〜P2 で修正着手中（audits/external-reaudit-2026-08-31.md）</td></tr>
+      <tr><td><b>主戦場の統計的強度が薄い（n=2）</b></td><td>主戦場の優位は n=2・課題1種・自作判定器によるもの。n≥5 への増強と判定器の感度分析が残ります。数値は「再現された実例」であって統計的証明ではありません</td></tr>
+      <tr><td><b>完全放置（Autopilot）は限定運用</b></td><td>VS Code の Autopilot は人手ゲート・証拠待ちを「仮定」で自己続行し、テスト未実行のまま完了扱いにする挙動を実測（D068）。自律実行は実行権のあるエージェントで人手ゲートを跨がない区間に限る（deny ゲートは有効）</td></tr>
+      <tr><td><b>ネイティブ Windows の sandbox 強制層なし</b></td><td>deny・フックは多層防御であって完全な防御ではなく、Bash 経由のファイル書き込み等の既知の迂回が残ります（PLATFORM.md に緩和策とともに明記）</td></tr>
+      <tr><td><b>外部利用者による追試なし</b></td><td>リポジトリは未公開で、知名度・コミュニティは本比較の評価軸から除外しています（公開判断は A3-7・ユーザー判断待ち）</td></tr>
+    </table>
+    </div>
+    <div class="note">
+      <b>公式ビルトインとの使い分けは「実測で」決めています:</b> セキュリティ検出は公式 <code>/security-review</code> と
+      検出力が同等（仕込み脆弱性7種で <b>7/7 vs 7/7</b>）と分かったため<b>検出は公式に委譲</b>し、本ハーネスはリリースゲート統合
+      （様式化・要件紐づけ・レポート無き完了の阻止）だけを所有します。一方、独立レビューは done契約の照合で公式より優位
+      （テスト証拠のすり替え改竄を <b>本ハーネス 5/5 検出・公式 4/5 見逃し</b>）と分かったため<b>自作を維持</b>します。
+      「自作か委譲か」を思い込みでなく測定で決め、根拠（実測/論拠/未評価）を委譲表に残しています。
+    </div>
+    <div class="note purple">
+      <b>それでもこのページを読む価値があるとすれば:</b> 未証明の領域がすべて<b>提案台帳（PROPOSALS.md）で状態管理され、
+      反証を試みた上で正直に区別されている</b>ことです。このページ自体が、その自己監査文化の産物です。
+    </div>
+  </div>
+</section>
+
+<!-- ============ ロードマップ ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-label">ROADMAP</div>
+    <h2>これから実施予定のこと（2026-08-31 時点）</h2>
+    <p class="sec-desc">
+      再監査の全指摘は提案台帳（PROPOSALS.md）で状態管理し、適用の完了は DECISIONS.md に記録します。
+      優先順は「<b>先に自己検査を緑にし、次に部分修正を構造的に不可能にし、その上で優位を統計的に証明し直す</b>」。
+    </p>
+    <div class="scroll">
+    <table>
+      <tr><th>優先</th><th>実施予定</th></tr>
+      <tr><td><b>P0 地固め</b><br>（2026-09-10 に主要項目を適用＝D072 / D079 / D080。CI 初緑 run 34406967789。残: 開発機の版更新）</td><td>CI の実緑化（依存宣言追加。<b>緑を確認するまで applied と記録しない</b>規律を導入）／設定ガードのインタプリタ・git plumbing・junction 経由バイパスの封鎖／保護域ガードの入力フィールド網羅（uri・notebook・パッチ経由）／Windows 側 fail-open（バッククォート行継続・8.3 短縮名）の修正</td></tr>
+      <tr><td><b>P1 構造的品質保証</b></td><td>説明用 HTML 6本と主要な数値言及を <code>gen-docs.py</code> の生成対象に拡張し、validate で一次データ実数との突合を必須化（「N 面のうち 1 面だけ直る」の根絶。本ページもその対象）／秘密検知パターンの現代化（npm token・JWT・Azure）／brownfield 導入直後の誤検知解消／太くなったプロンプトの薄化</td></tr>
+      <tr><td><b>P2 世界最高の証明・追従</b></td><td>評価装置の対等化（アーム共通予算・model 必須記録・トラジェクトリ保存）の上で <b>A/B を統計的に成立する形でやり直す</b>（n=5・完全分離で Fisher 両側 p=0.008＝再監査 2026-09-09 §6・pass^k＝k回走らせて k 回とも成功したときだけ成功と数える指標・regression+capability・他ハーネス Spec Kit / OMC との直接比較）／常駐指示の 200 行未満化／<code>SubagentStart</code> フックによる委譲エンフォーサ（A3-8）／プラグイン配布の標準スキーマ準拠／long-running agent 公式パターンの E2E 適用</td></tr>
+      <tr><td><b>P3 検証の空白</b></td><td>Copilot 実機フック発火の回帰検証／フックレイテンシ計測／git 履歴のシークレットスキャン／HTML 実描画・アクセシビリティ検収（再監査の網羅性批評で特定された未検証領域）</td></tr>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5分で試す ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-label">TRY IT</div>
+    <h2>5分で試す</h2>
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(240px,1fr));">
+      <div class="card"><h3 style="color:var(--accent)">1. テンプレートを入手</h3><p>GitHub テンプレート / ZIP / 既存リポジトリへは <code>python tools/sync-harness.py --project &lt;対象&gt; --apply</code>。詳細は USAGE.md「0. 準備」。</p></div>
+      <div class="card"><h3 style="color:var(--accent2)">2. メモを雑に書く</h3><p><b>requirements/memo.md</b> に作りたいものを思いつくまま書く（3行で十分）。曖昧でも矛盾していても、ヒアリングが検出して埋めていきます——上の実測のとおり。</p></div>
+      <div class="card"><h3 style="color:var(--accent3)">3. /00-start-project</h3><p>Copilot＝プロンプト / Claude Code＝スラッシュコマンドとして同名で存在します（Antigravity 用ワークフローも同梱・検証凍結）。小規模ならライトパスが自動提案されます。</p></div>
+      <div class="card"><h3 style="color:var(--warn)">4. あとは答えるだけ</h3><p>要件定義 → 設計（承認1回）→ 実装〜テスト（ノータッチ）→ リリース。<b>コマンドを覚える必要はありません</b>——2回目以降は普通のチャットで「◯◯を直して」と言うだけです。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ フッター ============ -->
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="COMPARISON.md">COMPARISON.md（本比較の詳細版・全出典）</a>
+      <a href="GLOSSARY.md">GLOSSARY.md（用語集: bare・done契約・pass^k 等）</a>
+      <a href="overview.html">概要</a>
+      <a href="guardrails.html">ガードレール解説</a>
+      <a href="../../evaluation/README.md">evaluation/（A/B測定の手法と結果JSON）</a>
+      <a href="../../DECISIONS.md">DECISIONS（設計判断と根拠）</a>
+      <a href="../../audits/PROPOSALS.md">PROPOSALS（取込計画の台帳）</a>
+    </div>
+    <p>本ページの数値はすべて <code>evaluation/results/</code> の実測JSON（2026-08-22〜29）に、比較の記述はすべて監査記録（audits/・DECISIONS.md）に紐づきます。<br>
+    比較先の一次情報は新規調査していません。記録に無い軸は「—」とし、優劣を主張しません。<br>
+    このページはビルド不要の単一HTML（フォントのみWebフォント使用。オフライン時はシステムフォントに自動フォールバック）。<br>
+    ※ DECISIONS.md・audits/ はハーネス本体リポジトリにのみ存在します（配布物からは除外されるため、テンプレートから作られたプロジェクトには含まれません）。</p>
+  </div>
+</footer>
+
+</body>
+</html>

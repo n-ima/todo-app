@@ -1,0 +1,412 @@
+{
+  "task": "expense-webapp",
+  "arm": "bare",
+  "timestamp": "2026-08-22T22:19:46",
+  "harness_commit": "f365c5e",
+  "claude_version": "2.1.201 (Claude Code)",
+  "workdir": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4",
+  "budgets": {
+    "max_turns_per_call": 60,
+    "session_budget_usd": 8.0,
+    "total_budget_usd": 40.0,
+    "max_budget_usd_flag_used": true
+  },
+  "calls": [
+    {
+      "index": 1,
+      "prompt": "requirements/memo.md に作りたいアプリのメモがあります。このメモのアプリを実装し、テストも書いてすべて通してください。完了したら成果物のファイルと実行方法を報告してください。",
+      "exit_code": 0,
+      "num_turns": 18,
+      "total_cost_usd": 3.403249,
+      "is_error": false,
+      "result_tail": "完成しました。メモの要件をすべて実装し、**62 件のテストが全件パス**、実サーバーを起動してのスモークテストでも主要フロー(申請→承認→集計→通知)が動作することを確認済みです。\n\n## 成果物のファイル\n\n| ファイル | 内容 |\n|---|---|\n| `run.py` | 起動スクリプト |\n| `expense_app/store.py` | データ保存(JSON)と業務ロジック(CRUD・承認/却下・25日締め集計) |\n| `expense_app/server.py` | Web 画面と HTTP 処理(`http.server` ベース) |\n| `tests/test_store.py` | 業務ロジックのテスト(35件) |\n| `tests/test_server.py` | 実サーバーを空きポートで起動して urllib で叩く HTTP テスト(27件) |\n| `README.md` | 使い方・仕様の説明 |\n\n依存はゼロで、Python さえ入っていれば `pip` も DB も不要です(標準ライブラリのみ)。\n\n## 実行方法\n\n```\npython run.py\n```\n\n起動後にブラウザで **http://127.0.0.1:8000/** を開きます。`--port` でポート、`--data` で保存先、他の PC からも使う場合は `--host 0.0.0.0` を指定できます。データは `data/expenses.json` に自動保存されます(バックアップはファイルコピーだけ)。\n\nテストは `python -m unittest discover -s tests -v` で実行できます。\n\n## 実装した機能と、メモの曖昧な点をこう解釈しました\n\n- **申請・修正・削除**: 日付・金額・カテゴリ・メモ・申請者名で申請。申請中と却下のものは修正・削除できますが、**承認済は修正・削除不可**にしました(承認後に金額が変わると精算が狂うため)。\n- **承認・却下**: 詳細画面から承認者名を入れて承認/却下。却下理由も残せます。**却下された申請を修正すると自動で「申請中」に戻り再申請扱い**になります(「直して出し直す」の要件)。\n- **25日締め**: メモに「月末締め」と「25日締め」が両方ありましたが、具体的な指定である **25日締めを採用**しました。日付が25日までならその月、26日以降は翌月の集計に入ります(12/26 は翌年1月分。境界はテストで担保)。\n- **月次集計**: 申請者別・カテゴリ別の**承認済合計**を表示し、未承認(申請中)が残っている場合は件数を警告表示します。\n- **通知**: メールはサーバー設定が必要になるため、代わりに**一覧画面上部の「お知らせ」欄**に承認・却下の通知を出す方式にしました(要件上「必須ではない」ため)。\n- **同時利用**: マルチスレッドサーバー+ロック+アトミック書き込み(一時ファイル→置換)で、数人の同時利用でもデータが壊れないようにしています。XSS 対策の HTML エスケープもテストで確認しています。\n\nコミットはしていません。必要であればコミットも作成します。",
+      "duration_s": 401.8,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 2,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 6,
+      "total_cost_usd": 1.42689,
+      "is_error": false,
+      "result_tail": "残っていた作業をすべて完了しました。\n\n- **テスト再確認**: 全 62 件パス(`python -m unittest discover -s tests`)\n- **`.gitignore` を追加**: 実行時に生成される `data/`(経費データ)と `__pycache__/` をコミット対象から除外\n- **コミット作成**: 前回未コミットだった成果物一式(アプリ本体・テスト・README)をコミット `5c56229` としてまとめました。作業ツリーはクリーンです。\n\nこれで実装・テスト・ドキュメント・コミットまですべて完了です。アプリは `python run.py` で起動し、http://127.0.0.1:8000/ で使えます。プッシュが必要でしたらリモートの指定と合わせてお知らせください。",
+      "duration_s": 50.8,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 3,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 3,
+      "total_cost_usd": 1.2071729999999998,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。すべて完了済みであることを確認しました。\n\n- **テスト**: 全 62 件パス(いま再実行して確認)\n- **作業ツリー**: クリーン(未コミットの変更なし)\n- **コミット**: `5c56229 feat: 経費精算 Web アプリを実装(申請・承認・25日締め月次集計)` として成果物一式(`run.py`、`expense_app/store.py`、`expense_app/server.py`、`tests/`、`README.md`、`.gitignore`)をコミット済み\n\n要件メモの項目もすべて実装済みです: 申請の作成・修正・削除、上長による承認・却下(却下後の修正で自動再申請)、25日締めの月次集計(申請者別・カテゴリ別)、承認/却下のお知らせ表示、JSON ファイル保存、ログインなしでの申請者名管理、標準ライブラリのみでの動作。\n\n使い方は `python run.py` で起動 → http://127.0.0.1:8000/ を開くだけです。テストは `python -m unittest discover -s tests -v` で実行できます。\n\nこの先やるとすれば、リモートへのプッシュ、メール通知の実装(SMTP サーバーがあれば)、CSV エクスポートなどの機能追加が考えられますが、必要になったらお申し付けください。",
+      "duration_s": 44.7,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 4,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 2,
+      "total_cost_usd": 0.242408,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。依頼いただいたタスクはすべて完了しています。\n\n- **実装**: `requirements/memo.md` の全要件を実装済み(申請の作成・修正・削除、承認・却下と再申請、25日締めの月次集計、お知らせ通知、JSON ファイル保存、標準ライブラリのみで動作)\n- **テスト**: 62 件すべてパス(前回実行で確認済み、以降コードの変更なし)\n- **コミット**: `5c56229` としてコミット済み。作業ツリーは今もクリーンです\n\n実行は `python run.py` → http://127.0.0.1:8000/ 、テストは `python -m unittest discover -s tests -v` です。\n\nこれ以上進める作業はこの依頼の範囲にはないため、ここで完了とします。機能追加(CSV エクスポート、SMTP でのメール通知など)やリモートへのプッシュが必要になったら、具体的にお申し付けください。",
+      "duration_s": 25.6,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 5,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 2,
+      "total_cost_usd": 0.21456599999999998,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。前回から状態に変化はなく(作業ツリーはクリーン、コミット `5c56229` のまま)、依頼されたタスク — アプリの実装、テスト作成と全件パス(62 件)、成果物と実行方法の報告 — はすべて完了しています。\n\n- **起動**: `python run.py` → http://127.0.0.1:8000/\n- **テスト**: `python -m unittest discover -s tests -v`\n- **成果物**: `run.py` / `expense_app/store.py` / `expense_app/server.py` / `tests/test_store.py` / `tests/test_server.py` / `README.md`\n\n続けて進められる作業はもうないため、これで完了です。新しい要望(機能追加やプッシュなど)があれば、その内容を具体的にお知らせください。",
+      "duration_s": 26.6,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 6,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 1,
+      "total_cost_usd": 0.094121,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。前回確認から何も変わっておらず、依頼のタスク(実装・テスト62件全パス・コミット `5c56229`・報告)はすべて完了済みです。\n\nこれ以上こちらから進める作業はないため、新しく何かご希望があれば(例: 「CSV エクスポートを追加して」「リモートにプッシュして」など)具体的にお伝えください。",
+      "duration_s": 11.5,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 7,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 1,
+      "total_cost_usd": 0.091299,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。状況は前回までと同じで、依頼いただいたタスクはすべて完了しています(実装・テスト 62 件全パス・コミット `5c56229`・成果物と実行方法の報告済み)。\n\n同じ依頼を繰り返しいただいていますが、こちらから追加で進められる作業はもう残っていません。次に進むには新しい指示が必要です。もし自動で送信されているメッセージでしたら、停止していただいて大丈夫です。",
+      "duration_s": 13.1,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 8,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 1,
+      "total_cost_usd": 0.087428,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。依頼のタスクは完了済みです(実装・テスト 62 件全パス・コミット `5c56229`・報告済み)。状況に変化はなく、進める作業はありません。新しい指示があればお知らせください。",
+      "duration_s": 5.7,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 9,
+      "prompt": "テストがすべて通っていることを確認し、最終的な成果物と実行方法を報告してください。",
+      "exit_code": 0,
+      "num_turns": 2,
+      "total_cost_usd": 0.214662,
+      "is_error": false,
+      "result_tail": "**テストは全 62 件パス(OK)を確認しました。** 業務ロジックのテスト 35 件と、実サーバーを起動して HTTP で叩く結合テスト 27 件がすべて通っています。\n\n## 最終成果物\n\n| ファイル | 内容 |\n|---|---|\n| `run.py` | 起動スクリプト |\n| `expense_app/store.py` | 業務ロジック(申請の CRUD・承認/却下・25日締め月次集計・JSON 保存) |\n| `expense_app/server.py` | Web 画面と HTTP 処理(`http.server` ベース) |\n| `tests/test_store.py` | 業務ロジックのテスト(35 件) |\n| `tests/test_server.py` | 実サーバー起動での HTTP テスト(27 件) |\n| `README.md` | 使い方・仕様の説明 |\n| `.gitignore` | 実行時データ(`data/`)等の除外設定 |\n\nすべてコミット `5c56229` に含まれており、作業ツリーはクリーンです。依存は Python 標準ライブラリのみで、pip や DB のインストールは不要です。\n\n## 実行方法\n\n```\npython run.py\n```\n\n起動後、ブラウザで **http://127.0.0.1:8000/** を開きます。データは `data/expenses.json` に自動保存されます。\n\nオプション:\n- `python run.py --port 8080` — ポート変更\n- `python run.py --data C:\\share\\keihi.json` — データ保存先の変更\n- `python run.py --host 0.0.0.0` — チームの他の PC からアクセスさせる場合\n\n## テストの実行方法\n\n```\npython -m unittest discover -s tests -v\n```\n\n## 主な機能(要件メモとの対応)\n\n- **経費申請**: 日付・金額・カテゴリ・メモ・申請者名で申請(ログイン不要)\n- **修正・削除**: 申請中/却下のものは修正・削除可能(承認済は不可)\n- **承認・却下**: 上長が詳細画面から承認者名を入れて操作。却下理由も記録され、却下された申請は修正すると自動的に「申請中」へ戻り再申請扱い\n- **状態の見える化**: 一覧・詳細に申請中/承認済/却下と承認者名を表示\n- **通知**: 承認・却下時に一覧上部の「お知らせ」欄へ表示(メールの代替。要件上は任意)\n- **月次集計**: 毎月25日締め(26日〜翌月25日)。申請者別・カテゴリ別の承認済合計と未承認件数の警告を表示",
+      "duration_s": 47.2,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 10,
+      "prompt": "運用開始後の変更依頼です。承認済み申請の金額を直したいとき、今は差戻ししかありませんが、差戻しではなく「修正履歴つきの直接編集」にしてください。誰がいつ・いくらからいくらへ変えたかが残るようにしたいです。",
+      "exit_code": 0,
+      "num_turns": 22,
+      "total_cost_usd": 2.4217049999999998,
+      "is_error": false,
+      "result_tail": "完了しました。承認済み申請は差戻し不要で直接編集でき、修正履歴が残るようになりました。**テストは全 75 件パス**(履歴機能のテストを 13 件追加)し、コミット `49e861d` として反映済みです。\n\n## 新しい動き\n\n- **承認済のまま直接修正**: 詳細画面の「修正する」から承認済の申請をそのまま編集できます。状態は承認済のまま変わらず、承認者の記録も保持されます(差戻しは発生しません)。\n- **変更者名が必須**: 承認済を修正するときだけ「変更者名」欄が表示され、未入力だとエラーになります。履歴なしで金額だけ変えることはできない仕組みです。\n- **修正履歴**: 詳細画面に「修正履歴(承認後の変更)」として **日時・変更者・変更内容(例: 金額: 1,200円 → 1,500円)** の一覧が表示されます。金額以外(日付・カテゴリ・メモなど)の変更も before → after で記録されます。\n- **通知**: 修正すると一覧上部のお知らせ欄にも「〜さんの承認済の申請 #N を 山田 さんが修正しました(金額: 1,200円 → 1,500円)」と出るので、申請者・上長の双方が気づけます。\n- **集計への反映**: 修正後の金額が月次集計に即反映されます(テストで担保)。\n- **変わらない点**: 申請中・却下の修正はこれまで通り(却下→修正で再申請)。承認済の**削除**は引き続き不可です(履歴ごと消えてしまうため)。\n\n## 互換性\n\n運用開始後という前提なので、**既存のデータファイル(`data/expenses.json`)はそのまま使えます**。履歴機能より前に保存された申請は読み込み時に空の履歴が補われ、以降の修正から履歴が付きます(これもテスト済み)。\n\n## 変更ファイル\n\n- `expense_app/store.py` — 承認済の update を許可し、差分検出・履歴保存・通知を追加\n- `expense_app/server.py` — 編集フォームの変更者名欄、詳細画面の修正履歴表、承認済でも修正ボタンを表示\n- `tests/test_store.py` / `tests/test_server.py` — 新仕様のテストに差し替え+追加(履歴記録、変更者名必須、リロード後の履歴保持、旧データ互換、集計反映など)\n- `README.md` — 仕様説明を更新\n\nサーバーを再起動(`python run.py`)すれば新しい動作になります。",
+      "duration_s": 259.4,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 11,
+      "prompt": "変更後も既存の承認フローと月次集計が壊れていないことをテストで確認し、テストも更新してください。",
+      "exit_code": 0,
+      "num_turns": 5,
+      "total_cost_usd": 2.655572,
+      "is_error": false,
+      "result_tail": "確認完了です。**既存の承認フローと月次集計は壊れていません。** 回帰テスト 9 件を追加し、**全 84 件がパス**しました(コミット `b299f8d`)。\n\n## 追加した回帰テストと確認できたこと\n\n**承認フローが従来どおりであること**(`tests/test_store.py` / `tests/test_server.py`)\n- 承認済を直接修正しても状態は承認済のままで、再承認・却下の対象に戻らない(承認/却下ボタンも再表示されない)\n- 却下→修正→再申請→承認のフローは従来どおり動く。この経路の修正には履歴が付かず、変更者名も要求されない(申請中の修正フォームに変更者名欄が出ないことも画面レベルで確認)\n- 申請中の詳細画面には従来どおり承認・却下・削除の操作が表示される\n\n**月次集計が正しいままであること**\n- 直接修正で金額を変えると集計に即反映される(既存テストで確認済み)\n- 直接修正で**日付が締め日(25日)をまたぐと、集計が正しい月へ移動する**(8/20 → 8/26 に修正すると 8月分 0 円・9月分 1,000 円になることをロジックと画面の両方で確認)\n- 承認済の直接修正・却下からの再申請・申請中が混在するシナリオで、申請者別/カテゴリ別合計と未承認件数がすべて期待どおりになる\n\n## テストの内訳(計 84 件)\n\n- 業務ロジック: 52 件(既存 35 + 履歴機能 13 + 回帰 4)\n- HTTP(実サーバー起動): 32 件(既存 25 + 履歴機能 2 + 回帰 5)\n\n実行は従来どおり `python -m unittest discover -s tests -v` です。",
+      "duration_s": 122.9,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 12,
+      "prompt": "続きをお願いします。完了したら変更内容と回帰確認の結果を報告してください。",
+      "exit_code": 0,
+      "num_turns": 3,
+      "total_cost_usd": 2.080844,
+      "is_error": false,
+      "result_tail": "作業はすべて完了しています。最終確認として全テストを再実行し、**84 件すべてパス**を確認しました。作業ツリーはクリーンで、変更はすべてコミット済みです。\n\n## 変更内容\n\n**1. 承認済申請の「修正履歴つき直接編集」**(コミット `49e861d`)\n- 承認済の申請を差戻しせずにそのまま修正できるようにしました。状態は承認済のまま維持され、承認者の記録も残ります。\n- 承認済の修正時は**変更者名の入力が必須**です(ログインがないため、これで「誰が変えたか」を担保)。\n- **誰が・いつ・どの値をどう変えたか**(例: 金額: 1,200円 → 1,500円)を申請ごとの修正履歴として保存し、詳細画面の「修正履歴(承認後の変更)」欄に表示します。金額以外(日付・カテゴリ・メモ等)の変更も before → after で記録されます。\n- 修正時は一覧のお知らせ欄にも通知が出ます。\n- 履歴機能導入前の既存データファイルもそのまま読み込めます(運用中データへの影響なし)。\n- 変更ファイル: `expense_app/store.py`、`expense_app/server.py`、`README.md`、テスト一式\n\n**2. 回帰テストの追加**(コミット `b299f8d`)\n- 上記変更で既存機能が壊れていないことを確認するテスト 9 件を `tests/test_store.py`(4 件)と `tests/test_server.py`(5 件・実サーバー起動)に追加しました。\n\n## 回帰確認の結果 — すべて問題なし\n\n- **承認フロー**: 直接修正後も承認済のままで、再承認・却下の対象に戻らない(画面にも承認/却下ボタンは再表示されない)。却下→修正→再申請→承認の従来フローもそのまま動作し、この経路では履歴は付かず変更者名も不要。申請中の詳細には従来どおり承認・却下・削除の操作が表示される。\n- **月次集計(25日締め)**: 修正後の金額が集計に即反映される。日付を修正して締め日をまたいだ場合(8/20→8/26)は集計が正しく翌月へ移動する。承認済の直接修正・再申請・申請中が混在するシナリオでも、申請者別/カテゴリ別合計と未承認件数がすべて期待どおり。\n\n**テスト結果: 84 件 / 84 件パス**(業務ロジック 52 件+ HTTP 32 件)。実行コマンドは `python -m unittest discover -s tests -v`、アプリの起動は `python run.py`(→ http://127.0.0.1:8000/)です。サーバーを再起動すれば新機能が有効になります。",
+      "duration_s": 44.9,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    }
+  ],
+  "totals": {
+    "duration_s": 1069.3,
+    "num_turns": 66,
+    "cost_usd": 14.1399,
+    "aborted_by_budget": false,
+    "n_truncated_calls": 0,
+    "n_truncated_calls_basis": "inferred: is_error and cost >= 0.98x call budget and empty result (v1 has no subtype)",
+    "n_error_calls": 0,
+    "budget_used_ratio": 0.3535,
+    "max_call_cost_usd": 3.4032,
+    "max_call_cost_ratio": 0.4254
+  },
+  "stages": {
+    "sizes": [
+      9,
+      3
+    ],
+    "intermediate_checks": {
+      "stage1": {
+        "task": "expense-webapp",
+        "stage": 1,
+        "target": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4",
+        "checks": [
+          {
+            "name": "artifact_present",
+            "ok": true,
+            "detail": "生成物スコープ(git-diff)の .py: 7 件"
+          },
+          {
+            "name": "crud_capability",
+            "ok": true,
+            "detail": "申請の作成+一覧の痕跡"
+          },
+          {
+            "name": "approval_capability",
+            "ok": true,
+            "detail": "承認遷移の痕跡"
+          },
+          {
+            "name": "aggregation_capability",
+            "ok": true,
+            "detail": "月次集計の痕跡"
+          },
+          {
+            "name": "contradiction_resolved",
+            "ok": false,
+            "detail": "締め日(月末/25日)の決定記録が見つかりません"
+          },
+          {
+            "name": "tests_present",
+            "ok": true,
+            "detail": "2 件"
+          },
+          {
+            "name": "tests_pass",
+            "ok": true,
+            "detail": "..............................................................\n----------------------------------------------------------------------\nRan 62 tests in 13.457s\n\nOK\n"
+          }
+        ],
+        "scope": {
+          "mode": "git-diff",
+          "count": 9,
+          "files": [
+            ".gitignore",
+            "README.md",
+            "expense_app/__init__.py",
+            "expense_app/server.py",
+            "expense_app/store.py",
+            "run.py",
+            "tests/__init__.py",
+            "tests/test_server.py",
+            "tests/test_store.py"
+          ]
+        },
+        "tests": {
+          "files": [
+            "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4\\tests\\test_server.py",
+            "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4\\tests\\test_store.py"
+          ],
+          "runner": "unittest",
+          "ok": true,
+          "output_tail": "..............................................................\n----------------------------------------------------------------------\nRan 62 tests in 13.457s\n\nOK\n"
+        },
+        "server_probe": {
+          "attempted": true,
+          "entry": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4\\run.py",
+          "port": 8000,
+          "started": true,
+          "responded": true,
+          "detail": "HTTP 200"
+        },
+        "pass": false,
+        "exit_code": 1
+      }
+    }
+  },
+  "check": {
+    "task": "expense-webapp",
+    "stage": 2,
+    "target": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4",
+    "checks": [
+      {
+        "name": "artifact_present",
+        "ok": true,
+        "detail": "生成物スコープ(git-diff)の .py: 7 件"
+      },
+      {
+        "name": "crud_capability",
+        "ok": true,
+        "detail": "申請の作成+一覧の痕跡"
+      },
+      {
+        "name": "approval_capability",
+        "ok": true,
+        "detail": "承認遷移の痕跡"
+      },
+      {
+        "name": "aggregation_capability",
+        "ok": true,
+        "detail": "月次集計の痕跡"
+      },
+      {
+        "name": "contradiction_resolved",
+        "ok": false,
+        "detail": "締め日(月末/25日)の決定記録が見つかりません"
+      },
+      {
+        "name": "tests_present",
+        "ok": true,
+        "detail": "2 件"
+      },
+      {
+        "name": "tests_pass",
+        "ok": true,
+        "detail": "....................................................................................\n----------------------------------------------------------------------\nRan 84 tests in 17.624s\n\nOK\n"
+      },
+      {
+        "name": "edit_history_feature",
+        "ok": true,
+        "detail": "修正履歴つき編集の痕跡"
+      },
+      {
+        "name": "tests_updated",
+        "ok": true,
+        "detail": "履歴・編集に言及するテスト"
+      }
+    ],
+    "scope": {
+      "mode": "git-diff",
+      "count": 9,
+      "files": [
+        ".gitignore",
+        "README.md",
+        "expense_app/__init__.py",
+        "expense_app/server.py",
+        "expense_app/store.py",
+        "run.py",
+        "tests/__init__.py",
+        "tests/test_server.py",
+        "tests/test_store.py"
+      ]
+    },
+    "tests": {
+      "files": [
+        "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4\\tests\\test_server.py",
+        "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4\\tests\\test_store.py"
+      ],
+      "runner": "unittest",
+      "ok": true,
+      "output_tail": "....................................................................................\n----------------------------------------------------------------------\nRan 84 tests in 17.624s\n\nOK\n"
+    },
+    "server_probe": {
+      "attempted": true,
+      "entry": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-bare-zyuwx4g4\\run.py",
+      "port": 8000,
+      "started": true,
+      "responded": true,
+      "detail": "HTTP 200"
+    },
+    "pass": false,
+    "exit_code": 1
+  },
+  "artifact_stats": {
+    "files": 10,
+    "python_files": 7,
+    "test_files": 2,
+    "test_functions": 84
+  },
+  "verdict": "FAIL",
+  "valid_for_comparison": false,
+  "invalid_reasons": [
+    "cli<2.1.217",
+    "cli<2.1.251",
+    "user_scope_unisolated",
+    "budget_enforcement=main-only",
+    "workdir_lost(temp auto-cleanup 2026-09-04/06; check.py cannot be re-run)",
+    "model_unrecorded(recovered from transcript)",
+    "budget_asymmetric_across_arms(this 8/40 vs other arm 10/60)"
+  ],
+  "trajectory": {
+    "zip": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-bare-zyuwx4g4.zip",
+    "sha256": "f586e35ea25318a11db6737467621e088133589acb0c792ea5363a1fd13c23ec",
+    "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-bare-zyuwx4g4",
+    "files": 1,
+    "bytes": 737560,
+    "zip_bytes": 165117,
+    "latest_mtime": "2026-08-22T22:19:27",
+    "manifest": "evaluation/results/trajectories/MANIFEST.json"
+  },
+  "recovered_models_observed": {
+    "claude-fable-5": 120
+  },
+  "recovered_model": "claude-fable-5",
+  "recovered_model_source": "transcript zip C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-bare-zyuwx4g4.zip (count of \"model\" values; via --scan-trajectories)",
+  "conditions": {
+    "model_requested": null,
+    "effort_requested": null,
+    "claude_version": "2.1.201",
+    "min_cli_ok": false,
+    "budget_enforcement": "main-only",
+    "subagent_model_forced": false,
+    "setting_sources": "user,project,local (CLI default; user scope unisolated)",
+    "config_dir_isolated": false,
+    "permission_mode": "acceptEdits",
+    "allowed_tools": [
+      "Bash(git:*)",
+      "Bash(py:*)",
+      "Bash(python:*)"
+    ],
+    "max_turns_per_call": 60,
+    "call_budget_usd": 8.0,
+    "total_budget_usd": 40.0,
+    "fresh_policy": "continue",
+    "auth_mode": "oauth(inferred: usage-credits quota text in same batch)",
+    "task_md_sha256": null,
+    "check_py_sha256": null
+  },
+  "experiment": {
+    "kind": "legacy",
+    "series_id": "legacy-v1-2026-08",
+    "run_index": null,
+    "condition_hash": "8eac5b711d09",
+    "plan_path": null,
+    "plan_sha256": null
+  },
+  "schema_version": 1,
+  "backfill": {
+    "first_applied_on": "2026-09-10",
+    "rule_version": 1,
+    "tool": "tools/eval-report.py --backfill",
+    "basis": "audits/external-reaudit-2026-09-09.md §6 (EV-1/EV-2/EV-3/RG-9); verdict by cost > total_budget (abort-flag independent); truncation inferred from call cost"
+  }
+}

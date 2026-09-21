@@ -1,0 +1,27 @@
+{
+  "name": "copilot-sdlc-harness",
+  "version": "1.2.0",
+  "description": "要件定義→設計→実装→テスト→リリースを一気通貫でオーケストレーションする開発ハーネス（GitHub Copilot / Claude Code 対応。Antigravity はアダプタ同梱・未検証）",
+  "author": {
+    "name": "n-ima",
+    "url": "https://github.com/n-ima"
+  },
+  "repository": "https://github.com/n-ima/copilot-sdlc-harness",
+  "license": "MIT",
+  "keywords": [
+    "sdlc",
+    "phase-gate",
+    "github-copilot",
+    "claude-code",
+    "agent-hooks",
+    "agent-skills"
+  ],
+  "skills": "./.github/skills/",
+  "commands": "./.claude/commands/",
+  "agents": [
+    "./.claude/agents/reviewer.md",
+    "./.claude/agents/spec-critic.md",
+    "./.claude/agents/task-worker.md"
+  ],
+  "hooks": "./.claude-plugin/hooks.json"
+}

@@ -1,0 +1,39 @@
+# claude-code-security-review の opt-in テンプレート(D052)。
+# PR の差分を Claude がセキュリティレビューし、指摘を PR コメントとして残す
+# (誤検知フィルタつき。https://github.com/anthropics/claude-code-security-review)。
+#
+# API 利用料が発生するため、既定では .example 拡張子で無効化している。
+# 有効化するには:
+#   1. このファイルを claude-security-review.yml にリネームする
+#   2. リポジトリの Settings → Secrets and variables → Actions に
+#      ANTHROPIC_API_KEY シークレットを設定する
+name: claude-security-review
+on:
+  pull_request:
+
+concurrency:
+  group: claude-security-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      # actions も 40 桁 SHA 固定(codex 監査 2026-08-31 H-06。validate-harness.py (n) が検査)
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: AIセキュリティレビュー(PR差分の解析とコメント投稿)
+        # コミットSHAピン止め(サプライチェーン対策: 可変参照の @main はアクション改竄が
+        # そのまま流入するため使わない)。このリポジトリはタグ/リリースを発行していないため
+        # main の HEAD コミットを直接ピンしている(main@2026-02-11 時点)。
+        # 更新時は差分を確認のうえ新しいコミットSHAへ張り替えること。
+        uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda
+        with:
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          comment-pr: true

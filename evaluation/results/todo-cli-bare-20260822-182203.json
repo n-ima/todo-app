@@ -1,0 +1,275 @@
+{
+  "task": "todo-cli",
+  "arm": "bare",
+  "timestamp": "2026-08-22T18:22:03",
+  "harness_commit": "52d1da4",
+  "claude_version": "2.1.201 (Claude Code)",
+  "workdir": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-bare-ippnl2fk",
+  "budgets": {
+    "max_turns_per_call": 60,
+    "session_budget_usd": 4.0,
+    "total_budget_usd": 12.0,
+    "max_budget_usd_flag_used": true
+  },
+  "calls": [
+    {
+      "index": 1,
+      "prompt": "requirements/memo.md に作りたいアプリのメモがあります。このメモのアプリを実装し、テストも書いてすべて通してください。完了したら成果物のファイルと実行方法を報告してください。",
+      "exit_code": 0,
+      "num_turns": 11,
+      "total_cost_usd": 1.262209,
+      "is_error": false,
+      "result_tail": "完了しました。要件メモどおりのTODO管理ツールを実装し、テスト11件がすべて通っています。\n\n## 成果物\n\n- **`todo.py`** — 本体。Python標準ライブラリのみの1ファイルスクリプト。データはホームディレクトリの `~/.todo.json` にJSON形式で保存されるため、再起動しても消えません(環境変数 `TODO_FILE` で保存先を変更可能。テストはこれを使って実データに触れないようにしています)。\n- **`test_todo.py`** — unittestによるテスト。実際に `python todo.py <コマンド>` をサブプロセスとして起動するエンドツーエンド形式で、追加・一覧・完了・削除・連番の振り直し・JSONファイルへの永続化・不正な番号や引数のエラー処理をカバーしています。\n\n## 実行方法\n\n```\npython todo.py add \"タスク名\"    # タスクを追加(追加順に1からの連番)\npython todo.py list              # 一覧表示(完了は [x]、未完了は [ ])\npython todo.py done <番号>       # 指定番号を完了にする(削除はしない)\npython todo.py delete <番号>     # 指定番号を削除する(以降の番号は詰められる)\n```\n\nテストの実行:\n\n```\npython -m unittest -v test_todo\n```\n\n結果は **Ran 11 tests — OK**(全件通過)。実際のCLIも一時ファイル指定で動作確認済みで、追加→完了→一覧→削除の一連の流れが期待どおり動きます。パス処理は `pathlib`、保存はUTF-8のJSONなので Windows / macOS / Linux いずれでも動作します。",
+      "duration_s": 107.5,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 2,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 2,
+      "total_cost_usd": 0.5753790000000001,
+      "is_error": false,
+      "result_tail": "未完了の作業はありませんでした。前回のターンで要件メモの内容はすべて実装済みで、いま再検証しても状態は健全です。\n\n- `todo.py` と `test_todo.py` はそのまま存在しています。\n- テストを再実行した結果、**11件すべて通過(OK)** です。\n\n要件メモとの照合も再確認しました: 4コマンド(`add` / `list` / `done` / `delete`)が指定どおりの名前・挙動で動作し、標準ライブラリのみの1ファイル構成、データは `~/.todo.json` に永続化、完了タスクは `[x]` 表示、クロスプラットフォーム対応、テスト付きで全件通過 — すべて満たしています。\n\n一点だけ補足すると、`todo.py` と `test_todo.py` はまだgitにコミットされていない状態(未追跡ファイル)です。コミットしておきたい場合はその旨お知らせください(あわせて `__pycache__/` を `.gitignore` に追加しておくときれいです)。",
+      "duration_s": 27.2,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 3,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 3,
+      "total_cost_usd": 0.277207,
+      "is_error": false,
+      "result_tail": "コミットが完了し、これですべての作業が終わりました。\n\n- コミット `19ea5a4`「feat: add CLI todo manager with tests」として、`todo.py`・`test_todo.py`・`.gitignore` の3ファイルをmainブランチにコミットしました。作業ツリーはクリーンです(`__pycache__/` は `.gitignore` で除外)。\n- テストは前回確認どおり11件すべて通過しています。\n\n成果物と実行方法(再掲):\n\n```\npython todo.py add \"タスク名\"    # タスク追加\npython todo.py list              # 一覧表示([x] = 完了)\npython todo.py done <番号>       # 完了にする\npython todo.py delete <番号>     # 削除する\npython -m unittest -v test_todo  # テスト実行(11件 OK)\n```\n\n要件メモの項目はすべて実装・検証・コミット済みで、未完了の作業はありません。",
+      "duration_s": 30.8,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 4,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 2,
+      "total_cost_usd": 0.6384169999999999,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。すべて完了済みです。\n\nいま最終確認した結果:\n\n- 作業ツリーはクリーン(未コミットの変更なし)\n- コミット `19ea5a4`「feat: add CLI todo manager with tests」がmainに入っています\n- テストは11件すべて通過(**OK**)\n\n要件メモ(`requirements/memo.md`)の内容 — `add` / `list` / `done` / `delete` の4コマンド、標準ライブラリのみの1ファイル `todo.py`、`~/.todo.json` への永続化、`[x]` による完了表示、クロスプラットフォーム対応、テスト付き — はすべて実装・検証・コミット済みです。\n\nこのプロジェクトでやるべきことは残っていませんが、機能追加(例: タスクの編集、期限、完了済みの一括削除など)をご希望であればお知らせください。",
+      "duration_s": 18.6,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 5,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 1,
+      "total_cost_usd": 0.070858,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。前のターンで最終確認済みで、状況は変わっていません:\n\n- `todo.py`(本体)と `test_todo.py`(テスト11件、全件通過)は実装済み\n- コミット `19ea5a4` としてmainにコミット済み、作業ツリーはクリーン\n\n要件メモの項目はすべて満たしており、これ以上進める作業は残っていません。新しい要件(機能追加や仕様変更など)があればお知らせください。すぐに取りかかります。",
+      "duration_s": 9.2,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 6,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 1,
+      "total_cost_usd": 0.06668500000000001,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。タスクはすべて完了しています。\n\n- 実装(`todo.py`)、テスト(`test_todo.py`・11件全通過)、コミット(`19ea5a4`)まで完了済み\n- 作業ツリーはクリーンで、要件メモの項目もすべて満たしています\n\n追加のご要望がない限り、こちらで進める作業は残っていません。",
+      "duration_s": 7.5,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 7,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 1,
+      "total_cost_usd": 0.06032,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。すべて完了済みです(実装・テスト11件全通過・コミット `19ea5a4`)。進める作業がないため、このターンでは何も実行していません。新しい指示があればお知らせください。",
+      "duration_s": 6.1,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 8,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 1,
+      "total_cost_usd": 0.057522000000000004,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。プロジェクトは完了状態のままです(実装・テスト全通過・コミット済み)。新しいタスクや変更のご要望があれば、具体的にお知らせください。",
+      "duration_s": 5.9,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 9,
+      "prompt": "続きをお願いします。未完了の作業があれば進めてください。",
+      "exit_code": 0,
+      "num_turns": 1,
+      "total_cost_usd": 0.054535,
+      "is_error": false,
+      "result_tail": "未完了の作業はありません。すべて完了済みです。新しい指示をいただければ対応します。",
+      "duration_s": 6.0,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 10,
+      "prompt": "テストがすべて通っていることを確認し、最終的な成果物と実行方法を報告してください。",
+      "exit_code": 0,
+      "num_turns": 2,
+      "total_cost_usd": 0.15409,
+      "is_error": false,
+      "result_tail": "**テストは11件すべて通過(OK)を確認しました。**\n\n## 最終成果物\n\n| ファイル | 内容 |\n|---|---|\n| `todo.py` | 本体。Python標準ライブラリのみで動く1ファイルのCLI TODO管理ツール |\n| `test_todo.py` | unittestによるテスト11件。CLIをサブプロセスとして起動するエンドツーエンド形式 |\n| `.gitignore` | `__pycache__/` などの除外設定 |\n\nいずれもコミット `19ea5a4`「feat: add CLI todo manager with tests」としてmainブランチにコミット済みです。\n\n## 実行方法\n\n```\npython todo.py add \"タスク名\"    # タスクを追加(追加順に1からの連番)\npython todo.py list              # 番号付きで一覧表示(完了は [x]、未完了は [ ])\npython todo.py done <番号>       # 指定番号のタスクを完了にする(削除はしない)\npython todo.py delete <番号>     # 指定番号のタスクを削除する(以降の番号は詰められる)\n```\n\nテストの実行:\n\n```\npython -m unittest -v test_todo\n```\n\n## 要件との対応\n\n- データはホームディレクトリの `~/.todo.json` にUTF-8のJSONで保存され、PC再起動後も保持されます(環境変数 `TODO_FILE` で保存先を変更可能。テストはこれを使い実データに触れません)\n- 4コマンドは要件メモ指定の名前・挙動どおりに実装\n- `pathlib` によるパス処理で Windows / macOS / Linux すべてで動作\n- 不正な番号・引数・不明なコマンドはエラーメッセージ(stderr)と終了コード1で処理",
+      "duration_s": 18.7,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    }
+  ],
+  "totals": {
+    "duration_s": 237.3,
+    "num_turns": 25,
+    "cost_usd": 3.2172,
+    "aborted_by_budget": false,
+    "n_truncated_calls": 0,
+    "n_truncated_calls_basis": "inferred: is_error and cost >= 0.98x call budget and empty result (v1 has no subtype)",
+    "n_error_calls": 0,
+    "budget_used_ratio": 0.2681,
+    "max_call_cost_usd": 1.2622,
+    "max_call_cost_ratio": 0.3156
+  },
+  "check": {
+    "task": "todo-cli",
+    "target": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-bare-ippnl2fk",
+    "checks": [
+      {
+        "name": "todo_py_found",
+        "ok": true,
+        "detail": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-bare-ippnl2fk\\todo.py"
+      },
+      {
+        "name": "add_exits_zero",
+        "ok": true,
+        "detail": "rc=0,0 stderr="
+      },
+      {
+        "name": "list_shows_both",
+        "ok": true,
+        "detail": "rc=0 stdout=1. [ ] 牛乳を買う\n2. [ ] レポートを書く\n"
+      },
+      {
+        "name": "done_reflected",
+        "ok": true,
+        "detail": "before='1. [ ] 牛乳を買う' after='1. [x] 牛乳を買う'"
+      },
+      {
+        "name": "delete_reflected",
+        "ok": true,
+        "detail": "stdout=1. [x] 牛乳を買う\n"
+      },
+      {
+        "name": "tests_present",
+        "ok": true,
+        "detail": "1 件"
+      },
+      {
+        "name": "tests_pass",
+        "ok": true,
+        "detail": "...........\n----------------------------------------------------------------------\nRan 11 tests in 3.034s\n\nOK\n"
+      }
+    ],
+    "todo_py": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-bare-ippnl2fk\\todo.py",
+    "storage_in_home": {
+      "observed": true,
+      "files": [
+        ".todo.json"
+      ]
+    },
+    "tests": {
+      "files": [
+        "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-bare-ippnl2fk\\test_todo.py"
+      ],
+      "runner": "unittest",
+      "ok": true,
+      "output_tail": "...........\n----------------------------------------------------------------------\nRan 11 tests in 3.034s\n\nOK\n"
+    },
+    "pass": true,
+    "exit_code": 0
+  },
+  "artifact_stats": {
+    "files": 4,
+    "python_files": 2,
+    "test_files": 1,
+    "test_functions": 11
+  },
+  "verdict": "PASS",
+  "valid_for_comparison": false,
+  "invalid_reasons": [
+    "cli<2.1.217",
+    "cli<2.1.251",
+    "user_scope_unisolated",
+    "budget_enforcement=main-only",
+    "workdir_lost(temp auto-cleanup 2026-09-04/06; check.py cannot be re-run)",
+    "model_unrecorded(recovered from transcript)"
+  ],
+  "trajectory": {
+    "zip": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-bare-ippnl2fk.zip",
+    "sha256": "ed4f041eb7ca90369f7184a91a23e84327e92c77a28fdc4146128ff56d5891e6",
+    "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-bare-ippnl2fk",
+    "files": 1,
+    "bytes": 224138,
+    "zip_bytes": 49655,
+    "latest_mtime": "2026-08-22T18:21:58",
+    "manifest": "evaluation/results/trajectories/MANIFEST.json"
+  },
+  "recovered_models_observed": {
+    "claude-fable-5": 55
+  },
+  "recovered_model": "claude-fable-5",
+  "recovered_model_source": "transcript zip C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-bare-ippnl2fk.zip (count of \"model\" values; via --scan-trajectories)",
+  "conditions": {
+    "model_requested": null,
+    "effort_requested": null,
+    "claude_version": "2.1.201",
+    "min_cli_ok": false,
+    "budget_enforcement": "main-only",
+    "subagent_model_forced": false,
+    "setting_sources": "user,project,local (CLI default; user scope unisolated)",
+    "config_dir_isolated": false,
+    "permission_mode": "acceptEdits",
+    "allowed_tools": [
+      "Bash(git:*)",
+      "Bash(py:*)",
+      "Bash(python:*)"
+    ],
+    "max_turns_per_call": 60,
+    "call_budget_usd": 4.0,
+    "total_budget_usd": 12.0,
+    "fresh_policy": "continue",
+    "auth_mode": "oauth(inferred: usage-credits quota text in same batch)",
+    "task_md_sha256": null,
+    "check_py_sha256": null
+  },
+  "experiment": {
+    "kind": "legacy",
+    "series_id": "legacy-v1-2026-08",
+    "run_index": null,
+    "condition_hash": "be2ff49327f1",
+    "plan_path": null,
+    "plan_sha256": null
+  },
+  "schema_version": 1,
+  "backfill": {
+    "first_applied_on": "2026-09-10",
+    "rule_version": 1,
+    "tool": "tools/eval-report.py --backfill",
+    "basis": "audits/external-reaudit-2026-09-09.md §6 (EV-1/EV-2/EV-3/RG-9); verdict by cost > total_budget (abort-flag independent); truncation inferred from call cost"
+  }
+}

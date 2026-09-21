@@ -1,0 +1,66 @@
+{
+  "schema": "external-lock/1",
+  "as_of": "2026-09-17",
+  "self": "n-ima/copilot-sdlc-harness",
+  "notes": [
+    "外部由来の Skill / プラグイン / MCP のロック(codex 監査 2026-08-31 H-09 / IA-20260831-11、H-02 / IA-20260831-04)。取り込んだ外部物 1 つ = 1 エントリ。読み手・検査は tools/external_lock.py(validate-harness.py (o) が呼ぶ)。",
+    "references はこのエントリが正当化する参照トークン(npm パッケージ名 / GitHub の owner/repo)。指示層(.github/skills|agents|prompts|instructions、.claude/*、.agents/*、mcp.json、plugin.json)に現れる外部参照はここに無ければ ERROR、版が浮動(@latest 等)・ロックと違う・版なしも ERROR。",
+    "sha256 は取得物そのもののダイジェスト。取得手順が未確立のものは null と sha256_note(取得元は DECISIONS の open)。npm は dist.integrity(sha512)と dist.shasum(sha1)、GitHub は revision(commit SHA)を代替の同一性根拠にする。",
+    "local_sha256 は local_path の現在のダイジェスト(local patch の追跡)。ローカル側を変えたら python tools/external_lock.py --refresh で更新する(ずれは validate の WARN)。",
+    "ignore は走査で拾うが外部 Skill/MCP ではないもの(プロジェクトの devDependency 等)。理由を必ず書く。"
+  ],
+  "entries": [
+    {
+      "name": "awesome-copilot security-review skill",
+      "kind": "skill",
+      "source": "github/awesome-copilot",
+      "source_url": "https://github.com/github/awesome-copilot/blob/7e375eac04fa04f291859ca962a4d8a3bb8b7564/skills/security-review/SKILL.md",
+      "source_path": "skills/security-review/SKILL.md",
+      "revision": "7e375eac04fa04f291859ca962a4d8a3bb8b7564",
+      "revision_note": "原典ファイルに対する最新コミット(GitHub API commits?path=skills/security-review/SKILL.md、2026-03-30 #1211。2026-09-17 取得)。取り込み時(D005・D070 改名)のコミットは未記録のため、これは『原典が取り込み後に変わっていないことの確認値』として記録。次回の drift 確認は同 API で sha が変わったかを見る",
+      "version": null,
+      "sha256": null,
+      "sha256_note": "原典ファイルの sha256 は未取得(取得元・手順は open: raw.githubusercontent.com の該当 revision を取得して sha256sum を記録する運用にするか、GitHub API の blob sha(git object hash)で代替するかを決める)",
+      "license": "MIT",
+      "license_source": "GitHub API /repos/github/awesome-copilot/license → spdx_id MIT(LICENSE blob 89bc5e962c9944cdb050887062afdaaf89be504a。2026-09-17 取得)",
+      "adopted": "D005(参考に作成)→ D070(release-security-review に改名。検出はビルトインへ委譲・統合を所有)",
+      "local_path": ".github/skills/release-security-review/SKILL.md",
+      "local_patch": true,
+      "local_patch_note": "substantial adaptation: このハーネスの docs 運用(security-review-report.md の様式・要件/NFR への紐づけ・release done ゲート統合)に合わせた書き直し。原典の 8 ステップ手順を検出フォールバックとして保持",
+      "local_sha256": "b70fc1e8425f0d83beb315c6063fb9e3accce64a2621a2b0d6453e89c6bb6301",
+      "references": [
+        "github/awesome-copilot"
+      ]
+    },
+    {
+      "name": "@playwright/mcp",
+      "kind": "mcp",
+      "source": "npm:@playwright/mcp",
+      "source_url": "https://www.npmjs.com/package/@playwright/mcp/v/0.0.80",
+      "repository": "https://github.com/microsoft/playwright-mcp",
+      "version": "0.0.80",
+      "revision": null,
+      "integrity": "sha512-FOPXHm2SvFhAQylm10jMZ35B/SR2TaMLVkavAlwoG4N2qCb5RqbvhQYcu3zmXNyxR2DW0Ooxe+9XPVt5UjKRCQ==",
+      "shasum_sha1": "5ef4341aad22b3d85a7543a8426b371c5eea8742",
+      "sha256": null,
+      "sha256_note": "tarball(https://registry.npmjs.org/@playwright/mcp/-/mcp-0.0.80.tgz)の sha256 は未取得。npm registry の dist.integrity(sha512)と dist.shasum(sha1)を同一性根拠にする(npm view @playwright/mcp@0.0.80 dist.integrity。2026-09-17 取得。当日の latest は 0.0.81)",
+      "license": "Apache-2.0",
+      "verified": "npm view @playwright/mcp@0.0.80 version license dist.integrity dist.shasum repository.url(2026-09-17)",
+      "local_path": null,
+      "local_patch": false,
+      "referenced_in": [
+        ".github/skills/test-case-design/SKILL.md"
+      ],
+      "references": [
+        "@playwright/mcp",
+        "microsoft/playwright-mcp"
+      ]
+    }
+  ],
+  "ignore": [
+    {
+      "reference": "playwright",
+      "reason": "npx playwright test はプロジェクト(アプリ側)の devDependency で、版はプロジェクトの lockfile が正。ハーネスが導入する外部 Skill / MCP ではない"
+    }
+  ]
+}

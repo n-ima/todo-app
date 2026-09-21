@@ -1,0 +1,10 @@
+{
+  "name": "bare",
+  "kind": "builtin",
+  "replies_block": "scripted-replies-bare",
+  "workdir_source": "empty",
+  "gate_status": false,
+  "allowed_tools_extra": [],
+  "status": "ready",
+  "notes": "素の Claude Code(対照群)。空ディレクトリ + memo だけ。督促は同一 series/run_index の harness 結果の督促数(nudges_by_stage)を各ステージ末尾に同数付与して発話数・予算を対称に保つ(--nudges で明示も可)。"
+}

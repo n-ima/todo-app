@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "copilot-sdlc-harness",
+  "version": "1.2.0",
+  "description": "要件定義→設計→実装→テスト→リリースを一気通貫でオーケストレーションする開発ハーネス（GitHub Copilot / Claude Code 対応。Antigravity はアダプタ同梱・未検証）",
+  "license": "MIT",
+  "author": { "name": "n-ima", "url": "https://github.com/n-ima" },
+  "repository": "https://github.com/n-ima/copilot-sdlc-harness",
+  "keywords": ["sdlc", "phase-gate", "github-copilot", "claude-code", "agent-hooks", "agent-skills"],
+  "extensions": {
+    "com.github.copilot": {
+      "agents": ".github/agents",
+      "hooks": ".github/hooks",
+      "commands": ".github/prompts",
+      "note": "Agent Plugins 1.0 では Copilot 固有部品(agents/hooks/commands)は com.github.copilot/ ディレクトリに置く規約だが、本ハーネスは .github/ 直下が正のため位置だけをここで宣言する(Copilot がこの名前空間の内容を読むかは未検証)。prompt files(.github/prompts)は VS Code の Local ハーネス限定で、既定の Agent Host では読み込まれない(再監査 2026-09-09 CP-2)。Agent Host の入口は skills 配下の入口スキル .github/skills/<nn>-<name>/SKILL.md(prompt files から tools/generate-adapters.py 第5節が生成。A6-17 / D081)。skills の位置は io.github.n-ima.copilot-sdlc-harness 名前空間で宣言しているため入口スキルはプラグインの skills に含まれる"
+    },
+    "io.github.n-ima.copilot-sdlc-harness": {
+      "skills": ".github/skills",
+      "generated": [".claude-plugin/plugin.json", ".claude-plugin/hooks.json"],
+      "generator": "python tools/generate-adapters.py (第6節 plugin manifests。--check で差分検査)",
+      "note": "Agent Plugins 1.0 の portable 部品(skills/・mcp.json)は plugin ルート直下の固定位置だが、本ハーネスの skills は .github/skills/ が正のため 1.0 の固定位置には置いていない。Claude Code 向けは .claude-plugin/plugin.json のパス指定で解決する。実インストール(VS Code / Copilot CLI / Claude Code marketplace)は未検証"
+    }
+  }
+}

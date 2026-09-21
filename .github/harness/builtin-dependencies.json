@@ -1,0 +1,99 @@
+{
+  "schema": "builtin-dependencies/1",
+  "as_of": "2026-09-17",
+  "authority": "D070「検出は委譲・統合を所有」で検出を委譲したビルトイン(/security-review・security-guidance・claude-code-security-review Action)、D071 / D068 / D069 で「併用可・自作を維持」と判定した公式機能(/code-review・/goal・checkpoint /rewind)、CI と評価装置が前提にする CLI フラグ/サブコマンドの台帳。存在確認は tools/host-canary.py(CI の claude 導入後ステップ。1 つも確認できなければ WARN=赤にしない: ビルトインの有無はホスト版と plugin 導入状態に依存しリポジトリの欠陥ではないため。消えたら D070/D071 の再評価トリガ)。委譲先を増減したら本ファイルと used_by の両方を直す(tools/validate-harness.py (t) が used_by の実在と id の言及を検査する)。任意キー: since_feature(platform-requirements.json の feature 名。その導入版より古い実機では無くて当然=INFO)、optional(利用者ごとの opt-in plugin。未導入は INFO。marketplace に残っているかは `claude plugin details` が導入済みしか答えないため機械では未検証)。probe の bundle-string は claude 実行ファイル/cli.js の中に名前の文字列があるかを見る近似(2.1.201 実測: security-review 10 件・code-review 71 件・/goal 26 件・rewind 161 件・security-guidance 0 件=marketplace plugin なので plugin-list で見る)。",
+  "dependencies": [
+    {
+      "id": "security-review",
+      "kind": "slash-command",
+      "host": "claude-code",
+      "decision": "D070",
+      "role": "検出(リリース範囲の差分レビュー)。本ハーネスは統合(security-review-report.md 様式・NFR 紐づけ・レポート無き release done の warn)だけを所有",
+      "used_by": [".github/skills/release-security-review/SKILL.md", ".github/harness/PLATFORM.md", ".github/harness/COMPARISON.md"],
+      "probes": [{"type": "bundle-string", "pattern": "security-review"}],
+      "on_missing": "release-security-review スキル内蔵の 8 ステップ手順(フォールバック)で検出し、D070 の委譲判断(再評価トリガ)を見直す"
+    },
+    {
+      "id": "security-guidance",
+      "kind": "plugin",
+      "host": "claude-code",
+      "decision": "D070",
+      "role": "実装中の差分レベルの助言(marketplace plugin。導入は利用者ごと=environment.md のチェックリストで採否)",
+      "used_by": [".github/skills/release-security-review/SKILL.md", ".github/harness/PLATFORM.md", "docs/01-requirements/environment_template.md"],
+      "optional": true,
+      "probes": [{"type": "plugin-list", "pattern": "security-guidance"}, {"type": "bundle-string", "pattern": "security-guidance"}],
+      "on_missing": "未導入なら environment.md の採否欄で「導入しない」を明示する。marketplace から消えていたら D070 の差分層の記述を見直す"
+    },
+    {
+      "id": "claude-code-security-review",
+      "kind": "github-action",
+      "host": "github-actions",
+      "decision": "D070",
+      "role": "PR ごとの自動セキュリティレビュー(opt-in テンプレート .example。採否は environment.md)",
+      "used_by": [".github/skills/release-security-review/SKILL.md", "docs/01-requirements/environment_template.md"],
+      "probes": [{"type": "file-exists", "path": ".github/workflows/claude-security-review.yml.example"}],
+      "on_missing": ".example テンプレートが消えている=配布物の欠落。復元するか SKILL.md の PR 時の記述を外す"
+    },
+    {
+      "id": "code-review",
+      "kind": "slash-command",
+      "host": "claude-code",
+      "decision": "D071",
+      "role": "日常の差分レビュー(併用可)。独立レビュー reviewer は done 契約照合に固有優位があり維持(D071 実測)",
+      "used_by": [".github/harness/PLATFORM.md", ".github/harness/COMPARISON.md", "README.md"],
+      "probes": [{"type": "plugin-list", "pattern": "code-review@"}, {"type": "bundle-string", "pattern": "code-review"}],
+      "on_missing": "併用の記述(PLATFORM 委譲表・COMPARISON)を見直す。reviewer は自前なので機能は落ちない"
+    },
+    {
+      "id": "/goal",
+      "kind": "slash-command",
+      "host": "claude-code",
+      "decision": "D068",
+      "role": "対照(自作 watchdog-continue を opt-in で維持)。再評価トリガ: /goal が証拠検証つき継続を提供したら",
+      "used_by": [".github/harness/PLATFORM.md"],
+      "probes": [{"type": "bundle-string", "pattern": "/goal"}],
+      "on_missing": "委譲表の対照行を更新する(機能は落ちない)"
+    },
+    {
+      "id": "rewind",
+      "kind": "slash-command",
+      "host": "claude-code",
+      "decision": "D069",
+      "role": "対照(checkpoint / /rewind。git 運用 + done 契約を維持)。再評価トリガ: checkpoint が Bash 編集とサブエージェント編集を追跡したら",
+      "used_by": [".github/harness/PLATFORM.md"],
+      "probes": [{"type": "bundle-string", "pattern": "rewind"}],
+      "on_missing": "委譲表の対照行を更新する(機能は落ちない)"
+    },
+    {
+      "id": "--init-only",
+      "kind": "cli-flag",
+      "host": "claude-code",
+      "decision": "D083",
+      "role": "CI の SessionStart フック実走(2.1.259 以降。continue-on-error)",
+      "used_by": [".github/workflows/harness-ci.yml", ".github/harness/PLATFORM.md"],
+      "since_feature": "permission_prompts_none",
+      "probes": [{"type": "cli-help", "pattern": "--init-only"}],
+      "on_missing": "CI ステップを外すか代替の起動契約(--bare 等)に切り替える(D083 の CI 節)"
+    },
+    {
+      "id": "plugin validate",
+      "kind": "cli-subcommand",
+      "host": "claude-code",
+      "decision": "D083",
+      "role": "CI の plugin マニフェスト検査(claude plugin validate .)",
+      "used_by": [".github/workflows/harness-ci.yml", ".github/harness/PLATFORM.md"],
+      "probes": [{"type": "cli-help", "command": ["plugin"], "pattern": "validate"}],
+      "on_missing": "CI ステップを外し、validate-harness (m) のスキーマ検査だけに戻す"
+    },
+    {
+      "id": "--max-budget-usd",
+      "kind": "cli-flag",
+      "host": "claude-code",
+      "decision": "D078",
+      "role": "評価装置 v2 と E2E の予算規律(2.1.217 以降はサブエージェント分を合算)",
+      "used_by": ["tools/e2e-run.py", ".github/harness/PLATFORM.md"],
+      "probes": [{"type": "cli-help", "pattern": "--max-budget-usd"}],
+      "on_missing": "評価装置の起動門(platform-requirements.json の min)を見直す。予算の強制が無い版では E2E を走らせない"
+    }
+  ]
+}

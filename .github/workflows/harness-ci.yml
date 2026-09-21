@@ -1,0 +1,200 @@
+# ハーネス自身の整合性CI(D046)。
+# 「指示よりフックで機械的に強制する」を説く本体が、自身の不変条件
+# (アダプタ整合・フック挙動・計測/評価ツール)を手動検査に頼っていた矛盾を塞ぐ。
+# 個別プロジェクト(テンプレートのコピー先)でも無害に動く: いずれも自己完結の検査で、
+# プロジェクトのアプリコードには触れない。
+# サプライチェーン(codex 監査 2026-08-31 H-06 / IA-20260831-08): actions は 40 桁 commit SHA で固定
+# (コメントに版。更新は SHA を張り替える PR で)、GITHUB_TOKEN は contents: read の最小権限、job ごとの
+# timeout-minutes、同一 ref の重複 run を取り消す concurrency、checkout の資格情報を作業ツリーに残さない
+# persist-credentials: false。tools/validate-harness.py (q) がこの 5 条件を機械検査する(本体 CI は ERROR)。
+# fetch-tags は validate (p)(CHANGELOG の版と annotated tag の照合)のため。
+name: harness-ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harness-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-tags: true
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+      - name: 依存導入(validate-harness.py の PyYAML。C-2=導入以来 import yaml で即死していた)
+        run: pip install -r requirements-dev.txt
+      - name: 構造検証(フロントマター・アダプタ整合・フック配線。台帳の登録漏れは ERROR)
+        run: python tools/validate-harness.py --ledger-strict
+      - name: 生成文書の鮮度検査(README対応表・統計タイル・件数文言の再生成差分ゼロ。A3-4)
+        run: python tools/gen-docs.py --check
+      - name: 生成器の自己テスト(gen-docs の REPORT.md 転記パーサ・frontmatter リスト解釈・辞書照合。A3-4b)
+        run: python tools/gen-docs.py --selftest
+      - name: 鮮度 lint(説明文書の「最終更新」「時点」「version」「D0NN まで」と一次データの乖離を WARN 表示。赤にしない。depth 1 では git 日付比較は INFO。R-06)
+        run: python tools/freshness-lint.py
+      - name: 衛生ツール自己テスト(freshness-lint の陽性 4 種と陰性・release-tag の版→コミット解決と shallow 判定・host-canary の版比較と probe。R-06 / A7-M-1 / A3-6 / A5-8)
+        run: |
+          python tools/freshness-lint.py --selftest
+          python tools/release-tag.py --selftest
+          python tools/host-canary.py --selftest
+      - name: リリース tag 整合(CHANGELOG の版と annotated tag の対応表。表示のみ=tag は人が付ける。depth 1 では版の導入コミットは unresolved。A7-M-1)
+        run: python tools/release-tag.py --check
+      - name: ハーネス自己改善 KPI(PROPOSALS.md の滞留日数・監査→適用リードタイム。OP-4。表示のみ)
+        run: python tools/effort-report.py --kpi
+      - name: モデル方針の生成物検査(model-policy.yml と frontmatter/deny 表/対照表の差分ゼロ。A6-10)
+        run: python tools/generate-adapters.py --check
+      - name: モデル方針モジュール自己テスト(model_policy.py)
+        run: python tools/model_policy.py --selftest
+      - name: Copilot 入口スキル生成器の自己テスト(copilot_entry_skills.py。鮮度は generate-adapters --check に含まれる。A6-17)
+        run: python tools/copilot_entry_skills.py --selftest
+      - name: plugin マニフェストモジュール自己テスト(plugin_manifests.py。A6-23)
+        run: python tools/plugin_manifests.py --selftest
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Claude Code CLI 導入(版固定。plugin validate は開発機 2.1.201 で実測、--init-only は 2.1.259 以降。npm stable=2.1.236 は不可)
+        run: npm i -g @anthropic-ai/claude-code@2.1.267
+      - name: plugin マニフェスト検査(claude plugin validate。--strict は plugin ルートの CLAUDE.md 警告で必ず赤になるため error のみ gate。警告はログで確認)
+        run: claude plugin validate .
+      - name: ホスト機能吸収カナリアとビルトイン依存カナリア(claude --version と platform-requirements.json の verified_on_ci の差、D070 で委譲した /security-review 等の存在。WARN/INFO のみ=赤にしない。A3-6 / A5-8)
+        run: python tools/host-canary.py
+      - name: SessionStart フック実走(claude --init-only。Setup/SessionStart フックを走らせて終了。API 鍵なし・費用ゼロで通るかは公式に明記が無く未確認のため continue-on-error。結果を DECISIONS に記録してから gate 化する)
+        continue-on-error: true
+        timeout-minutes: 5
+        run: claude --init-only --settings .claude/settings.json
+      - name: フック自己テスト(ガード判定の回帰)
+        run: bash .github/hooks/scripts/selftest.sh
+      - name: 計測ロガー自己テスト
+        run: python .github/hooks/scripts/log-effort.py --selftest
+      - name: 受領書・計測ツール自己テスト(session-receipt / statusline / log-subagent / session-baseline / effort-report。A6-12)
+        run: |
+          python tools/session-receipt.py --selftest
+          python .github/hooks/scripts/statusline.py --selftest
+          python .github/hooks/scripts/log-subagent.py --selftest
+          python .github/hooks/scripts/session-baseline.py --selftest
+          python tools/effort-report.py --selftest
+      - name: Stop フック(remind-record / draft-learnings / remind-session-boundary)自己テスト(CC-14 の鮮度ゲート・D047 様式)
+        run: |
+          python .github/hooks/scripts/remind-record.py --selftest
+          python .github/hooks/scripts/draft-learnings.py --selftest
+          python .github/hooks/scripts/remind-session-boundary.py --selftest
+      - name: 外部 Skill / MCP ロックの自己テストと検査(external_lock.py。ロック未登録・浮動版・版違い・local digest。IA-20260831-11)
+        run: |
+          python tools/external_lock.py --selftest
+          python tools/external_lock.py --check
+      - name: 記録フック自己テスト(StopFailure / InstructionsLoaded / Pre・PostModelSwitch。CC-9 / CC-8)
+        run: |
+          python .github/hooks/scripts/mark-abnormal-stop.py --selftest
+          python .github/hooks/scripts/log-instructions-loaded.py --selftest
+          python .github/hooks/scripts/log-model-switch.py --selftest
+      - name: 判定ログ共通実装と SubagentStop verdict ガードの自己テスト(A6-20 / PF-10。D085)
+        run: |
+          python .github/hooks/scripts/_log.py --selftest
+          python .github/hooks/scripts/guard-subagent-output.py --selftest
+      - name: フック計測・サブエージェント本文展開・watchdog 停止記録の自己テスト(hook-metrics / subagent_adapters / watchdog-continue。R-09 / A2-7 / A2-1 / A5-6)
+        run: |
+          python tools/hook-metrics.py --selftest
+          python tools/subagent_adapters.py --selftest
+          python .github/hooks/scripts/watchdog-continue.py --selftest
+      - name: 状態機械の自己テスト(gate_status.py の完全性・順序矛盾・往復カウンタ・原子的書換・復旧・突合・lock。A7-M-3 / R-04 / IA-20260831-15。D089)
+        run: python tools/gate_status.py --selftest
+      - name: Golden Eval 自己テスト(完了検証チェッカー)
+        run: python tools/golden-eval.py --selftest
+      - name: トレーサビリティ検査自己テスト(trace-check)
+        run: python tools/trace-check.py --selftest
+      - name: 逆同期ツール自己テスト(本体判定・配布除外・入れ子拒否)
+        run: python tools/sync-harness.py --selftest
+      - name: 取り込みツール自己テスト(本体判定・テンプレート除外・入れ子拒否)
+        run: python tools/intake-app.py --selftest
+      - name: doctor / ホスト版要求の自己テスト(環境・配線・配布鮮度の診断と platform-requirements.json の読込・版比較。A3-3 / A6-8 / A6-15。D086)
+        run: |
+          python tools/platform_requirements.py --selftest
+          python tools/doctor.py --selftest
+      - name: doctor 実走(ubuntu。claude は前段の導入ステップ次第=不在なら WARN。statusLine の実行テストは --no-probe で省く。FAIL があれば exit 1)
+        run: python tools/doctor.py --no-probe
+      - name: 評価装置 v2 自己テスト(計画・分類・判定・妥当性条件。claude は起動しない。A6-16)
+        run: python tools/e2e-run.py --selftest
+      - name: 決定論チェッカー自己テスト(todo-cli)
+        run: python evaluation/tasks/todo-cli/check.py --selftest
+      - name: 決定論チェッカー自己テスト(expense-webapp。矛盾解消跡の負例 FP/FN=0)
+        run: python evaluation/tasks/expense-webapp/check.py --selftest
+      - name: 評価集計自己テスト(backfill・妥当性検査・REPORT 生成・Fisher/Wilson)
+        run: python tools/eval-report.py --selftest
+      - name: 評価レポートの鮮度検査(evaluation/REPORT.md が結果 JSON からの再生成と一致)
+        run: python tools/eval-report.py --report --check
+
+  # Windows 実機での .ps1 フック検証。bash 側だけ直して .ps1 側の同等修正が漏れる、
+  # あるいはエンコーディング差(BOM・PowerShell 5.1 の ANSI 既定読み)で日本語が壊れる
+  # 事故を機械検出する(ubuntu ジョブでは .ps1 が一切実行されない穴を塞ぐ)。
+  validate-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-tags: true
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+      - name: 依存導入(validate-harness.py の PyYAML。C-2=導入以来 import yaml で即死していた)
+        run: pip install -r requirements-dev.txt
+      - name: BOM/LF 機械検査(全 .ps1 が BOM 付き UTF-8・全 .sh に CR なし)
+        shell: bash
+        run: |
+          python -c "import pathlib,sys; bad=[str(p) for p in sorted(pathlib.Path('.').rglob('*.ps1')) if '.git' not in p.parts and not p.read_bytes().startswith(b'\xef\xbb\xbf')]; print(*(['BOM missing: '+b for b in bad] or ['ps1 BOM OK']), sep='\n'); sys.exit(1 if bad else 0)"
+          python -c "import pathlib,sys; bad=[str(p) for p in sorted(pathlib.Path('.').rglob('*.sh')) if '.git' not in p.parts and b'\r' in p.read_bytes()]; print(*(['CR found: '+b for b in bad] or ['sh LF OK']), sep='\n'); sys.exit(1 if bad else 0)"
+      - name: フック自己テスト(.ps1 ガード判定の回帰。selftest.sh の Windows 版)
+        shell: powershell
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/selftest.ps1
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+      - name: inject-progress.ps1 用フィクスチャ作成(BOMなしUTF-8・LFの日本語教訓)
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/injfix/docs/00-overview"
+          cat > "$RUNNER_TEMP/injfix/docs/00-overview/learnings.md" <<'EOF'
+          ## 教訓
+          - [W1] 日本語の教訓 D:\proj\x が注入されること
+          EOF
+      - name: 全 .ps1 フックの実機実行(powershell 5.1・クラッシュなし・出力は空か妥当なJSON)
+        shell: powershell
+        run: |
+          $payload = '{"tool_input":{"command":"git status","file_path":"src/app.ts","content":"hello"}}'
+          $fail = 0
+          # selftest.ps1 はフックではなく自己テスト本体(出力はJSONでないPASS/FAIL行)。
+          # 上の専用ステップで実行済みのため、フック実機実行の対象から外す
+          Get-ChildItem .github/hooks/scripts/*.ps1 | Where-Object { $_.Name -ne 'selftest.ps1' } | ForEach-Object {
+            $name = $_.Name
+            $out = ($payload | powershell.exe -NoProfile -ExecutionPolicy Bypass -File $_.FullName | Out-String).Trim()
+            if ($LASTEXITCODE -ne 0) { Write-Host "CRASH: $name (exit=$LASTEXITCODE)"; $fail = 1 }
+            if ($out) {
+              try { $null = $out | ConvertFrom-Json; Write-Host "OK (json): $name" }
+              catch { Write-Host "INVALID JSON: $name -> $out"; $fail = 1 }
+            } else {
+              Write-Host "OK (empty): $name"
+            }
+          }
+          if ($fail -ne 0) { exit 1 }
+      - name: inject-progress.ps1 教訓注入の陽性確認(空出力を成功と誤認しない)
+        shell: powershell
+        run: |
+          Set-Location "$env:RUNNER_TEMP/injfix"
+          $out = (powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:GITHUB_WORKSPACE/.github/hooks/scripts/inject-progress.ps1" | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { Write-Host "CRASH (exit=$LASTEXITCODE)"; exit 1 }
+          if (-not $out) { Write-Host "EMPTY OUTPUT"; exit 1 }
+          try { $obj = $out | ConvertFrom-Json } catch { Write-Host "INVALID JSON: $out"; exit 1 }
+          $ctx = [string]$obj.hookSpecificOutput.additionalContext
+          if ($ctx -notmatch '\[W1\]') { Write-Host "lesson not injected: $ctx"; exit 1 }
+          Write-Host "lesson injected OK"

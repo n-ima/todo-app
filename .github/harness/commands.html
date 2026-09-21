@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>コマンド一覧 — copilot-sdlc-harness</title>
+<style>
+  :root {
+    --bg:#f6f8fd; --bg2:#eef2fa; --card:#fff; --border:#dfe6f3;
+    --text:#1b2437; --muted:#5d6b8a; --accent:#2f6fed; --accent2:#0d9e94;
+    --accent3:#7c4dff; --warn:#d97a06;
+    --grad:linear-gradient(135deg,#2f6fed 0%,#0d9e94 100%);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:"Inter","Noto Sans JP","Hiragino Sans","Segoe UI",sans-serif;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  .top{background:#fff;border-bottom:1px solid var(--border);padding:14px 0}
+  .top .wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .top b{font-size:15px}
+  .top nav{display:flex;gap:16px;flex-wrap:wrap}
+  .top a{color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:600}
+  .top a:hover{color:var(--accent)}
+  .top a.here{color:var(--accent);border-bottom:2px solid var(--accent)}
+  .hero{padding:44px 0 8px}
+  h1{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-.01em;margin-bottom:10px}
+  h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--muted);max-width:780px;font-size:15px}
+  .lead b{color:var(--text)}
+  section{padding:36px 0 4px}
+  .sec-label{font-size:12px;letter-spacing:.18em;color:var(--accent);font-weight:800;margin-bottom:6px}
+  h2{font-size:clamp(19px,2.6vw,26px);font-weight:800;margin-bottom:10px}
+  .sec-desc{color:var(--muted);max-width:780px;margin-bottom:22px;font-size:14px}
+  .sec-desc b{color:var(--text)}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 4px 18px rgba(31,58,120,.07);margin-bottom:14px}
+  th,td{padding:12px 14px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--bg2);font-size:12px;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td b{font-weight:700}
+  code{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:12.5px;font-family:Consolas,Menlo,monospace;white-space:nowrap}
+  .pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:11.5px;font-weight:700;white-space:nowrap}
+  .pill.new{background:rgba(47,111,237,.10);color:var(--accent)}
+  .pill.same{background:rgba(13,158,148,.12);color:var(--accent2)}
+  .pill.body{background:rgba(217,122,6,.12);color:var(--warn)}
+  .note{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:10px;padding:14px 18px;font-size:13.5px;color:var(--muted);margin-bottom:14px}
+  .note b{color:var(--text)}
+  footer{margin-top:56px;border-top:1px solid var(--border);padding:28px 0 40px;background:var(--bg2);color:var(--muted);font-size:12.5px}
+  footer a{color:var(--accent);text-decoration:none;font-weight:600}
+  .scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <b>copilot-sdlc-harness</b>
+  <nav>
+    <a href="overview.html">概要</a>
+    <a href="agents.html">エージェント</a>
+    <a href="skills.html">スキル</a>
+    <a class="here" href="commands.html">コマンド</a>
+    <a href="guardrails.html">ガードレール</a>
+    <a href="COMPARISON.html">比較</a>
+  </nav>
+</div></div>
+
+<div class="hero"><div class="wrap">
+<!-- BEGIN GENERATED: commands-hero-count -->
+  <h1>コマンド一覧 <span class="grad">— 18のスラッシュコマンド</span></h1>
+<!-- END GENERATED: commands-hero-count -->
+  <p class="lead">
+    Copilot / Claude Code の2環境で同名で動きます（実機検証済み。Antigravity 用にも
+    同名ワークフローのアダプタを同梱していますが、検証は凍結中です）。
+    <b>ただし、覚える必要はありません</b>——普通のチャットで「◯◯したい」と言えば、
+    エージェントが受付ルーチンに従って正しい入口に自分で入ります（分類/入口/影響を冒頭で宣言）。
+    この一覧は「いま何が起きているか」「次に何が来るか」を知りたいときの地図です。
+  </p>
+</div></div>
+
+<!-- BEGIN GENERATED: commands-sections -->
+<section><div class="wrap">
+  <div class="sec-label">MAIN PIPELINE</div>
+  <h2>初回構築の一本道（/01〜/09）</h2>
+  <p class="sec-desc">新規開発はこの順で進みます。セッション列は「新しいチャットで打つべきか」の目安（詳細は USAGE.md のセッション分割表）。</p>
+  <div class="scroll">
+  <table>
+    <tr><th>コマンド</th><th>何が起きるか（prompt の description）</th><th>担当</th><th>セッション</th></tr>
+    <tr><td><code>/00-start-project</code></td><td>プロジェクトの現在の進捗を確認し、次に実行すべきフェーズ/プロンプトを提案する</td><td>orchestrator</td><td><span class="pill same">どこでも</span></td></tr>
+    <tr><td><code>/01-requirements-intake</code></td><td>要件メモを読み込み、初期の要件ドラフトと不足点の質問リストを作成する</td><td>requirements</td><td><span class="pill new">新規</span></td></tr>
+    <tr><td><code>/02-requirements-deepdive</code></td><td>ユーザーの回答をもとに要件定義書・非機能要件・用語集を作成し、ゲート承認を求める</td><td>requirements</td><td><span class="pill same">01の続き</span></td></tr>
+    <tr><td><code>/03-design-architecture</code></td><td>要件定義書をもとに技術スタック候補を提示し、選定後にアーキテクチャ設計書を作成する</td><td>design</td><td><span class="pill new">新規</span></td></tr>
+    <tr><td><code>/04-design-detailed</code></td><td>アーキテクチャ設計をもとに、コンポーネント/画面/API単位の詳細設計を作成する</td><td>design</td><td><span class="pill same">03の続き</span></td></tr>
+    <tr><td><code>/05-implementation-plan</code></td><td>設計を実装可能なタスクリストに分解する</td><td>implement</td><td><span class="pill new">新規</span></td></tr>
+    <tr><td><code>/06-implement-task</code></td><td>tasks.md の未完了タスクをすべて、ノンストップで自動実装する（1タスクずつの承認は求めない）</td><td>implement</td><td><span class="pill same">05の続き</span></td></tr>
+    <tr><td><code>/07-test-plan</code></td><td>要件・設計からテスト計画（単体/結合/E2E/非機能）を作成する</td><td>test</td><td><span class="pill same">続きでよい</span></td></tr>
+    <tr><td><code>/08-test-execute</code></td><td>テスト計画に基づきテストを実装・実行し、結果を test-report.md にまとめる</td><td>test</td><td><span class="pill same">続きでよい</span></td></tr>
+    <tr><td><code>/09-release-checklist</code></td><td>environment.mdと環境固有Skillに基づき、リリースを「計画→独立検証→承認→実行」で進める。準備は自動、外部反映（push・タグ・デプロイ・公開）はユーザーの exact-action 承認後にのみ実行し、人手必須の作業だけをユーザーに委ねる</td><td>release</td><td><span class="pill same">自動継続</span></td></tr>
+  </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">OPERATIONS</div>
+  <h2>運用中・既存コード（日常はこちら）</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>コマンド</th><th>何が起きるか（prompt の description）</th><th>担当</th><th>セッション</th></tr>
+    <tr><td><code>/12-change-request</code></td><td>運用中プロジェクトへの変更依頼(機能追加・仕様変更・バグ修正・緊急対応)を差分駆動で受け付け、該当フェーズだけを再ゲートして実装・テスト・記録まで通す</td><td>change</td><td><span class="pill new">CR1件ごとに新規</span></td></tr>
+    <tr><td><code>/13-converge</code></td><td>運用中(または任意時点)の docs⇔実態の乖離を棚卸しし、分類・起票して収束させる収束監査を実行する</td><td>change</td><td><span class="pill new">新規</span></td></tr>
+    <tr><td><code>/11-brownfield-intake</code></td><td>既存のコードベースにハーネスを導入する。実装済みコードからas-is要件・アーキテクチャをdocsへ逆起こしし、整合検証を経て差分駆動の改修サイクルに接続する</td><td>change</td><td><span class="pill new">新規</span></td></tr>
+  </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">GROWTH & SYNC</div>
+  <h2>振り返り・還流</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>コマンド</th><th>何が起きるか（prompt の description）</th><th>担当</th><th>セッション</th></tr>
+    <tr><td><code>/10-retrospective</code></td><td>開発全体を振り返り、教訓の整理・ハーネス本体への改善提案・新規Skillの還流判断を行う</td><td>orchestrator</td><td><span class="pill new">新規</span></td></tr>
+    <tr><td><code>/90-apply-retrospective</code> <span class="pill body">本体専用</span></td><td>ハーネス本体リポジトリ専用。振り返り(retrospective)の改善提案表を読み込み、本体へ適用してDECISIONS.mdに記録する</td><td>harness-maintainer</td><td><span class="pill new">本体リポジトリで新規</span></td></tr>
+    <tr><td><code>/91-sync-from-harness</code></td><td>ハーネス本体で適用済みの改善を、このプロジェクトのハーネスコピーへ逆同期する。ファイルコピーは人間がtools/sync-harness.pyで実行し、エージェントはレポート読解・要レビューの手動マージ・docsの完了処理を担う</td><td>orchestrator</td><td><span class="pill new">新規</span></td></tr>
+  </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">ANYTIME</div>
+  <h2>いつでも使える</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>コマンド</th><th>何が起きるか（prompt の description）</th><th>担当</th><th>セッション</th></tr>
+    <tr><td><code>/98-harness-help</code></td><td>このハーネスの使い方を案内する。次に何をすればよいか分からないとき、どのプロンプト/エージェントを使うべきか迷ったときに実行する</td><td>orchestrator</td><td><span class="pill same">どこでも</span></td></tr>
+    <tr><td><code>/99-status</code></td><td>各フェーズの進捗とゲート承認状況をダッシュボード表示し、progress.md を更新する</td><td>orchestrator</td><td><span class="pill same">どこでも</span></td></tr>
+  </table>
+  </div>
+  <div class="note">
+    <b>環境ごとの呼び方:</b> Copilot は Agent Host（現在の既定）では入口スキル
+    <code>.github/skills/&lt;nn&gt;-&lt;name&gt;/</code>（prompt files から生成）、Local ハーネスでは
+    プロンプトファイル、Claude Code はスラッシュコマンドとして同名で存在します（Antigravity 用
+    ワークフローも同梱・検証凍結）。Agent Host は prompt files を読まないため（公式・再監査 2026-09-09
+    CP-2）、入口スキルの本文が「担当エージェント定義の読込→役割設定→prompt 本文の実行」を指示します
+    （役割設定は指示層。ピッカーで担当エージェントを選んでから実行すればツール制限とハンドオフも
+    機械的に効く。Agent Host での補完表示・役割遵守は実機未確認）。どの環境でも入口は
+    <code>/00-start-project</code>（新規）・<code>/11-brownfield-intake</code>（既存）・
+    <code>/12-change-request</code>（運用中）の3つだけ覚えれば十分——それすら、
+    普通に依頼すればエージェントが選びます。
+  </div>
+</div></section>
+<!-- END GENERATED: commands-sections -->
+<footer><div class="wrap">
+  <p><a href="overview.html">← 概要に戻る</a>　|　定義の実体: <code>.github/prompts/*.prompt.md</code>（正のレイヤ。各コマンドは対応エージェントに自動バインド）。Agent Host 向け入口 <code>.github/skills/&lt;nn&gt;-&lt;name&gt;/SKILL.md</code> と Claude Code の <code>.claude/commands/</code> は <code>tools/generate-adapters.py</code> の生成物（手で編集しない）。</p>
+</div></footer>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "_generated_from": ".github/harness/model-policy.yml",
+  "_generated_note": "python tools/generate-adapters.py が生成(手で編集しない)。session model は policy.session.copilot_cli_pin が null の間は出力しない。Repository settings は trusted なディレクトリでのみ効く。ローカル上書きは settings.local.json(gitignore)",
+  "subagents": {
+    "agents": {
+      "reviewer": {
+        "effortLevel": "high"
+      },
+      "spec-critic": {
+        "effortLevel": "high"
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+# bashスクリプトはCRLFだと実行時に壊れるため、常にLFでチェックアウトする
+# (Windowsのcore.autocrlf=true環境でクローンしたときのフック全滅事故を防ぐ)
+* text=auto
+*.sh text eol=lf
+# PowerShell 5.1はUTF-8 BOM付き前提(BOMはファイル内容として保持される)
+*.ps1 text
+# ハーネス本体の開発記録は配布物(git archive経由のZIP/intake-app注入)に含めない。
+# プロジェクト側にDECISIONS.mdがあると受付ルーチンが本体リポジトリと誤認するため(D049。
+# E2E実走行で検出)。GitHubテンプレート経路のみ複製されるが、/00の初期化で削除を案内する。
+/DECISIONS.md export-ignore
+audits export-ignore
+audits/** export-ignore
+# ハーネス本体専用のメタ文書も配布物に含めない(第3回監査。プロジェクト側では
+# アプリ自身の CHANGELOG/SECURITY 等と衝突するため。intake-app.py の
+# TEMPLATE_EXCLUDE_REL と同一に保ち、git archive 経路と非git経路の配布物を一致させる)
+/CHANGELOG.md export-ignore
+/SECURITY.md export-ignore
+/CONTRIBUTING.md export-ignore
+/README.en.md export-ignore
+# E2E測定装置(A/B評価ランナーと評価タスク・結果)はハーネス本体専用のため
+# 配布物に含めない(プロジェクト側には不要。evaluation/README.md 参照)
+/tools/e2e-run.py export-ignore
+/tools/eval-report.py export-ignore
+evaluation export-ignore
+evaluation/** export-ignore
+# 本体文書の生成器も本体専用(生成先の README 対応表・.github/harness/*.html はプロジェクトで
+# アプリ README に置き換わり、--check がマーカー欠落で必ず失敗する)。sync EXCLUDE_FILES /
+# intake TEMPLATE_EXCLUDE_REL と同一の三重台帳(2026-09-10 A7-H-9/RG-10。validate-harness.py は
+# DECISIONS.md の無い配布先では gen-docs 検査を対象外にする)
+/tools/gen-docs.py export-ignore

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スキル一覧 — copilot-sdlc-harness</title>
+<style>
+  :root {
+    --bg:#f6f8fd; --bg2:#eef2fa; --card:#fff; --border:#dfe6f3;
+    --text:#1b2437; --muted:#5d6b8a; --accent:#2f6fed; --accent2:#0d9e94;
+    --accent3:#7c4dff; --warn:#d97a06;
+    --grad:linear-gradient(135deg,#2f6fed 0%,#0d9e94 100%);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:"Inter","Noto Sans JP","Hiragino Sans","Segoe UI",sans-serif;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  .top{background:#fff;border-bottom:1px solid var(--border);padding:14px 0}
+  .top .wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .top b{font-size:15px}
+  .top nav{display:flex;gap:16px;flex-wrap:wrap}
+  .top a{color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:600}
+  .top a:hover{color:var(--accent)}
+  .top a.here{color:var(--accent);border-bottom:2px solid var(--accent)}
+  .hero{padding:44px 0 8px}
+  h1{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-.01em;margin-bottom:10px}
+  h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--muted);max-width:780px;font-size:15px}
+  section{padding:36px 0 4px}
+  .sec-label{font-size:12px;letter-spacing:.18em;color:var(--accent);font-weight:800;margin-bottom:6px}
+  h2{font-size:clamp(19px,2.6vw,26px);font-weight:800;margin-bottom:10px}
+  .sec-desc{color:var(--muted);max-width:780px;margin-bottom:22px;font-size:14px}
+  .sec-desc b{color:var(--text)}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 4px 18px rgba(31,58,120,.07);margin-bottom:14px}
+  th,td{padding:12px 14px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--bg2);font-size:12px;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td b{font-weight:700}
+  code{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:12.5px;font-family:Consolas,Menlo,monospace}
+  .note{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:10px;padding:14px 18px;font-size:13.5px;color:var(--muted);margin-bottom:14px}
+  .note b{color:var(--text)}
+  footer{margin-top:56px;border-top:1px solid var(--border);padding:28px 0 40px;background:var(--bg2);color:var(--muted);font-size:12.5px}
+  footer a{color:var(--accent);text-decoration:none;font-weight:600}
+  .scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <b>copilot-sdlc-harness</b>
+  <nav>
+    <a href="overview.html">概要</a>
+    <a href="agents.html">エージェント</a>
+    <a class="here" href="skills.html">スキル</a>
+    <a href="commands.html">コマンド</a>
+    <a href="guardrails.html">ガードレール</a>
+    <a href="COMPARISON.html">比較</a>
+  </nav>
+</div></div>
+
+<div class="hero"><div class="wrap">
+<!-- BEGIN GENERATED: skills-hero-count -->
+  <h1>スキル一覧 <span class="grad">— 手順とチェックリストの部品（22）</span></h1>
+<!-- END GENERATED: skills-hero-count -->
+  <p class="lead">
+    スキルは「どうやるか」をパッケージ化した手順書です。エージェントを薄く保ち、詳細は
+    スキルに逃がす設計。<b>段階的開示</b>（普段は名前と説明だけ読み込み、関連するときだけ本文を
+    読む）なので、数が増えてもコンテキストを圧迫しません。エージェントが必要な場面で自動的に
+    参照するため、<b>ユーザーがスキル名を覚える必要はありません</b>。
+  </p>
+</div></div>
+
+<!-- BEGIN GENERATED: skills-sections -->
+<section><div class="wrap">
+  <div class="sec-label">PHASE PROCEDURES</div>
+  <h2>フェーズの手順（9）</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>スキル</th><th>何をするか（SKILL.md の description）</th><th>主に使うエージェント</th></tr>
+    <tr><td><b>requirements-elicitation</b></td><td>要件定義フェーズで、要件メモや対話から不足・曖昧な点を体系的に洗い出すためのチェックリストと質問テンプレート。要件定義エージェントが要件を詳細化するときに使う。</td><td>requirements</td></tr>
+    <tr><td><b>adr-writing</b></td><td>設計フェーズで重要な技術決定をADR(Architecture Decision Record)として記録する手順とテンプレート。設計エージェントが技術スタックやアーキテクチャの決定を残すときに使う。</td><td>design</td></tr>
+    <tr><td><b>ui-design-mockup</b></td><td>ブラウザUIを持つアプリの画面設計を、実装前に自己完結型HTMLモックアップとして視覚化しユーザーに確認してもらう手順。設計フェーズで画面がある場合に使う。「できて動かして初めてデザインが分かる」を防ぐ。</td><td>design</td></tr>
+    <tr><td><b>test-case-design</b></td><td>要件の受け入れ条件からテストケースを網羅的に設計するための観点(正常系/異常系/境界値/非機能)チェックリスト。テストエージェントがtest-plan.mdを作るときに使う。</td><td>test</td></tr>
+    <tr><td><b>gate-check</b></td><td>docs/00-overview/progress.md の状態を読み書きしてフェーズゲート(未着手/進行中/ゲート承認待ち/完了)を判定・更新する手順。オーケストレーターや各フェーズエージェントが進捗確認・更新するときに使う。</td><td>全エージェント</td></tr>
+    <tr><td><b>request-routing</b></td><td>スラッシュコマンドを介さない「普通のチャット」で受けた依頼を、エージェント自身がハーネスの正しい入口(フェーズ/コマンド)へ振り分けるための受付手順。ハーネス適用済みプロジェクト(docs/00-overview/progress.md がある)で依頼を受けたら着手前に必ず使う。「◯◯を追加して」「◯◯が動かない」「直して」等の依頼、既存プロジェクト導入後の日常運用で使う。</td><td>全エージェント</td></tr>
+    <tr><td><b>fast-track</b></td><td>小規模な新規開発(小さいアプリ・簡単なツール・ユーティリティを、さくっと作る/軽量に作る)のためのライトパス。フルパイプライン(5フェーズ×個別ゲート)の代わりに、最小ヒアリング+設計スケッチ+承認2回で実装〜テストへ進む手順。単一機能圏・仕様がmemoで明確・想定ファイル10個以下の新規開発の受付・/00の初期化で使う。運用中の変更依頼には使わない(そちらはAGENTS.md原則5)。</td><td>orchestrator（判定）→ 各フェーズ</td></tr>
+    <tr><td><b>change-request</b></td><td>運用中プロジェクト(全フェーズがゲート承認済み、またはbrownfield intake直後)への変更依頼を差分駆動で処理する手順。機能追加・仕様変更・バグ修正・緊急ホットフィックスを4分類し、影響範囲をトレーサビリティから辿り、該当フェーズだけを再ゲートして実装・テスト・記録まで通す。/12-change-request で使う。</td><td>change</td></tr>
+    <tr><td><b>converge</b></td><td>docs と実装の乖離を検出して収束させる収束監査の手順。仕様と実装がずれている・docs が古い・実態と合っているか監査したい・棚卸ししたいときに使う。運用中(または任意の時点)に、定期または CR 数件ごとの実行を推奨。/13-converge で使う。</td><td>change</td></tr>
+  </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">QUALITY & SECURITY</div>
+  <h2>品質・セキュリティ（2）</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>スキル</th><th>何をするか（SKILL.md の description）</th><th>主に使うエージェント</th></tr>
+    <tr><td><b>release-security-review</b></td><td>コードベースをセキュリティリサーチャーの視点で監査し、インジェクション・認証/認可の不備・ハードコードされた認証情報・脆弱な依存関係・データフローの問題を検出する。実装完了後・リリース前のレビューで使う。</td><td>reviewer / release</td></tr>
+    <tr><td><b>mutation-verification</b></td><td>実装をわざと壊してテストが落ちることを実測する mutation 検証の手順。execFileSync でのテスト実行方法、置換が1箇所であることの検査、生き残り(テストが落ちない変異)の切り分け順序、等価変異の典型カタログを含む。テストの穴を実装フェーズ中に検出したいとき、task-worker やテストエージェントが使う。既定では必須にしない(コスト増のためプロジェクトの重要度に応じて選択する)。</td><td>task-worker / test</td></tr>
+  </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">RELEASE & ENVIRONMENT</div>
+  <h2>リリース・環境（4）</h2>
+  <p class="sec-desc">デプロイ環境のスキルは事前に全収録せず、<b>実際に判明した時点で作って育てる</b>のが方針です。2回目以降のリリースはスキルにより自動化されます。</p>
+  <div class="scroll">
+  <table>
+    <tr><th>スキル</th><th>何をするか（SKILL.md の description）</th><th>主に使うエージェント</th></tr>
+    <tr><td><b>skill-authoring</b></td><td>未知のデプロイ環境・技術スタック・ツールに遭遇したとき、その手順や規約をAgent Skill(SKILL.md)として新規に切り出す/公式Skillを取り込む方法。設計エージェント(スタック規約)・リリースエージェント(デプロイ手順)が使う。</td><td>design / release</td></tr>
+    <tr><td><b>deploy-local-npx</b></td><td>ホスティング先を持たないローカル完結アプリ(CLIツール・ローカルサーバー・npm実行形式)のリリース手順テンプレート。npm ci → build → npx . で起動確認し、annotatedタグでバージョンを固定する。environment.mdのデプロイ先が「なし(ローカル実行のみ)」のときにリリースエージェントが使う。</td><td>release</td></tr>
+    <tr><td><b>deploy-local-zip</b></td><td>ホスティング先を持たず、Gitタグとgit archiveによるZIP配布で完結するローカル実行アプリのリリース手順テンプレート。実行権限の罠(core.filemode=false)、CIが生成した実物ZIPの検査(gh run download)、PRとCI起動の確認、タグ打ち直し禁止のロールバック、更新経路(2回目以降のインストール)を含む。environment.mdのデプロイ先が「なし・ZIP配布」のときにリリースエージェントが使う。</td><td>release</td></tr>
+    <tr><td><b>windows-shell-conventions</b></td><td>Windows + Git Bash + PowerShell 併用環境でコマンド実行するときの既知の落とし穴集。ドライブレター大文字小文字、autocrlfとgit stashのCRLF事故、PowerShellインライン呼び出しの構文崩壊、curlの日本語文字化け、heredoc/Editのバックスラッシュ破壊、Voltaシム、パイプのSIGPIPEなど。Windows環境で実装・テスト・リリースのコマンドを実行する全エージェントが使う。</td><td>実行系の全エージェント</td></tr>
+  </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">SCALE & INTAKE</div>
+  <h2>規模・既存コード対応（2）</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>スキル</th><th>何をするか（SKILL.md の description）</th><th>主に使うエージェント</th></tr>
+    <tr><td><b>large-scale-development</b></td><td>大規模開発(複数サブシステム・複数チーム・要件30超)でこのハーネスを使うための構造とゲート運用。システム分割、サブシステム間インターフェース契約(ICD)、サブシステム別パイプライン、AIと人の責任分界、並列化の指針。要件やチームが複数に分かれる案件で使う。</td><td>orchestrator / design</td></tr>
+    <tr><td><b>brownfield-intake</b></td><td>既存のコードベース(brownfield)にこのハーネスを導入する手順。tools/intake-app.py で既存アプリをテンプレート複製の app/ 配下へ機械的に取り込み(経路A)、またはgit履歴を保全したい既存リポジトリへハーネス一式を注入し(経路B)、実装済みコードからas-is要件・as-isアーキテクチャをdocsに逆起こしして、コードとの整合を検証してから差分駆動の改修サイクルに接続する。「既存アプリにハーネスを入れたい」「途中からハーネスを使いたい」「多数の既存アプリに展開したい」ときに使う。</td><td>requirements</td></tr>
+  </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">GROWTH LOOP & MAINTENANCE</div>
+  <h2>成長ループ・本体保守（5）</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>スキル</th><th>何をするか（SKILL.md の description）</th><th>主に使うエージェント</th></tr>
+    <tr><td><b>harness-retrospective</b></td><td>リリース後(または任意のタイミング)に開発全体を振り返り、教訓の整理・ハーネス本体への改善提案・新規Skillの還流判断を行う手順。オーケストレーターが/10-retrospectiveで使う。</td><td>orchestrator</td></tr>
+    <tr><td><b>harness-apply-retrospective</b></td><td>ハーネス本体リポジトリ専用。個別プロジェクトの振り返り(retrospective*.md)の改善提案表を本体に適用し、DECISIONS.mdに記録する手順。/90-apply-retrospectiveでharness-maintainerエージェントが使う。個別プロジェクトのセッションでは使わない(harness-retrospectiveの還流方法を参照)。</td><td>harness-maintainer</td></tr>
+    <tr><td><b>harness-sync</b></td><td>ハーネス本体で適用済みの改善(DECISIONS.mdのD番号)を個別プロジェクトのハーネスコピーへ逆同期する手順。/91-sync-from-harnessでプロジェクト側から使う。tools/sync-harness.pyのdry-run→レポート確認→人間が--apply→検証→マーカー更新の流れ。本体還流(/90)の後工程。</td><td>orchestrator</td></tr>
+    <tr><td><b>harness-guide</b></td><td>このハーネス自体の使い方ガイド。どのプロンプト・エージェントをいつ使うか、チャットを分けるタイミング、コスト最適化を案内する。「使い方が分からない」「次に何をすればいい」という質問に答えるときに使う。</td><td>orchestrator</td></tr>
+    <tr><td><b>harness-stats</b> <span class="pill sub">user-invocable</span></td><td>現在のセッションの受領書(host 推定費用・文脈使用率・累計トークン・委譲・GATE 遷移・tests・基準線比較)を任意の時点で表示する。利用者が /harness-stats で呼ぶ専用(モデルからの自動呼び出しは無効)。数値の正は .github/hooks/logs/usage の受領書で、集計・表示は tools/session-receipt.py</td><td>利用者（user-invocable）</td></tr>
+  </table>
+  </div>
+  <div class="note">
+    <b>プロジェクトごとに増えるスキル:</b> <code>deploy-&lt;environment&gt;</code>（デプロイ先が判明した時点で作成）と
+    <code>stack-conventions</code>（技術スタック確定時に作成）は、各プロジェクトで動的に追加され、
+    汎用的なものは振り返りで本体へ還流されます。<b>ハーネスは使うたびにスキルが増えて賢くなります。</b>
+  </div>
+</div></section>
+<!-- END GENERATED: skills-sections -->
+<footer><div class="wrap">
+  <p><a href="overview.html">← 概要に戻る</a>　|　定義の実体: <code>.github/skills/*/SKILL.md</code>（正のレイヤ。<code>.claude/skills/</code> はポインタ）。</p>
+</div></footer>
+
+</body>
+</html>

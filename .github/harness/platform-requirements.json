@@ -1,0 +1,87 @@
+{
+  "schema": "platform-requirements/1",
+  "as_of": "2026-09-10",
+  "authority": "ホストに要求する版(claude_code.min / required / e2e.min_cli)とフック・予算・CLI フラグ等ホスト機能の導入版(features)は本ファイルが正。サブエージェントのモデル解決・effort・FORCE などモデル関連機能の導入版は .github/harness/model-policy.yml の min_version が正で、本ファイルは数値を持たず名前で参照するだけ(二重化しない)。tools/usage-config.json の host_min_version は claude_code.min の鏡(validate-harness が一致を検査)。PLATFORM.md「最低安全バージョン表」は tools/gen-docs.py が本ファイルから生成する。",
+  "readers": [
+    "tools/doctor.py(claude --version の FAIL/WARN 判定)",
+    "tools/validate-harness.py (n)(claude --version の WARN・鏡の照合)",
+    "tools/e2e-run.py(評価装置 v2 の起動門。定数のハードコードを廃止)",
+    "tools/gen-docs.py(PLATFORM.md の platform-requirements 生成ブロック)"
+  ],
+  "sources": [
+    "audits/external-reaudit-2026-09-09.md §1.1(Claude Code CHANGELOG 2.1.252〜2.1.265 の一次確認)・§2.2 CC-1・§2.4 OP-2",
+    "DECISIONS.md D078 決定1(固定条件 C: CLI >= 2.1.251、推奨 2.1.257)・D079 併記の文書訂正(最低安全版表)",
+    ".github/harness/PLATFORM.md「最低安全バージョン表」(2026-09-10 統合時点の手書き行を本ファイルへ機械化)"
+  ],
+  "claude_code": {
+    "min": "2.1.217",
+    "min_feature": "budget_subagent_inclusive",
+    "min_reason": "`--max-budget-usd` がサブエージェント分を合算して強制停止する最初の版。これ未満ではコスト浪費型の暴走を予算で止められない(doctor は FAIL)",
+    "required": "2.1.257",
+    "required_feature": "deny_subshell_eval",
+    "required_reason": "`permissions.deny` がサブシェル・リダイレクト内も評価される版。評価装置 v2 の固定条件 C の推奨版でもある(同版のサブエージェント一括固定 FORCE と fable alias 既定の導入版は model-policy.yml `subagent_model_force` / `models.fable-5.1` が正)。未達は doctor が WARN",
+    "verified_on_dev": "2.1.201",
+    "verified_note": "開発機の実機版(再監査 2026-09-09 CC-1: 自ら宣言した最低版 2.1.217 未満)。selftest 両系はフックの実機発火を含まず stdin ペイロードでスクリプトを直接実行している。開発機を更新したら本値と model-policy.yml の verified を上げる",
+    "verified_on_ci": "2.1.267",
+    "verified_on_ci_note": "CI(.github/workflows/harness-ci.yml)の npm 版固定 @anthropic-ai/claude-code@x.y.z で導入し、全ジョブ緑を確認した版(run 35162514385、2026-09-17。d17704a で 2.1.267 に固定)。harness-ci.yml の版固定はこの値の鏡(tools/validate-harness.py (v) が一致を検査)。tools/host-canary.py が CI の実機版と比べ、前進していれば Day-0 再ベンチ儀式(PLATFORM.md)を案内する。pin を上げるときは CI 緑を確認してから本値を更新する(A3-6)",
+    "features": {
+      "deny_bulk_bypass_fix": {
+        "version": "2.1.90",
+        "reason": "deny 規則が50サブコマンド超の一括呼び出しで無音バイパスされるバグの修正版"
+      },
+      "budget_subagent_inclusive": {
+        "version": "2.1.217",
+        "reason": "`--max-budget-usd` がサブエージェント分を合算して強制停止しない問題の修正版(評価装置 v2 の `budget_enforcement=subagent-inclusive` の境界)"
+      },
+      "subagent_background_default": {
+        "version": "2.1.232",
+        "reason": "サブエージェントの既定が background 起動に変更(PostToolUse(Agent) は `async_launched` で usage 無し・resolvedModel のみ)。実行モデルの記録経路(`log-subagent.py`)がこの版で変わる"
+      },
+      "project_dir_name_env": {
+        "version": "2.1.234",
+        "reason": "`CLAUDE_CODE_PROJECT_DIR_NAME`(評価装置 v2 がユーザースコープ隔離の transcript 探索に使う)"
+      },
+      "residency_premium_1_1x": {
+        "version": "2.1.239",
+        "reason": "費用推定(`--max-budget-usd`・`/cost`・`total_cost_usd`)にデータ常駐ワークスペースの 1.1x プレミアムが加算される版。装置 v1(2.1.201)の費用と定義が異なるため結果 JSON の `conditions.residency_premium_in_estimate` / `data_residency_premium_1_1x` で区別する"
+      },
+      "model_switch_hooks": {
+        "version": "2.1.251",
+        "reason": "PreModelSwitch/PostModelSwitch 追加(`log-model-switch.py` の発火下限。未満では発火しないだけで fail-open。2.1.201 で発火しないことを実プローブで確認=再監査 §1.1)。評価装置 v2(`tools/e2e-run.py`)はこの版未満を exit 2 で拒否する(`--allow-old-cli` で続行しても `valid_for_comparison=false`)。同版のサブエージェント model 解決順の反転と Fable 5.1 対応(未満は API 400)は model-policy.yml(`resolution_order` / `models.fable-5.1`)が正"
+      },
+      "deny_subshell_eval": {
+        "version": "2.1.257",
+        "reason": "`permissions.deny` がサブシェル・リダイレクト内も評価。A/B の同一モデル固定(`CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1`。導入版は model-policy.yml `subagent_model_force` が正)の推奨版で、結果 JSON の `conditions.subagent_model_forced` に記録される。`fable` alias の既定が Fable 5.1 になる版(同じく policy が正)"
+      },
+      "permission_prompts_none": {
+        "version": "2.1.259",
+        "reason": "`--permission-prompts none`・`--init-only`・Setup フック。`--bare` が将来 `-p` の既定になる予告(e2e/CI の起動契約が変わる)"
+      },
+      "hooks_if": {
+        "version": null,
+        "reason": "hooks の `if`(許可ルール構文でツール呼び出しを絞り、不一致なら起動しない。CC-6 / A2-7)。公式 hooks リファレンス(2026-09-17 確認)に導入版の記載がなく、CHANGELOG(2.1.257 まで)にも無い。guard 系には適用しない(`/usr/bin/git push`・`sh -c`・`git -C . push` が `Bash(git push *)` に一致せず素通り=公式の一致表。A6-18 の判断どおり)。docs 限定の PostToolUse 警告 3 本への `Edit(docs/**)` は候補だが 8.3 短縮名・バックスラッシュ区切りの一致と 2.1.201 での挙動が未検証のため既定では付けない(適用可否は tools/hook-metrics.py の発火数で判断)"
+      },
+      "stop_failure_instructions_loaded": {
+        "version": null,
+        "reason": "`StopFailure` / `InstructionsLoaded` の発火下限(`mark-abnormal-stop.py` / `log-instructions-loaded.py`)。公式 hooks リファレンス(2026-09-10)に導入版の記載なし。未満の版では発火しないだけで fail-open。開発機を 2.1.265 以上へ更新後、`logs/abnormal-stop-*.json` / `logs/instructions-loaded.jsonl` の生成で実測して版数を確定する"
+      }
+    },
+    "e2e": {
+      "min_cli": "2.1.251",
+      "min_cli_feature": "model_switch_hooks",
+      "min_cli_reason": "評価装置 v2 の起動門(D078 固定条件 C)。未満は exit 2。推奨版は claude_code.required",
+      "recommended_note": "推奨版 = claude_code.required(FORCE が効く版。結果 JSON の subagent_model_forced)"
+    }
+  },
+  "tools": {
+    "python": {"min": "3.8", "needed_for": "全 python フック(run-python.sh 経由)・tools/*。Windows では Microsoft Store のスタブ python.exe に注意(run-python.sh は python→python3 の順に解決)"},
+    "pyyaml": {"needed_for": "tools/validate-harness.py / tools/generate-adapters.py / tools/model_policy.py(pip install pyyaml)。フックと doctor は不要"},
+    "git": {"needed_for": "guard-config-change.py(HEAD 比較。無いと fail-open)・session-baseline.py・受領書のコミット数・sync/intake"},
+    "bash": {"needed_for": "全フック(`bash .github/hooks/scripts/...` で配線)。Windows は Git Bash が必須で、WSL の bash(System32)が先に解決されるとフックが WSL 内で走り fail-open になる(再監査 CC-6)"},
+    "node": {"optional": "sh ガードの JSON 解析(node → python の順。python があれば不要)"},
+    "jq": {"optional": "sh ガードの JSON 解析の第1候補(無ければ node → python)"}
+  },
+  "copilot": {
+    "note": "Copilot CLI / VS Code の版条件は model-policy.yml `min_version.copilot_cli` と PLATFORM.md「環境差」表が正(本ファイルは Claude Code のホスト版のみ)"
+  }
+}

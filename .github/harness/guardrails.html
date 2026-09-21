@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ガードレール — copilot-sdlc-harness</title>
+<style>
+  :root {
+    --bg:#f6f8fd; --bg2:#eef2fa; --card:#fff; --border:#dfe6f3;
+    --text:#1b2437; --muted:#5d6b8a; --accent:#2f6fed; --accent2:#0d9e94;
+    --accent3:#7c4dff; --warn:#d97a06; --deny:#d43a3a;
+    --grad:linear-gradient(135deg,#2f6fed 0%,#0d9e94 100%);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:"Inter","Noto Sans JP","Hiragino Sans","Segoe UI",sans-serif;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  .top{background:#fff;border-bottom:1px solid var(--border);padding:14px 0}
+  .top .wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .top b{font-size:15px}
+  .top nav{display:flex;gap:16px;flex-wrap:wrap}
+  .top a{color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:600}
+  .top a:hover{color:var(--accent)}
+  .top a.here{color:var(--accent);border-bottom:2px solid var(--accent)}
+  .hero{padding:44px 0 8px}
+  h1{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-.01em;margin-bottom:10px}
+  h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--muted);max-width:780px;font-size:15px}
+  .lead b{color:var(--text)}
+  section{padding:36px 0 4px}
+  .sec-label{font-size:12px;letter-spacing:.18em;color:var(--accent);font-weight:800;margin-bottom:6px}
+  h2{font-size:clamp(19px,2.6vw,26px);font-weight:800;margin-bottom:10px}
+  .sec-desc{color:var(--muted);max-width:780px;margin-bottom:22px;font-size:14px}
+  .sec-desc b{color:var(--text)}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 4px 18px rgba(31,58,120,.07);margin-bottom:14px}
+  th,td{padding:12px 14px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--bg2);font-size:12px;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td b{font-weight:700}
+  code{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:12.5px;font-family:Consolas,Menlo,monospace}
+  .pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:11.5px;font-weight:700;white-space:nowrap}
+  .pill.deny{background:rgba(212,58,58,.10);color:var(--deny)}
+  .pill.ask{background:rgba(217,122,6,.12);color:var(--warn)}
+  .pill.warn{background:rgba(124,77,255,.10);color:var(--accent3)}
+  .pill.inject{background:rgba(13,158,148,.12);color:var(--accent2)}
+  .pill.block{background:rgba(47,111,237,.10);color:var(--accent)}
+  .note{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:10px;padding:14px 18px;font-size:13.5px;color:var(--muted);margin-bottom:14px}
+  .note b{color:var(--text)}
+  .note.warn{border-left-color:var(--warn)}
+  footer{margin-top:56px;border-top:1px solid var(--border);padding:28px 0 40px;background:var(--bg2);color:var(--muted);font-size:12.5px}
+  footer a{color:var(--accent);text-decoration:none;font-weight:600}
+  .scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <b>copilot-sdlc-harness</b>
+  <nav>
+    <a href="overview.html">概要</a>
+    <a href="agents.html">エージェント</a>
+    <a href="skills.html">スキル</a>
+    <a href="commands.html">コマンド</a>
+    <a class="here" href="guardrails.html">ガードレール</a>
+    <a href="COMPARISON.html">比較</a>
+  </nav>
+</div></div>
+
+<div class="hero"><div class="wrap">
+  <h1>ガードレール <span class="grad">— 祈りではなく、仕組みで守る</span></h1>
+  <p class="lead">
+    「AIに繰り返し指示して守らせる」より「機械的に強制する」——このハーネスの中心思想です。
+    フックはモデルを介さないシェル実行（ほぼゼロコスト）で、LLMがルールを忘れても・
+    プロンプトインジェクションを受けても発動します。<b>フック自身も自己テスト
+<!-- BEGIN GENERATED: selftest-counts -->
+<span class="gen-count">sh 404 / ps1 376 ケース（静的計数。pass/fail の正は各 selftest の実行結果）</span>
+<!-- END GENERATED: selftest-counts -->
+    で回帰検査</b>しており、
+    「守っているつもりで壊れていた」を許しません——実際に壊れていた箇所は監査が暴いて
+    修正します（下記「既知の限界」参照。CI の 2 OS 常時実行は構成済み・緑化は P0 対応中）。
+  </p>
+</div></div>
+
+<section><div class="wrap">
+  <div class="sec-label">HOOKS</div>
+  <h2>機械的フック（
+<!-- BEGIN GENERATED: hook-count -->
+25 + opt-in 1
+<!-- END GENERATED: hook-count -->
+  ）</h2>
+  <p class="sec-desc">
+    判定の種類: <span class="pill deny">deny</span> 実行を拒否 /
+    <span class="pill ask">ask</span> 人に確認を出す /
+    <span class="pill warn">warn</span> 警告して通す /
+    <span class="pill inject">inject</span> コンテキストを自動注入 /
+    <span class="pill block">block</span> ターン終了を1回だけ止める
+  </p>
+  <div class="scroll">
+  <table>
+    <tr><th>フック</th><th>判定</th><th>何を守るか</th></tr>
+    <tr><td><b>guard-template-edit</b></td><td><span class="pill deny">deny</span></td><td><code>*_template.md</code> への直接編集を拒否（コピーして実体を作る運用を強制）</td></tr>
+    <tr><td><b>guard-harness-config-edit</b></td><td><span class="pill deny">deny</span></td><td>ハーネス自身の設定（agents / hooks / workflows / prompts / instructions / AGENTS.md / CLAUDE.md / PLATFORM.md / settings・<code>settings.local.json</code>・中核2スキル（request-routing / gate-check）等）への自動編集を拒否。<b>プロンプトインジェクションによる自己権限昇格を防ぐ</b></td></tr>
+    <tr><td><b>guard-secret-leak</b></td><td><span class="pill deny">deny</span> / <span class="pill ask">ask</span></td><td>クラウド鍵・秘密鍵等の高確度パターンは書いた瞬間に拒否、汎用的な <code>api_key=</code> 等は確認</td></tr>
+    <tr><td><b>guard-dangerous-git</b></td><td><span class="pill ask">ask</span> / <span class="pill deny">deny</span></td><td><code>git push</code> / <code>git tag</code> / force系 / <code>reset --hard</code> / <code>rm -rf</code> を毎回確認（理由文に「何を」＝exact-action の承認単位）。<code>git -C</code> 経由やフラグ順不同（<code>-fr</code>, <code>-r -f</code>）の迂回も検知。承認バイパス（bypassPermissions / Autopilot / <code>HARNESS_EXTERNAL_EFFECT_MODE=deny</code>）下は ask が消音されるため deny（codex C-01）</td></tr>
+    <tr><td><b>guard-external-effect</b></td><td><span class="pill ask">ask</span> / <span class="pill deny">deny</span></td><td>git 以外の<b>外部反映</b>（IaC の apply、kubectl / helm、クラウド・PaaS CLI のデプロイ、コンテナレジストリ push、パッケージ公開、gh の書込系、HTTP の書込メソッド、ssh / scp、本番マーカー付き migrate、MCP の書込系ツール）を「何を・どこへ」を示して毎回確認。plan / dry-run / 読み取り / ループバック宛は通す。承認バイパス下は deny。<code>environment.md</code> の「自動」分類でも外部反映の承認は省略されない（codex C-01 / IA-20260831-01）</td></tr>
+    <tr><td><b>guard-done-evidence</b></td><td><span class="pill deny">deny</span></td><td>progress.md を「done」へ変える書込や tasks.md へ完了マーク <code>[x]</code> を足す書込に、証拠 3 点セット（再実行可能なコマンド・出力の要約・YYYY-MM-DD HH:MM）が<b>同じ書込に</b>無ければ拒否（<b>証拠なし done の機械拒否</b>。人間の直接編集は対象外。A2-4b）</td></tr>
+    <tr><td><b>guard-phase-scope</b></td><td><span class="pill deny">deny</span>/<span class="pill ask">ask</span></td><td>進行中フェーズが無い状態でのアプリコード編集を状態依存で強制（運用中・着手前=deny、未初期化=ask、読み取りは対象外）。「入口を経てから作業する」を機械的に担保（D062: ask はホストの承認記憶で消音され得るため運用中は deny）</td></tr>
+    <tr><td><b>warn-stale-gate</b></td><td><span class="pill warn">warn</span></td><td>承認済み（done）フェーズ配下の文書が編集されたら整合確認を促す</td></tr>
+    <tr><td><b>check-doc-chars</b></td><td><span class="pill warn">warn</span></td><td>docs/ への書き込み後、不可視文字・文字化け（NUL・BOM・ハングル混入等）を機械検査</td></tr>
+    <tr><td><b>warn-gate-tamper</b></td><td><span class="pill warn">warn</span></td><td>progress.md を「done」へ変える編集や tasks.md への完了マーク <code>[x]</code> 追加を検知したら、人の明示承認・証拠の確認を促す（<b>ゲート状態の無断書き換え対策</b>）。implementation / test を done にする書込で独立レビューの記録（review-log.md）が無ければ「独立レビューの記録がありません」を警告（A6-14）</td></tr>
+    <tr><td><b>inject-progress</b></td><td><span class="pill inject">inject</span></td><td>セッション開始時と圧縮前に GATE_STATUS と教訓（新しい50件）を自動注入。「言ったのに忘れられる」を防ぐ</td></tr>
+    <tr><td><b>route-request</b></td><td><span class="pill inject">inject</span></td><td>依頼のたびに受付ルーチンのルール（分類/入口/影響の宣言→入口の自己起動）を注入</td></tr>
+    <tr><td><b>remind-record</b></td><td><span class="pill block">block</span></td><td>アプリコードを変更したのに docs/ に記録が無いままターンを終えようとしたら1回だけ止めて記録を促す</td></tr>
+    <tr><td><b>log-effort</b></td><td><span class="pill inject">記録</span></td><td>会話ごとの受領書（トークン累計・host 推定費用・文脈%・GATE 遷移・tests・委譲・基準線比較）を .github/hooks/logs/usage に記録し、区切りのターンだけ 3 行で提示（Claude Code。block はしない。旧 effort-log.csv は廃止）</td></tr>
+    <tr><td><b>session-baseline</b></td><td><span class="pill inject">記録</span></td><td>セッション開始時点の GATE_STATUS・HEAD・tasks [x] 数・numstat を保存（受領書の遷移・増分の基準。compact では書かない・上書きしない。Claude Code）</td></tr>
+    <tr><td><b>log-subagent</b></td><td><span class="pill inject">記録</span></td><td>サブエージェントの種別と要求→実行モデル（resolvedModel）を記録（受領書の委譲欄と実行モデルの証拠。tool_name 自己フィルタ。Claude Code）</td></tr>
+    <tr><td><b>notify</b></td><td><span class="pill inject">通知</span></td><td>承認待ち等の通知発生時にローカルで音を鳴らし、logs に時刻+種別だけを1行記録（Claude Code の Notification イベント。常に fail-open）</td></tr>
+    <tr><td><b>draft-learnings</b></td><td><span class="pill inject">起草</span></td><td>セッション終了時に、会話中の「ユーザーの訂正→方針変更」パターンを検出して教訓候補を learnings-pending.md に自動起草（learnings.md への昇格は人間のキュレーション。誤検出しても注入されないため無害。Claude Code の Stop イベント）</td></tr>
+    <tr><td><b>watchdog-continue</b> <span class="pill ask">opt-in</span></td><td><span class="pill block">block</span></td><td><b>既定は未配線（opt-in）。</b>GATE_STATUS が in_progress のまま停止したとき、承認・質問待ちでなければ有界（既定3回）で自動継続を促す番犬。<code>stop_hook_active</code> と反復上限の二重の歯止めで無限ループを防ぐ</td></tr>
+  </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">LAYERS</div>
+  <h2>多層防御 — フックだけに頼らない</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>層</th><th>仕組み</th><th>守れるもの</th></tr>
+    <tr><td><b>1. ツール権限</b></td><td>各エージェントの tools を最小化（要件・設計エージェントは execute を持たない。レビュワーは読取専用）</td><td>そもそも危険な操作ができない</td></tr>
+    <tr><td><b>2. permissions（Claude Code）</b></td><td>deny でハーネス設定（<code>settings.local.json</code>・instructions・PLATFORM.md・中核2スキル request-routing / gate-check を含む）・テンプレートへの Edit/Write/NotebookEdit を拒否。ask で <code>git push</code> 等を確認（<b>Bash / PowerShell 両ツールに定義</b>）</td><td>フックが壊れてもツール層が残る（二重化）</td></tr>
+    <tr><td><b>3. フック（上表14）</b></td><td>PreToolUse / PostToolUse / SessionStart / Stop 等で機械的に検査</td><td>編集・コマンド・受付・記録</td></tr>
+    <tr><td><b>4. プロセスゲート</b></td><td>ゲート承認（done への遷移は必ず人）・独立レビュー必須通過・done契約（証拠なしに完了なし）・retry→replan→escalate（3回失敗で停止）</td><td>品質と暴走</td></tr>
+    <tr><td><b>5. Git側の保護</b></td><td>ブランチ保護 + CODEOWNERS（推奨設定を同梱）・PR経由の変更</td><td>ハーネス外からの最終防衛線</td></tr>
+    <tr><td><b>6. 自己検査</b></td><td>validate（構造整合）・フック自己テスト
+<!-- BEGIN GENERATED: selftest-counts-table -->
+<span class="gen-count">sh 404 / ps1 376 ケース（静的計数。pass/fail の正は各 selftest の実行結果）</span>
+<!-- END GENERATED: selftest-counts-table -->
+    ・Golden Eval（完了宣言と実態の突き合わせ）の検査スイート。本体CI（Ubuntu / Windows 両OS）での毎push実行は構成済みで、緑化は P0 対応中</td><td>ガード自身の劣化</td></tr>
+  </table>
+  </div>
+  <div class="note">
+    <b>接続を増やすときの判定基準（Rule of Two）:</b> 1つのセッションが
+    (A) 信頼できない入力の処理 (B) 機密データへのアクセス (C) 状態変更・外部送信 の
+    <b>3つを同時に持つ構成にしない</b>（2つまで）。3つ揃うとプロンプトインジェクション経由の
+    データ流出が構造的に可能になるため、必要な場合は人間の承認ゲートを挟みます。
+    外部スキル/MCPの導入は出所確認・版固定・事前レビューのサプライチェーン統制つき。
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-label">PLATFORM DIFFERENCES</div>
+  <h2>環境ごとのガード強度差（正直な劣化モード）</h2>
+  <p class="sec-desc">同じ振る舞いを目指しますが、機械的強制の強さはプラットフォームの機能差で変わります。差は隠さず文書化するのが方針です。環境差の詳細の正は <code>.github/harness/PLATFORM.md</code>（規範は AGENTS.md＝憲法、詳細は PLATFORM.md という二層構成）。</p>
+  <div class="scroll">
+  <table>
+    <tr><th>環境</th><th>機械的に効くもの</th><th>指示レベルで代替するもの</th></tr>
+    <tr><td><b>Claude Code</b>（最強）</td><td>フック全14 + permissions（deny/ask）の二重化。ファイル編集・コマンド・受付・記録のすべてが機械ガードつき</td><td>—</td></tr>
+    <tr><td><b>Copilot</b>（VS Code）</td><td>フック（Preview）で deny/ask/warn。UserPromptSubmit もサポートされ、受付の機械化は既定で届く（D060 配線）。記録（remind-record / Stop）は未配線のため Claude Code のみ（AGENTS.md の指示レベルで代替）</td><td>フックが組織ポリシーで無効化されている場合の全般</td></tr>
+    <tr><td><b>Antigravity</b>（アダプタ凍結・未検証）</td><td>IDE の Deny List（GUI）に危険コマンドを手動登録</td><td>スクリプトフック全般（IDEが読まないため）。重要なリリース判断は Copilot / Claude Code 推奨</td></tr>
+  </table>
+  </div>
+  <div class="note warn">
+    <b>既知の限界（隠さず記載）:</b> Bash経由のファイル書き込み（<code>echo &gt;</code> 等）は
+    ファイル系 deny の対象外・MCPツールの呼び出しはコマンドパターン検査の対象外です。
+    さらに <b>2026-08-31 の再監査が、設定ガードのインタプリタ経由書き込み
+    （<code>python -c</code> / <code>node -e</code> 等）・git plumbing（<code>git apply</code> /
+    <code>checkout -- </code> 等）・junction 作成のバイパスを実測で確認</b>しており、
+    書き込み判定の allowlist 方式を反転する封鎖を P0 として実施中です
+    （audits/external-reaudit-2026-08-31.md C-1）。
+    だから MCP は最小権限・既定で破壊的サーバー非接続とし、Git側の保護（層5）を併用します。
+    完全な防御は存在しない前提で、<b>層を重ねて影響範囲を絞る</b>のが設計方針です。
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p><a href="overview.html">← 概要に戻る</a>　|　実体: <code>.github/hooks/</code>（スクリプトと配線）・<code>.claude/settings.json</code>（permissions）。詳細は <code>.github/hooks/README.md</code>。</p>
+</div></footer>
+
+</body>
+</html>

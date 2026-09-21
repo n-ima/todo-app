@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "series_id": "S2-expense-efficiency",
+  "status": "draft",
+  "registered_on": "2026-09-10",
+  "experiment": "efficiency",
+  "task": "expense-webapp",
+  "arms": ["harness", "bare"],
+  "order": "ABAB",
+  "n_per_arm": 5,
+  "model": "claude-opus-5",
+  "effort": "high",
+  "budget_ladder_usd": [12, 24, 48],
+  "stages": 2,
+  "call_budget_usd": null,
+  "max_turns_per_call": 60,
+  "fresh_policy": "fresh-on-command",
+  "allowed_tools_extra": [],
+  "max_nudges": 2,
+  "min_cli": "2.1.251",
+  "validity": {"budget_enforcement": "subagent-inclusive", "single_condition_hash": true,
+               "equal_total_budget_across_arms": true},
+  "decision_rules": {
+    "primary_metric": "予算内 PASS 率と DNF 率(B ごとに別表)",
+    "secondary": "PASS 走行の費用分布(cost-to-pass)",
+    "cost_reporting": "範囲(min/median/max)。アーム間の費用比は作らない",
+    "note": "DNF は成果。結果を見てから B を動かさない(ラダーは事前登録)"
+  },
+  "notes": "監査 2026-09-09 §6 の S2。同額の事前登録ラダー $12/$24/$48。call 上限は B/ステージ数(発話単位の打切りは許容し件数を報告)。"
+}

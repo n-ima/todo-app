@@ -1,0 +1,31 @@
+{
+  // 既定の場所 (.github/agents, .github/prompts, .github/instructions, .github/skills, .github/hooks)
+  // はVS Codeが自動検出する。上3ブロックは既定の明示（無くても動く）。
+  // ただし最後の agentSkillsLocations の1行だけは必須: これが無いと
+  // .claude/skills（ポインタ）と .github/skills（正）が二重に読み込まれる。
+  "chat.agentFilesLocations": {
+    ".github/agents": true
+  },
+  "chat.promptFilesLocations": {
+    ".github/prompts": true
+  },
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true
+  },
+  // Claude Code用スキルポインタ(.claude/skills)はCopilotにも探索されるため、
+  // 正(.github/skills)との二重読み込みを防ぐ
+  "chat.agentSkillsLocations": {
+    ".claude/skills": false
+  },
+  // VS Code Agent Host(既定)と Copilot CLI は .claude/settings.json のフックも既定で読み、
+  // .github/hooks/ と同一ガードを重複排除なし・直列で実行する(再監査 2026-09-09 CP-3。
+  // Local ハーネスの「Claude Code フックを有効にする」opt-in 門=D058 は Agent Host には無い)。
+  // 読込元を .github/hooks/ に固定して二重発火を抑止する(validate-harness が不変条件として検査)
+  "chat.hookFilesLocations": {
+    ".github/hooks": true,
+    ".claude/settings.json": false,
+    ".claude/settings.local.json": false
+  },
+  // CLAUDE.md は Claude Code 用の橋渡し(@AGENTS.md)。Copilot が読むと AGENTS.md と二重になる
+  "chat.useClaudeMdFile": false
+}

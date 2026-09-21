@@ -1,0 +1,3 @@
+# ハーネス自己検査(validate-harness.py)の依存。配布物(アプリ)には不要。
+# CI(harness-ci.yml)と開発機で `pip install -r requirements-dev.txt`。
+PyYAML==6.0.3

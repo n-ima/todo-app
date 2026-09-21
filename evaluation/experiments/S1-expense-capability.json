@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "series_id": "S1-expense-capability",
+  "status": "draft",
+  "registered_on": "2026-09-10",
+  "experiment": "capability",
+  "task": "expense-webapp",
+  "arms": ["harness", "bare"],
+  "order": "ABAB",
+  "n_per_arm": 5,
+  "model": "claude-opus-5",
+  "effort": "high",
+  "budgets": {"total_usd": 120.0, "call_usd": 120.0},
+  "max_turns_per_call": 60,
+  "fresh_policy": "fresh-on-command",
+  "allowed_tools_extra": [],
+  "max_nudges": 2,
+  "min_cli": "2.1.251",
+  "validity": {
+    "budget_used_ratio_max": 0.7,
+    "n_truncated_calls": 0,
+    "n_max_turns_calls": 0,
+    "budget_enforcement": "subagent-inclusive",
+    "model_aux_cost_ratio_max": 0.01,
+    "single_condition_hash": true
+  },
+  "escalation": {"b_cap_multiplier": 1.5, "max_steps": 2,
+                 "note": "budget_used_ratio > 0.7 が 1 本でも出たら系列を INVALID とし B_cap x1.5 で再走行(最大 2 段。破棄した系列も results/ に残す)"},
+  "decision_rules": {
+    "primary_metric": "pass@1 (Wilson 95%)",
+    "test": "Fisher exact two-sided",
+    "claim_difference_if": "p <= 0.05 (5/5 vs 0/5: p=0.0079, 4/5 vs 0/5: p=0.0476)",
+    "no_claim_if": "3/5 vs 0/5 (p=0.167) 以下の分離では差を主張しない",
+    "extension": "分離しなければ n=8/アームまで ABAB 順で延長(8/8 vs 0/8: p=0.00016)",
+    "supplement": "DNF/INVALID で有効 n<5 になった場合、ABAB 順で最大 +3 走行を補充(補充も事前登録の条件で)",
+    "cost_reporting": "範囲(min/median/max)。アーム間の費用比は作らない"
+  },
+  "pilot": {"required": true, "note": "系列開始前に 1+1 走行(harness/bare)で非打切り時の max_call_cost と budget_used_ratio を実測し B_cap を確定してから status=registered にする"},
+  "notes": "監査 2026-09-09 §6 の S1。B_cap=120 は既存最大 $69.06 x1.5 の切り上げ(参考値由来。パイロットで確定)。"
+}

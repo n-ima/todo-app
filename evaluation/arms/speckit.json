@@ -1,0 +1,17 @@
+{
+  "name": "speckit",
+  "kind": "external",
+  "replies_block": "scripted-replies-speckit",
+  "workdir_source": "empty",
+  "gate_status": false,
+  "pin": {"repo": "github/spec-kit", "ref": "v1.0.5"},
+  "setup": [
+    ["uvx", "--from", "git+https://github.com/github/spec-kit.git@v1.0.5", "specify", "init",
+     "--here", "--integration", "claude", "--script", "sh", "--non-interactive", "--force",
+     "--ignore-agent-tools"]
+  ],
+  "expect_files": [".specify"],
+  "allowed_tools_extra": ["Bash(bash .specify/*)", "Bash(.specify/*)"],
+  "status": "draft-unsmoked",
+  "notes": "Spec Kit v1.0.5 を pin して --integration claude で初期化する(`--ai` は v0.10.0 で削除済み)。台本は task.md の scripted-replies-speckit(情報等価: harness 台本と同じ回答を /speckit.clarify 後に与える)。allowed_tools_extra は同一系列の harness/bare にも同じ値を与える(条件 C。--plan の allowed_tools_extra で全アームに配る)。setup が作る .git は bootstrap 単一ルートのため除去する。実機 smoke(setup → claude -p 'echo ok' --max-turns 1)は未実施(status=draft-unsmoked)。commands の配置(.claude/commands/speckit.*.md か skills)は pin 版で実機確認してから expect_files に追加する。"
+}

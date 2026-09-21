@@ -1,0 +1,102 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/guard-template-edit.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/guard-template-edit.ps1",
+        "linux": "bash .github/hooks/scripts/guard-template-edit.sh",
+        "osx": "bash .github/hooks/scripts/guard-template-edit.sh",
+        "timeout": 5
+      },
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/guard-dangerous-git.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/guard-dangerous-git.ps1",
+        "linux": "bash .github/hooks/scripts/guard-dangerous-git.sh",
+        "osx": "bash .github/hooks/scripts/guard-dangerous-git.sh",
+        "timeout": 5
+      },
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/guard-phase-scope.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/guard-phase-scope.ps1",
+        "linux": "bash .github/hooks/scripts/guard-phase-scope.sh",
+        "osx": "bash .github/hooks/scripts/guard-phase-scope.sh",
+        "timeout": 5
+      },
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/guard-external-effect.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/guard-external-effect.ps1",
+        "linux": "bash .github/hooks/scripts/guard-external-effect.sh",
+        "osx": "bash .github/hooks/scripts/guard-external-effect.sh",
+        "timeout": 5
+      },
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/guard-done-evidence.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/guard-done-evidence.ps1",
+        "linux": "bash .github/hooks/scripts/guard-done-evidence.sh",
+        "osx": "bash .github/hooks/scripts/guard-done-evidence.sh",
+        "timeout": 5
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/route-request.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/route-request.ps1",
+        "linux": "bash .github/hooks/scripts/route-request.sh",
+        "osx": "bash .github/hooks/scripts/route-request.sh",
+        "timeout": 5
+      }
+    ],
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/inject-progress.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/inject-progress.ps1",
+        "linux": "bash .github/hooks/scripts/inject-progress.sh",
+        "osx": "bash .github/hooks/scripts/inject-progress.sh",
+        "timeout": 5
+      }
+    ],
+    "PreCompact": [
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/inject-progress.sh PreCompact",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/inject-progress.ps1 PreCompact",
+        "linux": "bash .github/hooks/scripts/inject-progress.sh PreCompact",
+        "osx": "bash .github/hooks/scripts/inject-progress.sh PreCompact",
+        "timeout": 5
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/warn-stale-gate.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/warn-stale-gate.ps1",
+        "linux": "bash .github/hooks/scripts/warn-stale-gate.sh",
+        "osx": "bash .github/hooks/scripts/warn-stale-gate.sh",
+        "timeout": 5
+      },
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/check-doc-chars.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/check-doc-chars.ps1",
+        "linux": "bash .github/hooks/scripts/check-doc-chars.sh",
+        "osx": "bash .github/hooks/scripts/check-doc-chars.sh",
+        "timeout": 5
+      },
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/warn-gate-tamper.sh",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .github/hooks/scripts/warn-gate-tamper.ps1",
+        "linux": "bash .github/hooks/scripts/warn-gate-tamper.sh",
+        "osx": "bash .github/hooks/scripts/warn-gate-tamper.sh",
+        "timeout": 5
+      }
+    ]
+  }
+}

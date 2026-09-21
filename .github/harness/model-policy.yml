@@ -1,0 +1,347 @@
+# .github/harness/model-policy.yml — 役割別モデル/effort 方針の唯一の正(v1)
+#
+# 監査 2026-09-09 §4.5(MP-1〜7 / CC-2 / MS 群)の設計。他の全面は生成物:
+#   - .claude/agents/<role>.md の frontmatter(model / effort / maxTurns / background / memory)
+#   - .github/agents/<role>.agent.md の `model:` 行のみ(# generated-from マーカー。`auto` は除去)
+#   - .github/copilot/settings.json(Copilot CLI。subagents.agents.<name>.{model,effortLevel,contextTier})
+#   - .claude/commands/<cmd>.md の `effort:`(phase_overrides。既定は空)
+#   - .github/hooks/scripts/guard-subagent-model.{sh,ps1} に埋め込む役割表(JSON)
+#   - .claude/settings.json の permissions.deny `Agent(model:…)`(--print-deny / --apply-deny)
+#   - PLATFORM.md / README.md / agents.html の対照表(<!-- BEGIN GENERATED: model-policy-* -->)
+# 生成: python tools/generate-adapters.py(通常モードで人間が実行。保守モード(.locked)中は
+#       settings.json への書込を拒否する)。検査: python tools/generate-adapters.py --check、
+#       python tools/validate-harness.py(WARN 既定。--model-policy-strict で ERROR)。
+#
+# 既定(A/B 前・挙動不変): 全役割 model: inherit。判定役(reviewer / spec-critic)と上流
+# (requirements / design)は effort: high + never_low、それ以外は effort: inherit。
+# model / effort を変えるのは ab_evidence(evaluation/results/<file>)が入った役割のみ。
+#
+# 上書き(方針より強い層。PLATFORM.md「モデル/effort の方針」の優先順位表が正):
+#   CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 の環境では roles.*.claude_code.model は全て無効
+#   (fork と model: inherit のスキルを除く。v2.1.257+)。
+#   CLAUDE_CODE_EFFORT_LEVEL は roles.*.claude_code.effort と phase_overrides を全て上書きする。
+version: 1
+retrieved: 2026-09-10            # 可用性・価格・廃止日・版条件の取得日(validate: 30日超で WARN)
+sources:
+  claude_sub_agents: https://code.claude.com/docs/en/sub-agents
+  claude_permissions: https://code.claude.com/docs/en/permissions
+  claude_model_config: https://code.claude.com/docs/en/model-config
+  copilot_cli_config: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference
+  copilot_plans: https://raw.githubusercontent.com/github/docs/main/data/tables/copilot/model-supported-plans.yml
+  copilot_pricing: https://raw.githubusercontent.com/github/docs/main/data/tables/copilot/models-and-pricing.yml
+  anthropic_pricing: https://platform.claude.com/docs/en/about-claude/pricing
+
+# 版条件は「docs 記載版」と「実機検証版」を分ける(docs と CHANGELOG で版数が食い違うため、
+# validate の照合は docs 版を正とし、verified は実機で確認した項目だけを埋める)。
+# 正の分担(1 行。2026-09-10 A6-8): ホストに要求する版(min / required / 評価装置の起動門)とフック・予算・
+# CLI フラグ等ホスト機能の導入版は .github/harness/platform-requirements.json、モデル関連機能の導入版は
+# 本ファイルの min_version(JSON は数値を持たず名前で参照する)。doctor / gen-docs は本ブロックを
+# PyYAML 無しの regex で読むため、docs: 配下は 2 スペース字下げ・"x.y.z" の引用文字列の書式を保つ
+# (yaml 読みとの一致は validate-harness (n) が検査)。
+min_version:
+  claude_code:
+    docs:
+      resolved_model: "2.1.174"          # PostToolUse(Agent).tool_response.resolvedModel
+      agent_model_deny: "2.1.178"        # permissions `Agent(model:…)` / `Agent(name)`
+      model_inherit: "2.1.200"           # frontmatter `model: inherit`
+      models_used: "2.1.212"             # tool_response.modelsUsed(完了時のみ)
+      tasks_model_display: "2.1.242"     # /tasks にモデル・effort を表示(effort frontmatter 自体の版条件ではない=MS-5 反証)
+      resolution_order: "2.1.251"        # 呼出時 > frontmatter > CLAUDE_CODE_SUBAGENT_MODEL > メイン
+      subagent_model_force: "2.1.257"    # CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1
+      skill_model_interactive: "2.1.259" # skills/commands frontmatter の model が対話で有効
+      fable_5_1_effort_cache_keep: "2.1.260"  # Fable 5.1 のみ effort 変更でキャッシュ維持
+    effort_frontmatter:
+      docs: null                         # 公式 sub-agents docs は effort に版条件を付けていない
+      changelog: "2.1.78"                # CHANGELOG 上の記載(2.1.78/80)。設計レビューは 2.1.242 と読んだ=見解が割れている
+      verify_how: "実機 2.1.201 で reviewer を起動し、SubagentStop の hooks 入力 effort.level が frontmatter の値になるかで確認する"
+    verified: {}                         # 実機で確認した項目のみ {キー: "版"}(開発機 2.1.201)
+  copilot_cli:
+    docs:
+      settings_json_subagents: "1.0.70"  # .github/copilot/settings.json の subagents.agents.<name>
+      usage_output_file: "1.0.81"        # --usage-output-file(per-agent usage)
+      agent_model_array: "1.0.83"        # .agent.md の model 配列(それ以前は読込エラー #2133)
+    verified: {}                         # 開発機は copilot CLI 未導入
+
+# 1 モデル = 1 エントリ。役割側はキー名のみ参照する。
+# 単価は USD / 1M tokens(取得 2026-09-10。cache_write_5m = input×1.25、cache_write_1h = input×2)。
+# copilot_plans は公式データ表の真偽値をそのまま持ち、管理者ポリシーの注記は admin_policy_note に分離する。
+models:
+  fable-5.1:
+    claude_code: {id: claude-fable-5-1, alias: fable}
+    copilot_display: "Claude Fable 5.1"
+    copilot_cli_id: claude-fable-5.1
+    price_usd_per_mtok: {input: 10, output: 50, cache_read: 0.25, cache_write_5m: 12.5, cache_write_1h: 20}
+    copilot_plans: {free: false, pro: false, pro_plus: true, business: true, enterprise: true}
+    admin_policy_note: "Business / Enterprise は管理者ポリシー既定オフ(有効化後に使用可)"
+    cloud_agent: false
+    context_window: 1000000
+    effort_supported: true
+    deprecated_on: null
+    price_prefixes: [claude-fable-5-1]
+    note: "Claude Code では fable alias の既定(2.1.257+)。2.1.201 では API 400 で拒否される(実プローブ)"
+  opus-5:
+    claude_code: {id: claude-opus-5, alias: opus}
+    copilot_display: "Claude Opus 5"
+    copilot_cli_id: claude-opus-5
+    price_usd_per_mtok: {input: 5, output: 25, cache_read: 0.5, cache_write_5m: 6.25, cache_write_1h: 10}
+    copilot_plans: {free: false, pro: false, pro_plus: true, business: true, enterprise: true}
+    admin_policy_note: null
+    cloud_agent: true
+    context_window: null                 # 未取得(公式表から転記するまで null)
+    effort_supported: true
+    deprecated_on: null
+    price_prefixes: [claude-opus-5]
+    note: "公式既定の出発点。Fable 5.1 は Opus 5 の xhigh/max で evals が届かない時の昇格先"
+  sonnet-5:
+    claude_code: {id: claude-sonnet-5, alias: sonnet}
+    copilot_display: "Claude Sonnet 5"
+    copilot_cli_id: claude-sonnet-5
+    price_usd_per_mtok: {input: 2, output: 10, cache_read: 0.2, cache_write_5m: 2.5, cache_write_1h: 4}
+    copilot_plans: {free: false, pro: true, pro_plus: true, business: true, enterprise: true}
+    admin_policy_note: null
+    cloud_agent: false                   # cloud agent の選択肢に無い(docs 2026-09 時点)
+    context_window: null
+    effort_supported: true
+    deprecated_on: null
+    price_prefixes: [claude-sonnet-5]
+    note: "task-worker の軽量候補(B1)は Sonnet 5 一択($2/$10 恒久)。公式 corpus 実測は精度 -10〜12pt"
+  haiku-4.5:
+    claude_code: {id: claude-haiku-4-5, alias: haiku}
+    copilot_display: "Claude Haiku 4.5"
+    copilot_cli_id: claude-haiku-4.5
+    price_usd_per_mtok: {input: 1, output: 5, cache_read: 0.1, cache_write_5m: 1.25, cache_write_1h: 2}
+    copilot_plans: {free: true, pro: true, pro_plus: true, business: true, enterprise: true}
+    admin_policy_note: null
+    cloud_agent: true
+    context_window: 200000
+    effort_supported: false              # validate: この model に effort を付けたら WARN
+    deprecated_on: 2026-10-15            # retirement 2026-10-15 以降(validate: 今日+30日以内で WARN)
+    price_prefixes: [claude-haiku-4-5]
+    note: "候補外(effort 非対応・200K・tool search 400・advisor 不可・retirement)。enforcement で deny"
+
+# 既記録の生 ID(effort-log.csv の claude-sonnet-4-6 / claude-opus-4-8 / claude-fable-5 等)の
+# 単価解決用。prefix 族フォールバック(最長一致)で解決し、役割には割り当てない。
+# 単価は tools/effort-report.py の 2026-08-02 表からの引き継ぎ(実測値ではない)。
+legacy_models:
+  fable-5:
+    price_prefixes: [claude-fable-5]     # claude-fable-5-1 は models.fable-5.1 が最長一致で先に解決される
+    price_usd_per_mtok: {input: 10, output: 50, cache_read: 1.0, cache_write_5m: 12.5, cache_write_1h: 20}
+    note: "Fable 5(5.1 の前世代)。cache_read は 0.1x"
+  mythos:
+    price_prefixes: [claude-mythos]
+    price_usd_per_mtok: {input: 10, output: 50, cache_read: 1.0, cache_write_5m: 12.5, cache_write_1h: 20}
+    note: "effort-report.py 旧表の引き継ぎ"
+  opus-4:
+    price_prefixes: [claude-opus-4]
+    price_usd_per_mtok: {input: 5, output: 25, cache_read: 0.5, cache_write_5m: 6.25, cache_write_1h: 10}
+    copilot_display: "Claude Opus 4.7"
+    deprecated_on: 2026-10-02            # Copilot で 2026-10-02 に廃止(MP-4)
+    replacement: opus-5
+  sonnet-4:
+    price_prefixes: [claude-sonnet-4]
+    price_usd_per_mtok: {input: 3, output: 15, cache_read: 0.3, cache_write_5m: 3.75, cache_write_1h: 6}
+    copilot_display: "Claude Sonnet 4.6"
+    note: "Sonnet 4.x($3/$15)。Sonnet 5 は $2/$10 で別行(旧 effort-report 表はこれを 5 に誤適用していた=TM-1)"
+
+# Copilot にだけ存在する非 Claude モデル(tier_order_hypothesis の参照用。役割に割り当てない。
+# 許容値集合の検査対象外)。表示名は未照合。
+external_models:
+  gpt-6-astra: {copilot_display: null}
+  gemini-3.8-flash: {copilot_display: null}
+  mai-code-1.1-flash: {copilot_display: null}
+
+# Copilot の「子は親のコストティアを超えられない」制約(VS Code は起動拒否、CLI は無言降格 #2758)の
+# 順序仮説。確定表は公開されていない(価格順の推定)。MP-8 の実機実験で verified_* を埋める。
+tier_order_hypothesis:
+  order: [fable-5.1, gpt-6-astra, opus-5, sonnet-4, sonnet-5, haiku-4.5, gemini-3.8-flash, mai-code-1.1-flash]
+  basis: "価格順の仮説(確定表は非公開)"
+  verified_on: null
+  verified_with: null                    # 例: "copilot-cli 1.0.83 / VS Code 1.137"
+
+# 役割(policy.roles のキー = .github/agents/*.agent.md の basename 集合)。
+#   kind: subagent = .claude/agents/<role>.md に生成される(3 本)。
+#   kind: phase / maintainer = Claude Code では commands 経由で読む役割定義で、claude_code.* の
+#         生成先は無い(文書のみ。phase_overrides で /NN コマンドに effort を書く経路だけがある)。
+#   claude_code.model: alias / フル ID / inherit。effort: inherit / low / medium / high / xhigh / max。
+#   claude_code.allowed_models: null = policy.models から enforcement.deny_agent_model を除いた全て
+#   (guard-subagent-model の許可集合。A/B 後に役割ごとに絞る)。
+#   copilot_vscode.model: null = ピッカー継承(auto は書かない) / [model キー…] = 表示名配列に変換して生成。
+#   copilot_cli.model: 単一文字列(settings.json 側は配列不可)。effortLevel: low / medium / high / xhigh(max 無し)。
+#   never_low: true = effort low / medium を方針として禁止(validate が高 effort 以外を WARN)。
+#   ab_evidence: null の間は既定固定。A/B の結果ファイル(evaluation/results/<file>)を入れて初めて model/effort を変える。
+roles:
+  orchestrator:
+    kind: phase
+    purpose: "進捗ルーター(/00・/99)。書かない。公式文献の orchestrator(lead)ではない(MS-8)"
+    invokes: []
+    claude_code: {model: inherit, effort: inherit}
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: null}
+    never_low: false
+    ab_candidate: "medium / low(判断は GATE_STATUS の機械読取が主。low で progress.md を読まずに答える副作用に注意)"
+    rationale: ["監査 2026-09-09 §4.2", D040]
+    ab_evidence: null
+  requirements:
+    kind: phase
+    purpose: "上流(要件)。全後工程が依存するため effort high を下限に固定"
+    invokes: [spec-critic]
+    claude_code: {model: inherit, effort: high}   # 生成先なし(phase_overrides で /01・/02 に書ける。既定は空)
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: null}
+    never_low: true
+    ab_candidate: "変更なし(上流コストの主因は継続セッションの cache_read。対策は分割=D057 と往復削減)"
+    rationale: ["監査 2026-09-09 §4.2", D057]
+    ab_evidence: null
+  design:
+    kind: phase
+    purpose: "上流(設計)。全後工程が依存するため effort high を下限に固定"
+    invokes: [spec-critic]
+    claude_code: {model: inherit, effort: high}   # 生成先なし(phase_overrides で /03・/04 に書ける。既定は空)
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: null}
+    never_low: true
+    ab_candidate: "変更なし"
+    rationale: ["監査 2026-09-09 §4.2"]
+    ab_evidence: null
+  implement:
+    kind: phase
+    purpose: "コーディネーター(公式文献の lead)。分解・統合・escalate 判断。reviewer は完了タスク 10 個ごと+全完了時(A6-14)"
+    invokes: [task-worker, reviewer]
+    claude_code: {model: inherit, effort: inherit}
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: null}
+    never_low: false
+    ab_candidate: "medium(第2段。低 effort の executor は相談率が崩壊し escalate 条項が無効化される恐れ)"
+    rationale: ["監査 2026-09-09 §4.2"]
+    ab_evidence: null
+  test:
+    kind: phase
+    purpose: "コーディネーター(lead)。reviewer を起動する側"
+    invokes: [reviewer]
+    claude_code: {model: inherit, effort: inherit}
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: null}
+    never_low: false
+    ab_candidate: "medium(第2段)"
+    rationale: ["監査 2026-09-09 §4.2"]
+    ab_evidence: null
+  release:
+    kind: phase
+    purpose: "不可逆操作。節約する場面ではない(ask ガードが担う)。計画→独立検証(reviewer)→承認→実行の権限分離(codex C-02 / IA-20260831-02)"
+    invokes: [reviewer]
+    claude_code: {model: inherit, effort: inherit}
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: null}
+    never_low: false
+    ab_candidate: "変更なし"
+    rationale: ["監査 2026-09-09 §4.2"]
+    ab_evidence: null
+  change:
+    kind: phase
+    purpose: "運用中の変更請求(/12)のコーディネーター(lead)"
+    invokes: [task-worker, reviewer, spec-critic]
+    claude_code: {model: inherit, effort: inherit}
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: null}
+    never_low: false
+    ab_candidate: "medium(第2段)"
+    rationale: ["監査 2026-09-09 §4.2"]
+    ab_evidence: null
+  harness-maintainer:
+    kind: maintainer
+    purpose: "ハーネス本体専用の保守(個別プロジェクトでは使わない)"
+    invokes: []
+    claude_code: {model: inherit, effort: inherit}
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: null}
+    never_low: false
+    ab_candidate: "対象外"
+    rationale: ["監査 2026-09-09 §4.2"]
+    ab_evidence: null
+  reviewer:
+    kind: subagent
+    purpose: "独立コードレビュー(読み取り専用)。判定役。release の action packet の独立検証も担う"
+    invoked_by: [implement, test, change, release]
+    claude_code:
+      model: inherit
+      effort: high                       # never_low と整合(low / medium は「高確信のみ報告」= 見逃し増、Read が減る)
+      maxTurns: null                     # 上限は実測(ターン分布)後に設定する。null = 行を出さない
+      background: false                  # 完了時の modelsUsed を PostToolUse で観測するため前面実行(background は async_launched しか取れない)
+      memory: null
+      allowed_models: null
+    copilot_vscode: {model: null}        # 親と同ティア(inherit)。親≧子制約のため「判定役だけ強いモデル」は Copilot では成立しない
+    copilot_cli: {model: null, effortLevel: high, contextTier: null}
+    never_low: true
+    plan_fallbacks: null
+    ab_candidate: "変更なし(advisor 実験は別枠)"
+    rationale: [D040, D046, D071, "監査 2026-09-09 §4.2"]
+    ab_evidence: null
+  spec-critic:
+    kind: subagent
+    purpose: "要件定義書・設計書の独立レビュー(読み取り専用)。判定役"
+    invoked_by: [requirements, design, change]
+    claude_code:
+      model: inherit
+      effort: high
+      maxTurns: null
+      background: false
+      memory: null
+      allowed_models: null
+    copilot_vscode: {model: null}
+    copilot_cli: {model: null, effortLevel: high, contextTier: null}
+    never_low: true
+    plan_fallbacks: null
+    ab_candidate: "変更なし"
+    rationale: [D040, "監査 2026-09-09 §4.2"]
+    ab_evidence: null
+  task-worker:
+    kind: subagent
+    purpose: "1 タスク実装ワーカー(量産)。唯一の節約対象。実運用では総コストの 67〜76%(RD-1)"
+    invoked_by: [implement, change]
+    claude_code:
+      model: inherit
+      effort: inherit
+      maxTurns: null
+      background: null                   # ホスト既定に従う(2.1.232+ は background 既定 = PostToolUse は async_launched)
+      memory: null
+      allowed_models: null
+    copilot_vscode: {model: null}        # Copilot では方向が反転(親を強く・worker を下位ティアに)。MP-8 実測後に配列化
+    copilot_cli: {model: null, effortLevel: null, contextTier: null}
+    never_low: false
+    plan_fallbacks: null
+    ab_arms:                             # A3-1 / A6-21 と接続(順序: Arm 0 → C(solo) → A1 → A3 → A2 → B1)
+      - "A1: inherit + effort medium"
+      - "A2: task-worker-low(effort low) + 固定テスト失敗時は task-worker-high へ再委譲(受入テストを固定検体にしてから)"
+      - "B1: sonnet-5 + effort high(A 案最良アームの cost/accepted task を下回り差し戻しが増えない場合のみ)"
+    rationale: [D034, D040, "監査 2026-09-09 §4.1-4.3"]
+    ab_evidence: null
+
+session:
+  copilot_cli_pin: null                  # .github/copilot/settings.json の session model(trusted repo)。null = 出力しない。MP-8 で優先順位確認後に使う
+
+# 工程別オーバーレイ(Claude Code の .claude/commands/<cmd>.md frontmatter に effort を書く)。
+# 既定は空: 対話運用では effort を frontmatter に常設しない(GSD v1.11.0 の先例 = Opus 5 では
+# セッション内の effort 切替でキャッシュ全損。Fable 5.1 のみ 2.1.260+ で維持)。
+# 例: 02-requirements-deepdive: {effort: high}
+phase_overrides: {}
+
+enforcement:
+  claude_code:
+    # permissions.deny に展開する候補外モデル。生成: Agent(model:<alias>) と Agent(model:<フル ID>)。
+    # 注意: deny は「呼出時の model パラメータの literal 一致のみ」(公式)。省略時・frontmatter・
+    # inherit 由来には効かない。それらは guard-subagent-model(PreToolUse)と実行モデルの記録
+    # (PostToolUse / SubagentStop。measure 側 log-subagent.py)が担う。
+    deny_agent_model: [haiku-4.5]
+    deny_wildcard: false                 # true で Agent(model:<フル ID>*) も生成(公式: 値は * 対応。実機未確認)
+    pre_tool_use_role_table: true        # guard-subagent-model.{sh,ps1} の埋め込み表を生成
+    post_tool_use_record: log-subagent.py  # 第3層(記録)は measure 側。logs/usage/<sid>.subagents.jsonl
+    emit_effort_frontmatter: true        # false にすると .claude/agents に effort 行を出さない(版条件の実機確認前の退避用)
+  copilot:
+    settings_json: true                  # .github/copilot/settings.json を生成する
+
+hosts:
+  claude_code: true
+  copilot_vscode: true
+  copilot_cli: true
+  cloud_agent: false                     # custom agent の model は cloud で未保証(G-2 に反証なし)。SOP のみ、生成物から外す
+  antigravity: false                     # 凍結(D057)

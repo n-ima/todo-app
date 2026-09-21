@@ -1,0 +1,200 @@
+{
+  "task": "todo-cli",
+  "arm": "harness",
+  "timestamp": "2026-08-30T19:42:35",
+  "harness_commit": "9629387",
+  "claude_version": "2.1.201 (Claude Code)",
+  "workdir": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-harness-9wm6lczb",
+  "budgets": {
+    "max_turns_per_call": 50,
+    "session_budget_usd": 4.0,
+    "total_budget_usd": 12.0,
+    "max_budget_usd_flag_used": true
+  },
+  "calls": [
+    {
+      "index": 1,
+      "prompt": "/00-start-project",
+      "exit_code": 0,
+      "num_turns": 13,
+      "total_cost_usd": 2.1660950000000003,
+      "is_error": false,
+      "result_tail": "**分類: 新規開発（greenfield）/ 入口: `/00-start-project`（本コマンド・実行済み）/ 規模: 小 → ライトパス（fast-track）を既定で提案**\n\n## 実施した初期化（機械的作業・完了）\n\n- `docs/00-overview/progress.md` を `progress_template.md` からそのまま作成（GATE_STATUS ブロック維持、全フェーズ not_started）\n- `docs/00-overview/learnings.md` をテンプレートから作成\n- ルート `README.md` をアプリ用スタブ（todo-cli（仮））に差し替え（ハーネス文書は `.github/harness/` に残存）\n- brownfield 兆候（`app/`・intake-report・実装済みコード）なし、ルートに `DECISIONS.md`/`audits/` の複製なし → 対応不要\n\n## フェーズ状態（gate-check 判定）\n\n| フェーズ | 状態 |\n|---|---|\n| 要件定義 | 未着手 |\n| 設計 | 未着手 |\n| 実装 | 未着手 |\n| テスト | 未着手 |\n| リリース | 未着手 |\n\n## ライトパス判定（fast-track スキル基準・全項目合致）\n\n| 観点 | 判定 |\n|---|---|\n| 機能範囲 | ✅ 単一機能圏（TODO 管理の4コマンドで完結） |\n| 仕様の明確さ | ✅ memo でコマンド名・保存先・制約まで具体的 |\n| 規模 | ✅ `todo.py` + テストの2〜3ファイル想定 |\n| 利用者 | ✅ 自分ひとり |\n| デプロイ | ✅ 不要（ローカル実行のみ） |\n\nフルパイプライン（5フェーズ×個別ゲート）はこの規模ではセレモニー過剰（実測済み）のため、**承認2回（①要件+設計 ②リリース前）のライトパス**で進めることを提案します。同意いただければ、そのまま確認できるよう**仮置き案**も先に示します（これが手順1の「1往復確認」を兼ねます）。\n\n### 仮置き案\n\n**作るもの**: Python 標準ライブラリのみで動く1ファイルの CLI `todo.py`。タスクはホームディレクトリ配下の JSON ファイル（例: `~/.todo.json`）に保存し、再起動後も保持。Windows/macOS/Linux 対応。unittest でテストを付け全通過させる。\n\n**使い方**（memo のとおり固定）:\n- `python todo.py add \"タスク名\"` — 追加（1からの連番）\n- `python todo.py list` — 番号付き一覧（完了は `[x]` 印で区別）\n- `python todo.py done <番号>` — 完了化（削除しない）\n- `python todo.py delete <番号>` — 削除\n\n**スコープ外**: 共有・同期・GUI・Web・ログイン・複数ユーザー・期限/優先度などの拡張機能。デプロイ先なし（ローカル実行のみ、と environment.md に記載予定）。\n\n---\n\n**確認事項（1回の返信でまとめて回答可能です）**:\n1. ライトパスで進めてよいですか？（フルパイプライン希望ならそちらに切り替えます）\n2. 上の仮置き案（作るもの・使い方・スコープ外）に修正はありますか？（例: 保存ファイル名の指定、delete 後の番号の扱い＝欠番のままか詰め直すか、など気になる点があれば）\n\n同意をいただき次第、このセッションのまま要件・設計ドキュメント作成 → spec-critic レビュー → 承認①へ進みます。",
+      "duration_s": 115.8,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 2,
+      "prompt": "全部仮置き案どおりでOKです。そのまま進めてください。",
+      "exit_code": 1,
+      "num_turns": 20,
+      "total_cost_usd": 4.164884500000001,
+      "is_error": true,
+      "result_tail": "",
+      "duration_s": 362.4,
+      "error_class_inferred": "budget_call",
+      "truncated_by_call_budget_inferred": true
+    },
+    {
+      "index": 3,
+      "prompt": "要件を承認します。ゲートを通過して次のフェーズへ進んでください。",
+      "exit_code": 1,
+      "num_turns": 14,
+      "total_cost_usd": 4.1083365,
+      "is_error": true,
+      "result_tail": "",
+      "duration_s": 255.6,
+      "error_class_inferred": "budget_call",
+      "truncated_by_call_budget_inferred": true
+    },
+    {
+      "index": 4,
+      "prompt": "設計はすべて提案どおりでOKです。確定してください。",
+      "exit_code": 0,
+      "num_turns": 11,
+      "total_cost_usd": 3.7384650000000006,
+      "is_error": false,
+      "result_tail": "TASK-001 が完了・コミットされました（`ce62e92`）。今ターンの予算残がサブエージェント1回分に足りないため、ここまでの結果を報告します。\n\n## 現在の状況\n\n- **設計**: 承認①で確定済み（追加の変更なし。GATE_STATUS: requirements/design = done）\n- **TASK-001 `todo.py` 全体実装**: ✅ 完了。作業ツリーに存在した実装を設計と突合し、done 契約の検証を実行して確認しました — `py_compile` OK + スモーク15検査 **ALL PASS**（正常系: add→list→done→delete→詰め直し・完了印 `[x]` 表示・冪等 done / 異常系: 範囲外番号・空タイトル・破損 JSON がすべて exit 1 + stderr メッセージ + データ不変更 / 初回起動・永続化形式も確認。実行日時 2026-08-30 19:41）。証拠は `tasks.md` に3点セットで記録済み\n- **教訓2件を learnings.md に記録**: Windows の subprocess 検証には `PYTHONUTF8=1` が必要（test_todo.py にも同じ対処を適用予定）／複合 Bash が拒否される場合は Python スクリプト化\n\n## 残タスク（自動区間・承認は②リリース前のみ）\n\n1. **TASK-101**: `test_todo.py`（unittest、US-001〜005 の受け入れ条件網羅、`TODO_FILE` 分離）→ task-worker に委譲\n2. **TASK-901**: README 更新 + 最終スモーク\n3. テストフェーズ（test-plan / test-report）→ reviewer 独立レビュー → 承認②\n\n次のターンで TASK-101 の task-worker 委譲から自動継続します。",
+      "duration_s": 149.5,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    }
+  ],
+  "totals": {
+    "duration_s": 883.2,
+    "num_turns": 58,
+    "cost_usd": 14.1778,
+    "aborted_by_budget": true,
+    "aborted_by_quota": false,
+    "n_truncated_calls": 2,
+    "n_truncated_calls_basis": "inferred: is_error and cost >= 0.98x call budget and empty result (v1 has no subtype)",
+    "n_error_calls": 0,
+    "budget_used_ratio": 1.1815,
+    "max_call_cost_usd": 4.1649,
+    "max_call_cost_ratio": 1.0412
+  },
+  "stages": {
+    "sizes": [
+      10
+    ],
+    "intermediate_checks": {}
+  },
+  "check": {
+    "task": "todo-cli",
+    "target": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-harness-9wm6lczb",
+    "checks": [
+      {
+        "name": "todo_py_found",
+        "ok": true,
+        "detail": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-harness-9wm6lczb\\todo.py"
+      },
+      {
+        "name": "add_exits_zero",
+        "ok": true,
+        "detail": "rc=0,0 stderr="
+      },
+      {
+        "name": "list_shows_both",
+        "ok": true,
+        "detail": "rc=0 stdout=1. [ ] 牛乳を買う\n2. [ ] レポートを書く\n"
+      },
+      {
+        "name": "done_reflected",
+        "ok": true,
+        "detail": "before='1. [ ] 牛乳を買う' after='1. [x] 牛乳を買う'"
+      },
+      {
+        "name": "delete_reflected",
+        "ok": true,
+        "detail": "stdout=1. [x] 牛乳を買う\n"
+      },
+      {
+        "name": "tests_present",
+        "ok": false,
+        "detail": "test_*.py / *_test.py が見つかりません"
+      }
+    ],
+    "todo_py": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-todo-cli-harness-9wm6lczb\\todo.py",
+    "storage_in_home": {
+      "observed": true,
+      "files": [
+        ".todo.json"
+      ]
+    },
+    "pass": false,
+    "exit_code": 1
+  },
+  "artifact_stats": {
+    "files": 207,
+    "python_files": 14,
+    "test_files": 0,
+    "test_functions": 0
+  },
+  "verdict": "DNF_BUDGET_TOTAL",
+  "valid_for_comparison": false,
+  "invalid_reasons": [
+    "cli<2.1.217",
+    "cli<2.1.251",
+    "user_scope_unisolated",
+    "budget_enforcement=main-only",
+    "workdir_lost(temp auto-cleanup 2026-09-04/06; check.py cannot be re-run)",
+    "model_unrecorded(recovered from transcript)",
+    "verdict=DNF_BUDGET_TOTAL",
+    "n_truncated_calls=2(inferred)"
+  ],
+  "trajectory": {
+    "zip": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-9wm6lczb.zip",
+    "sha256": "cfb4887f7dfa68719002d585336e843e6e789fdea89b644e6a28f88c1858fbe0",
+    "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-9wm6lczb",
+    "files": 9,
+    "bytes": 1670506,
+    "zip_bytes": 434436,
+    "latest_mtime": "2026-08-30T20:12:08",
+    "manifest": "evaluation/results/trajectories/MANIFEST.json"
+  },
+  "recovered_models_observed": {
+    "claude-fable-5": 232,
+    "<synthetic>": 2
+  },
+  "recovered_model": "claude-fable-5",
+  "recovered_model_source": "transcript zip C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-9wm6lczb.zip (count of \"model\" values; via --scan-trajectories)",
+  "conditions": {
+    "model_requested": null,
+    "effort_requested": null,
+    "claude_version": "2.1.201",
+    "min_cli_ok": false,
+    "budget_enforcement": "main-only",
+    "subagent_model_forced": false,
+    "setting_sources": "user,project,local (CLI default; user scope unisolated)",
+    "config_dir_isolated": false,
+    "permission_mode": "acceptEdits",
+    "allowed_tools": [
+      "Bash(git:*)",
+      "Bash(py:*)",
+      "Bash(python:*)"
+    ],
+    "max_turns_per_call": 50,
+    "call_budget_usd": 4.0,
+    "total_budget_usd": 12.0,
+    "fresh_policy": "continue",
+    "auth_mode": "oauth(inferred: usage-credits quota text in same batch)",
+    "task_md_sha256": null,
+    "check_py_sha256": null
+  },
+  "experiment": {
+    "kind": "legacy",
+    "series_id": "legacy-v1-2026-08",
+    "run_index": null,
+    "condition_hash": "91d1c7ae4149",
+    "plan_path": null,
+    "plan_sha256": null
+  },
+  "schema_version": 1,
+  "backfill": {
+    "first_applied_on": "2026-09-10",
+    "rule_version": 1,
+    "tool": "tools/eval-report.py --backfill",
+    "basis": "audits/external-reaudit-2026-09-09.md §6 (EV-1/EV-2/EV-3/RG-9); verdict by cost > total_budget (abort-flag independent); truncation inferred from call cost"
+  }
+}

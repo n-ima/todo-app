@@ -1,0 +1,10 @@
+{
+  "name": "harness",
+  "kind": "builtin",
+  "replies_block": "scripted-replies",
+  "workdir_source": "git-archive-HEAD",
+  "gate_status": true,
+  "allowed_tools_extra": [],
+  "status": "ready",
+  "notes": "本ハーネス適用アーム。workdir は `git archive HEAD` の展開(export-ignore が効き .git/ローカル設定が混入しない)。GATE_STATUS(docs/00-overview/progress.md)を読めるため `# expect:` 注釈の督促(kind=nudge)が有効。"
+}

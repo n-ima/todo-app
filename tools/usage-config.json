@@ -1,0 +1,55 @@
+{
+  "schema": "usage-config/1",
+  "as_of": "2026-09-09",
+  "notes": [
+    "受領書(session-receipt.py)・振り返り(effort-report.py)・USAGE.md セッション分割表が共有する閾値の唯一の正。文言側は tools/gen-docs.py が生成する(USAGE.md の usage-config-thresholds ブロック)。",
+    "$ の絶対値では警告しない(単価表の版差で常時鳴るため)。警告は『同工程の基準線 p90 超』と『文脈使用率』の 2 系統のみ。フックは決して止めない(fail-open・block なし)。",
+    "provisional_baselines は 2026-09-09 再監査 RD-5 の実運用 11 セッション(Fable 5 定価)から写した暫定値。effort-report.py が docs/06-retrospective/baselines.json を生成したらそちらが優先される(n<5 は暫定表示)。",
+    "model_switch_policy は PreModelSwitch フック(log-model-switch.py)の既定モード: log=記録のみ(既定。block しない) / ask=GATE_STATUS に in_progress があり、切替先モデルが model-policy の allowed 外なら permissionDecision ask(D074 open。A/B や下流プロジェクトで想定外の切替を止めたい場合だけ ask にする。--mode で上書き可)。"
+  ],
+  "model_switch_policy": "log",
+  "context_warn_pct": 40,
+  "context_warn_source": "HumanLayer の大規模セッション分析",
+  "context_warn_note": "コンテキスト窓の約40%超から想起劣化という実測。USAGE.md セッション分割表と同一値(文言は gen-docs が生成)",
+  "cost_delta_usd": 2.0,
+  "token_delta": 500000,
+  "turns_every": 10,
+  "cache_read_ratio_warn": 0.95,
+  "price_divergence_warn": 0.10,
+  "baseline_min_n": 5,
+  "baseline_switch_n": 20,
+  "rotate_days": 90,
+  "receipt_max_lines": 3,
+  "host_min_version": "2.1.217",
+  "hook_slo": {
+    "p95_duration_ms": 1000,
+    "ask_deny_rate_max": 0.5,
+    "false_ask_rate_max": 0.2,
+    "min_records": 20,
+    "note": "フック計測の SLO(R-09 / A2-7。読み手は tools/hook-metrics.py。受領書の hooks 欄と effort-report --kpi はその 1 行要約を載せる)。p95_duration_ms は判定ログ hook-decisions.jsonl の duration_ms(スクリプト内の経過。プロセス起動分は含まない)の P95 上限で、フックの timeout 5 s の 1/5 を初期値にした。ask_deny_rate_max は allow を記録するスクリプト(guard-harness-config-edit / guard-phase-scope / guard-template-edit 等)に限った (ask+deny)/全判定 の上限、false_ask_rate_max は「同一 target への ask/deny → 直後 allow」の近似件数 ÷ (ask+deny) の上限、min_records は指標ごとの最小件数(未満は判定しない)。いずれも初期値で、実機分布(2026-09-17 時点は未計測。selftest の値だけ)で校正する。超過は WARN のみ(hook-metrics.py --strict で exit 1)"
+  },
+  "split_tasks_done": 10,
+  "split_rework_cycles": 2,
+  "implement_test_loop_max": 3,
+  "session_lock_stale_minutes": 120,
+  "state_machine_note": "状態機械(.github/harness/STATE-MACHINE.md)の 2 閾値。implement_test_loop_max = implement↔test の往復上限(GATE_COUNTERS の implement_test_loops がこれを超えたら warn-gate-tamper / validate (r) / gate_status.py check が WARN。自動の差し戻しを止め /13-converge か人の判断へ。HARNESS_LOOP_MAX で上書き可)。session_lock_stale_minutes = logs/session.lock を無視するまでの分(inject-progress が SessionStart で置き、別セッションの新しい lock があれば警告。HARNESS_SESSION_LOCK_STALE_MIN で上書き可)。読み手は sh/ps1 が正規表現で、python が json で読む",
+  "resident_tokens_warn": 20000,
+  "resident_tokens_target": 12000,
+  "resident_tokens_note": "常駐指示(AGENTS.md + CLAUDE.md + route-request の毎依頼注入文 + inject-progress の注入上限)のトークン推定。validate-harness.py (h-2) が推定範囲の上限が resident_tokens_warn を超えたら WARN(注意水準=2026-09-10 の実測 19.5k を超えて太らせない歯止め)、それ以外は INFO で resident_tokens_target(A5-5 の再圧縮後の目標)との差を出す。推定係数: 日本語(CJK)1 文字 = 1.0〜1.3 トークン、ASCII 4 文字 = 1 トークン(いずれも公称の経験則。Claude のトークナイザは非公開。logs/instructions-loaded.jsonl があれば実測バイト数で AGENTS/CLAUDE 分を校正)",
+  "resident_token_per_cjk_char": [1.0, 1.3],
+  "resident_ascii_chars_per_token": 4,
+  "inject_progress_max_chars": 8700,
+  "inject_progress_max_chars_note": "inject-progress.sh / .ps1 が SessionStart / PreCompact の注入文をこの文字数で打ち切る上限(第3波 A7-M-8。超えたら末尾 1 行で打ち切りと全文の場所を明示。環境変数 HARNESS_INJECT_MAX_CHARS が優先、0 で無効)。見積りの内訳: notepad 先頭 2048 バイト + 教訓 新しい 50 件 × 約 120 文字 + GATE_STATUS ブロック約 600 文字。validate-harness.py (h-2) の常駐トークン推定も同じ値を使う",
+  "learnings_draft_rotate_days": 30,
+  "learnings_draft_excerpt_chars": 60,
+  "learnings_draft_note": "draft-learnings.py(Stop)の教訓候補の下書き .github/hooks/logs/learnings-draft.local.md(ローカル・gitignore 済み=local 欄)の保持日数と、訂正発話から残す抜粋の先頭字数(privacy-patterns.json の redaction 後に切り詰め。0 で抜粋なし)。docs/ には書かず、learnings.md への転記は人か /10-retrospective の明示操作だけ(codex 監査 2026-08-31 H-01 / IA-20260831-03)",
+  "provisional_baselines": {
+    "source": "audits/external-reaudit-2026-09-09.md §5.5 RD-5(n=11、Fable 5 定価)",
+    "all": {"n": 11, "cost_p50": 9.65, "cost_p90": 60.71, "cost_max": 121.13},
+    "phases": {
+      "01-requirements-intake": {"n": 2, "cost_p50": 9.6, "cost_p90": 9.7, "cost_max": 9.7},
+      "03-design-architecture": {"n": 2, "cost_p50": 22.6, "cost_p90": 26.1, "cost_max": 26.1},
+      "06-implement-task": {"n": 3, "cost_p50": 60.7, "cost_p90": 121.1, "cost_max": 121.1}
+    }
+  }
+}

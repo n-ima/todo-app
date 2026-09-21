@@ -1,0 +1,39 @@
+# ローカルセッション/エディタ固有の設定（テンプレートとして配布するリポジトリには含めない）
+# ※ .claude/settings.json（共有hooks設定）と .claude/agents,commands,skills（アダプタ）は追跡対象
+.claude/settings.local.json
+.claude/skills/.system/
+.vscode/*.local.json
+
+# OS/エディタの生成物
+.DS_Store
+Thumbs.db
+
+# 依存関係・ビルド成果物（各プロジェクトの技術スタックに応じて追記する）
+node_modules/
+dist/
+build/
+
+# フック判定ログ(振り返り用のローカル記録。コミットしない)。
+# logs/usage/ には会話ごとの受領書(session_id を含む個人の一次データ)が入る(2026-09-09 再監査 RC-4)
+.github/hooks/logs/
+
+# 旧 effort-log.csv(D040)は logs/usage の受領書へ移行済み(python tools/effort-report.py --migrate)。
+# 3 実プロジェクトで未追跡・未 ignore のまま残っていた個人コストの偶発 commit を防ぐため移行期間中は ignore
+docs/00-overview/effort-log.csv
+
+# 保守モード中の設定退避(tools/harness-maintenance.py。ローカル一時ファイル)
+.claude/settings.json.locked
+
+# 外部調査文書などの参考インプット(ハーネスの資産ではないためコミットしない)
+参考資料（ハーネス調査）/
+__pycache__/
+
+# 評価走行のトラジェクトリ退避(zip は 20MB 級。MANIFEST.json だけ追跡)
+evaluation/results/trajectories/*.zip
+
+# 評価走行の作業領域(装置 v2: workdir・git bundle・stream-json・隔離 CLAUDE_CONFIG_DIR。
+# Temp 外に置いて自動クリーンアップで消えないようにするが、コミットはしない。
+# 結果 JSON と trajectories/<結果名>/ の小さな退避物だけを追跡する)
+evaluation/runs/
+# Copilot CLI のローカル上書き(公式: settings.local.json は .gitignore へ。生成物は settings.json)
+.github/copilot/settings.local.json

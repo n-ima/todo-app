@@ -1,0 +1,32 @@
+{
+  "schema": "prices/1",
+  "as_of": "2026-09-09",
+  "unit": "USD per 1M tokens",
+  "sources": [
+    "https://platform.claude.com/docs/en/about-claude/pricing",
+    "https://code.claude.com/docs/en/costs"
+  ],
+  "notes": [
+    "list 価格による推定に使う単価表。請求額ではない(サブスクリプションの課金とは無関係。managed の modelPricing は反映しない)。",
+    "解決は最長前方一致: claude-fable-5-1 を claude-fable-5 より先に解決する(日付サフィックス・[1m] サフィックス付き ID にも一致)。",
+    "cache_read / cache_w5m / cache_w1h は絶対単価(USD/1M)。fable-5-1 の cache_read は input の 0.025x、他は概ね 0.1x / 書込 5分TTL 1.25x / 1時間TTL 2x。",
+    "family 行(claude-opus 等)は生 ID が未登録のときのフォールバック。レポート・受領書では fallback と明示し、無音で欠落させない。",
+    "改定したら as_of を更新する(tools/validate-harness.py が 90 日超で WARN する運用は未実装・A6-6 の残課題)。"
+  ],
+  "models": [
+    {"id": "claude-fable-5-1", "input": 10.0, "output": 50.0, "cache_read": 0.25, "cache_w5m": 12.5, "cache_w1h": 20.0},
+    {"id": "claude-fable-5", "input": 10.0, "output": 50.0, "cache_read": 1.0, "cache_w5m": 12.5, "cache_w1h": 20.0},
+    {"id": "claude-mythos", "input": 10.0, "output": 50.0, "cache_read": 1.0, "cache_w5m": 12.5, "cache_w1h": 20.0, "legacy": true},
+    {"id": "claude-opus-5", "input": 5.0, "output": 25.0, "cache_read": 0.5, "cache_w5m": 6.25, "cache_w1h": 10.0},
+    {"id": "claude-opus-4-8", "input": 5.0, "output": 25.0, "cache_read": 0.5, "cache_w5m": 6.25, "cache_w1h": 10.0, "legacy": true},
+    {"id": "claude-opus-4-7", "input": 5.0, "output": 25.0, "cache_read": 0.5, "cache_w5m": 6.25, "cache_w1h": 10.0, "legacy": true},
+    {"id": "claude-sonnet-5", "input": 2.0, "output": 10.0, "cache_read": 0.2, "cache_w5m": 2.5, "cache_w1h": 4.0},
+    {"id": "claude-sonnet-4-6", "input": 3.0, "output": 15.0, "cache_read": 0.3, "cache_w5m": 3.75, "cache_w1h": 6.0, "legacy": true},
+    {"id": "claude-sonnet-4-5", "input": 3.0, "output": 15.0, "cache_read": 0.3, "cache_w5m": 3.75, "cache_w1h": 6.0, "legacy": true},
+    {"id": "claude-haiku-4-5", "input": 1.0, "output": 5.0, "cache_read": 0.1, "cache_w5m": 1.25, "cache_w1h": 2.0},
+    {"id": "claude-fable", "input": 10.0, "output": 50.0, "cache_read": 0.25, "cache_w5m": 12.5, "cache_w1h": 20.0, "family": true},
+    {"id": "claude-opus", "input": 5.0, "output": 25.0, "cache_read": 0.5, "cache_w5m": 6.25, "cache_w1h": 10.0, "family": true},
+    {"id": "claude-sonnet", "input": 2.0, "output": 10.0, "cache_read": 0.2, "cache_w5m": 2.5, "cache_w1h": 4.0, "family": true},
+    {"id": "claude-haiku", "input": 1.0, "output": 5.0, "cache_read": 0.1, "cache_w5m": 1.25, "cache_w1h": 2.0, "family": true}
+  ]
+}

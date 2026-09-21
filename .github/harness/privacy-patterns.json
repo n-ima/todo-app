@@ -1,0 +1,42 @@
+{
+  "schema": "privacy-patterns/1",
+  "as_of": "2026-09-10",
+  "notes": [
+    "判定ログ(logs/hook-decisions.jsonl)の target 欄に残してよい文字列の規則。redaction と欄分類の唯一の正(2026-09-09 再監査 §5.4 RC-5/RC-11、A6-20)。",
+    "sh(_log.sh)・ps1(_log.ps1)・python(_log.py)の 3 系統がこのファイルを読む。sh は jq 不在でも読めるよう 1 エントリ 1 行で書く(行単位の正規表現で pattern / replace / ignore_case を拾う)。エントリを複数行に折り返さないこと。",
+    "パターンは POSIX ERE / .NET / Python re の共通部分だけで書く: \\s \\d \\w や [[:space:]] は使わない(bash と .NET/Python で解釈が割れる)。区切りは明示の文字クラス、リテラルの . は [.] で書く。バックスラッシュはパターンに含めない(ダブルクォートだけは JSON エスケープ \\\" で書き、sh の行読みが復号する)。",
+    "replace は後方参照を含まない固定文字列。ignore_case は sh(nocasematch)/ps1(IgnoreCase)/python(re.I) で同じ意味。",
+    "3 系統のバイト同一は要求しない(方言差で常時 FAIL になる)。selftest 両系の canary secret 回帰(偽トークンが JSONL に平文で残らない)で意味照合する。"
+  ],
+  "target_max_chars": 120,
+  "redact": [
+    {"name": "url-basic-auth", "pattern": "://[^/@ ]+:[^/@ ]+@", "replace": "://[REDACTED]@", "ignore_case": false},
+    {"name": "aws-access-key", "pattern": "(AKIA|ASIA)[0-9A-Z]{16}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "anthropic-key", "pattern": "sk-ant-[A-Za-z0-9_-]{20,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "github-pat", "pattern": "github_pat_[A-Za-z0-9_]{20,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "github-token", "pattern": "gh[pousr]_[A-Za-z0-9]{20,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "slack-token", "pattern": "xox[baprs]-[A-Za-z0-9-]{10,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "slack-app-token", "pattern": "xapp-[0-9]-[A-Za-z0-9-]{10,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "google-api-key", "pattern": "AIza[0-9A-Za-z_-]{35}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "google-oauth", "pattern": "ya29[.][A-Za-z0-9_-]{30,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "stripe-live", "pattern": "(sk|rk)_live_[A-Za-z0-9]{20,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "npm-token", "pattern": "npm_[A-Za-z0-9]{36}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "jwt", "pattern": "eyJ[A-Za-z0-9_-]{10,}[.]eyJ[A-Za-z0-9_-]{10,}[.][A-Za-z0-9_-]{10,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "azure-account-key", "pattern": "AccountKey=[A-Za-z0-9+/=]{40,}", "replace": "AccountKey=[REDACTED]", "ignore_case": false},
+    {"name": "azure-sas-sig", "pattern": "sig=[A-Za-z0-9%+/=]{30,}", "replace": "sig=[REDACTED]", "ignore_case": false},
+    {"name": "openai-project-key", "pattern": "sk-proj-[A-Za-z0-9_-]{40,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "openai-key", "pattern": "sk-[A-Za-z0-9]{48}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "gitlab-pat", "pattern": "glpat-[A-Za-z0-9_-]{20}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "huggingface-token", "pattern": "hf_[A-Za-z0-9]{34}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "pypi-token", "pattern": "pypi-AgEIcHlwaS5vcmc[A-Za-z0-9_-]{50,}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "sendgrid-key", "pattern": "SG[.][A-Za-z0-9_-]{22}[.][A-Za-z0-9_-]{43}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "digitalocean-token", "pattern": "dop_v1_[a-f0-9]{64}", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "private-key-block", "pattern": "-----BEGIN[ A-Z]* PRIVATE KEY( BLOCK)?-----", "replace": "[REDACTED]", "ignore_case": false},
+    {"name": "generic-assignment", "pattern": "(api[_-]?key|secret|token|password|passwd|client_secret|access_key)[\"']?[ ]*[:=][ ]*[\"']?[A-Za-z0-9/+=_-]{8,}", "replace": "[REDACTED-ASSIGNMENT]", "ignore_case": true}
+  ],
+  "fields": {
+    "committed": ["工程×役割×モデルのトークン合計", "推定 $(basis・単価表日付)", "行数", "tests", "gate 遷移数", "tasks_done", "spawn 回数比", "rework", "フック判定の件数(deny/ask/warn/block)", "週単位日付"],
+    "local": ["session_id", "prompt_id", "transcript_path", "ホスト版", "受領書", "statusline 永続 JSON", "フック判定 JSONL(hook-decisions.jsonl: 判定・スクリプト名・target 先頭 120 字)", "learnings 候補"],
+    "never": ["プロンプト本文", "tool 出力本文", "ファイル内容", "commit 本文", "秘密値", "git author/email", "OTel RAW bodies", "Copilot captureContent"]
+  }
+}

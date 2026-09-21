@@ -1,0 +1,446 @@
+{
+  "task": "expense-webapp",
+  "arm": "harness",
+  "timestamp": "2026-08-22T23:13:12",
+  "harness_commit": "f365c5e",
+  "claude_version": "2.1.201 (Claude Code)",
+  "workdir": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8",
+  "budgets": {
+    "max_turns_per_call": 60,
+    "session_budget_usd": 10.0,
+    "total_budget_usd": 60.0,
+    "max_budget_usd_flag_used": true
+  },
+  "calls": [
+    {
+      "index": 1,
+      "prompt": "/00-start-project",
+      "exit_code": 0,
+      "num_turns": 17,
+      "total_cost_usd": 1.8583049999999999,
+      "is_error": false,
+      "result_tail": "初期化が完了しました。以下、`/00-start-project` の結果報告です。\n\n## 実行したこと（機械的な初期化）\n\n- `docs/00-overview/progress.md` を作成（GATE_STATUS: 全フェーズ not_started）\n- `docs/00-overview/learnings.md` を作成\n- ルート `README.md` をハーネス説明からアプリ用スタブに差し替え\n- ルートに `DECISIONS.md` / `audits/` の複製は無かったため、削除対象なし（brownfield の兆候も無し）\n\nなお、セッション開始時のフックが「ここはハーネス本体」と表示していましたが、実ファイルを確認した結果、`requirements/memo.md` に要件メモがありハーネス本体の開発記録（DECISIONS.md 等)は存在しない**テンプレート複製後の新規プロジェクト**です。そちらを正として進めています。\n\n## フェーズ状態\n\n| フェーズ | 状態 | 判定根拠 |\n|---|---|---|\n| 要件定義 | 未着手 | `docs/01-requirements/requirements.md` なし |\n| 設計 | 未着手 | `docs/02-design/architecture.md` なし |\n| 実装 | 未着手 | `docs/03-implementation/tasks.md` なし |\n| テスト | 未着手 | `docs/04-test/test-report.md` なし |\n| リリース | 未着手 | `docs/05-release/release-checklist.md` なし |\n\n## 次の一手の提案 — 分類: 新規開発 / 入口: ライトパス（fast-track） / 規模: 小\n\n全フェーズ未着手の新規開発なので、`requirements/memo.md`（経費精算 Web アプリ）を fast-track スキルの小規模基準に照らしました。\n\n| 観点 | 判定 |\n|---|---|\n| 機能範囲 | ○ 経費精算という単一機能圏（申請・承認・集計はその周辺） |\n| 仕様の明確さ | ○ memo で作るものは具体的（締め日の記述に矛盾が1点あり、最初の往復で確認） |\n| 規模 | △ Python 標準ライブラリのみ・ファイル保存なら10ファイル前後に収まる見込み（ボーダー） |\n| 利用者 | ○ 社内7人 |\n| デプロイ | ○ ローカル実行のみ（`python` で起動） |\n\n基準に概ね合致するため、**ライトパスでの開始を推奨します**。フルパイプライン（5フェーズ×個別ゲート）の代わりに、最小ヒアリング1往復＋設計スケッチ＋承認2回（①要件+設計、②リリース前）で実装〜テストまで進みます。品質バー（done 契約・証拠つき完了判定・独立レビュー・テスト）は削りません。\n\n確認したい点が1つあります: memo に「**月末締め**で翌月精算」と「**毎月25日締め**」の両方の記述があり、集計ロジックに直結するため、ライトパス開始後の最初の確認で解消させてください。\n\n---\n\n**次にやること（このまま返信でOK）**: 「ライトパスで進めて」または「フルパイプラインで進めて」とお答えください。ライトパス同意後は、このセッションのまま要件の仮置き案（作るもの・使い方・スコープ外）の提示に進みます。フルパイプライン希望の場合は新しいチャットで `/01-requirements-intake` を実行してください。",
+      "duration_s": 143.9,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 2,
+      "prompt": "ヒアリングに回答します。\n- 締め日: メモに「月末締め」と「25日締め」が混在していますが、正しくは毎月25日締めです。25日に統一し、その解消の経緯を要件文書に記録してください\n- 通知（メール等）: 今回のスコープ外とします\n- 権限: ログインは不要です。申請時に申請者名を入力し、承認操作は承認者として誰でも実行できる簡易運用で構いません\nその他は仮置き案どおりで OK です。そのまま進めてください。",
+      "exit_code": 0,
+      "num_turns": 28,
+      "total_cost_usd": 5.7253995,
+      "is_error": false,
+      "result_tail": "要件+設計の成果物が揃い、spec-critic レビューの反映まで完了しました。**承認①（要件+設計のゲート承認）をお願いします。**\n\n## 作成した成果物\n\n| ファイル | 内容 |\n|---|---|\n| `docs/01-requirements/requirements.md` | ユーザーストーリー5本（登録・修正/削除・承認/却下・再申請・月次集計）+ 受け入れ条件（境界・異常系含む）。締め日25日確定の経緯を A-003 に記録済み |\n| `docs/01-requirements/nfr.md` / `glossary.md` | 簡易記入（性能・セキュリティ・対応環境など。該当なしは明示） |\n| `docs/01-requirements/environment.md` | デプロイ先なし・ホストPC1台でローカル実行・テストは `python -m unittest`・利用者運用は手作業（コピー） |\n| `docs/02-design/architecture.md` | 設計スケッチ: Python 標準ライブラリの `http.server` + JSON ファイル1本（ロック+アトミック書き込み）+ サーバーレンダリング HTML。想定8ファイル。ADR 0件（スタックは要件制約で一意） |\n\n## spec-critic 独立レビューの結果\n\nBLOCKER 1件・MAJOR 6件・MINOR 6件が検出され、**全件を文書に反映済み**です。memo の要求カバレッジは「漏れなし」判定でした。主な反映内容: ロック区間を読み書きトランザクション全体に拡大（削除と承認の競合によるデータ破損防止）、データファイル破損時は起動拒否（黙って初期化しない）、再申請時の却下情報クリア、集計月パラメータの検証と省略時挙動、年跨ぎ境界、CSRF 緩和（Origin/Host 検査）、金額上限・申請者名の正規化。\n\n## 承認①の前に確認したい仮置き3点\n\n1. **利用形態（BLOCKER 対応）**: 「社内のホストPC1台でアプリを起動し、7人は LAN 越しに `http://<ホストPC名>:8000` でアクセス」としました。localhost 限定では「承認状態を全員から見える」という目的が成立しないためです。この利用形態でよいですか？（もし「各自のPCで個別に動かす」想定でしたら設計の前提が変わります）\n2. **集計の判定基準**: memo の「25日までに出た申請」を**経費発生日**（フォームの「日付」欄）で判定すると解釈しました。締め後に過去日付の申請を出すと過去月の集計が変わり得ます（運用で許容する前提）。提出日基準がよければ変更します。\n3. **UI モックアップの省略**: 画面は3つ（一覧・申請フォーム・月次集計）のシンプルな構成のため、ライトパスとしてモックアップ作成を省略する提案です。省略にはユーザーの明示承認が必要です（見てから決めたい場合は作成します）。\n\n---\n\n**次にやること**: 上記3点への回答を添えて「承認①OK（この内容で実装に進んでよい）」とお答えください。承認後は同一セッションのまま、requirements/design を done に更新してタスク分解 → task-worker による実装 → テストへノンストップで進みます。",
+      "duration_s": 697.1,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 3,
+      "prompt": "要件を承認します。ゲートを通過して次のフェーズへ進んでください。",
+      "exit_code": 0,
+      "num_turns": 17,
+      "total_cost_usd": 8.397817000000002,
+      "is_error": false,
+      "result_tail": "## 承認①のゲート通過と実装フェーズの進捗報告\n\n**承認①を記録し、requirements / design を done に更新しました**（仮置き3点＝LAN 利用形態・経費発生日判定・UI モック省略も承認として記録）。そのまま実装フェーズに入り、タスク分解と実装を進めました。\n\n### ここまでの実装状況（tasks.md が正）\n\n| タスク | 状態 | 証拠 |\n|---|---|---|\n| TASK-001 storage 基盤（JSON 永続化・排他制御・アトミック書き込み） | ✅ 完了 | `python -m unittest tests.test_storage -v` → 5件 OK（22:38） |\n| TASK-101 ドメインロジック（検証・状態遷移・締め期間・集計） | ✅ 完了 | `python -m unittest tests.test_logic -v` → 27件 OK、全体回帰 32件 OK（22:44）。締め境界 25/26 日・年跨ぎ・approved 不変・却下情報クリアを含む |\n| TASK-102 画面と HTTP サーバー（3画面・境界検証・CSRF 緩和） | ⬜ 未着手（次はこれ） | - |\n| TASK-103 HTTP 結合テスト・データ互換テスト | ⬜ 未着手 | - |\n| TASK-901 README 利用手順 | ⬜ 未着手 | - |\n\n各タスクは task-worker の証拠をコーディネーターが再実行で検証してからコミットしています（コミット4件: docs 確定 → TASK-001 → TASK-101 → learnings）。ローカルコミットのみで push は行っていません。\n\n### 区切りの理由\n\nこのターンのコスト予算が残り1タスク分に満たなくなったため、タスク境界（TASK-101 コミット済み・全テスト green）で安全に中断しました。`tasks.md`・`progress.md`・git 履歴が正の状態なので、新しいセッションが続きからそのまま再開できます（残り: TASK-102 → 103 → 901 → テスト報告 → reviewer 独立レビュー → 承認②）。\n\n---\nこのセッションの作業はここで完了です。\n次にやること: 新しいチャットを開き、最初に『/06-implement-task』と入力してください",
+      "duration_s": 696.3,
+      "error_class_inferred": "none",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 4,
+      "prompt": "設計はすべて提案どおりでOKです。確定してください。",
+      "exit_code": 1,
+      "num_turns": 5,
+      "total_cost_usd": 10.135178999999999,
+      "is_error": true,
+      "result_tail": "",
+      "duration_s": 918.8,
+      "error_class_inferred": "budget_call",
+      "truncated_by_call_budget_inferred": true
+    },
+    {
+      "index": 5,
+      "prompt": "設計を承認します。次のフェーズへ進んでください。",
+      "exit_code": 1,
+      "num_turns": 17,
+      "total_cost_usd": 7.5434294999999985,
+      "is_error": true,
+      "result_tail": "You're out of usage credits. Run /usage-credits to keep using Fable 5 or /model to switch models.",
+      "duration_s": 645.5,
+      "error_class_inferred": "quota",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 6,
+      "prompt": "/05-implementation-plan",
+      "exit_code": 1,
+      "num_turns": 1,
+      "total_cost_usd": 0,
+      "is_error": true,
+      "result_tail": "You're out of usage credits. Run /usage-credits to keep using Fable 5 or /model to switch models.",
+      "duration_s": 5.0,
+      "error_class_inferred": "quota",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 7,
+      "prompt": "実装計画を承認します。/06 で実装を開始してください。",
+      "exit_code": 1,
+      "num_turns": 1,
+      "total_cost_usd": 0,
+      "is_error": true,
+      "result_tail": "You're out of usage credits. Run /usage-credits to keep using Fable 5 or /model to switch models.",
+      "duration_s": 5.3,
+      "error_class_inferred": "quota",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 8,
+      "prompt": "/06-implement-task",
+      "exit_code": 1,
+      "num_turns": 1,
+      "total_cost_usd": 0,
+      "is_error": true,
+      "result_tail": "You're out of usage credits. Run /usage-credits to keep using Fable 5 or /model to switch models.",
+      "duration_s": 5.3,
+      "error_class_inferred": "quota",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 9,
+      "prompt": "続きをお願いします。テスト・リリースまで進めてください。タグ付けなど人手が必要な操作はコマンド提示だけで構いません。完了したら状況を報告してください。",
+      "exit_code": 1,
+      "num_turns": 1,
+      "total_cost_usd": 0,
+      "is_error": true,
+      "result_tail": "You're out of usage credits. Run /usage-credits to keep using Fable 5 or /model to switch models.",
+      "duration_s": 5.2,
+      "error_class_inferred": "quota",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 10,
+      "prompt": "/12-change-request 運用開始後の変更依頼です。承認済み申請の金額を直したいとき、今は差戻ししかありませんが、差戻しではなく「修正履歴つきの直接編集」にしてください。誰がいつ・いくらからいくらへ変えたかが残るようにしたいです。",
+      "exit_code": 1,
+      "num_turns": 1,
+      "total_cost_usd": 0,
+      "is_error": true,
+      "result_tail": "You're out of usage credits. Run /usage-credits to keep using Fable 5 or /model to switch models.",
+      "duration_s": 5.4,
+      "error_class_inferred": "quota",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 11,
+      "prompt": "変更を承認します。既存の承認フローと月次集計が壊れていないことをテストで確認し、テストも更新してください。",
+      "exit_code": 1,
+      "num_turns": 1,
+      "total_cost_usd": 0,
+      "is_error": true,
+      "result_tail": "You're out of usage credits. Run /usage-credits to keep using Fable 5 or /model to switch models.",
+      "duration_s": 5.1,
+      "error_class_inferred": "quota",
+      "truncated_by_call_budget_inferred": false
+    },
+    {
+      "index": 12,
+      "prompt": "続きをお願いします。完了したら変更内容と回帰確認の結果を報告してください。",
+      "exit_code": 1,
+      "num_turns": 1,
+      "total_cost_usd": 0,
+      "is_error": true,
+      "result_tail": "You're out of usage credits. Run /usage-credits to keep using Fable 5 or /model to switch models.",
+      "duration_s": 5.2,
+      "error_class_inferred": "quota",
+      "truncated_by_call_budget_inferred": false
+    }
+  ],
+  "totals": {
+    "duration_s": 3150.4,
+    "num_turns": 91,
+    "cost_usd": 33.6601,
+    "aborted_by_budget": false,
+    "n_truncated_calls": 1,
+    "n_truncated_calls_basis": "inferred: is_error and cost >= 0.98x call budget and empty result (v1 has no subtype)",
+    "n_error_calls": 0,
+    "budget_used_ratio": 0.561,
+    "max_call_cost_usd": 10.1352,
+    "max_call_cost_ratio": 1.0135
+  },
+  "stages": {
+    "sizes": [
+      9,
+      3
+    ],
+    "intermediate_checks": {
+      "stage1": {
+        "task": "expense-webapp",
+        "stage": 1,
+        "target": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8",
+        "checks": [
+          {
+            "name": "artifact_present",
+            "ok": true,
+            "detail": "生成物スコープ(git-diff)の .py: 9 件"
+          },
+          {
+            "name": "crud_capability",
+            "ok": true,
+            "detail": "申請の作成+一覧の痕跡"
+          },
+          {
+            "name": "approval_capability",
+            "ok": true,
+            "detail": "承認遷移の痕跡"
+          },
+          {
+            "name": "aggregation_capability",
+            "ok": true,
+            "detail": "月次集計の痕跡"
+          },
+          {
+            "name": "contradiction_resolved",
+            "ok": true,
+            "detail": "docs/00-overview/progress.md"
+          },
+          {
+            "name": "tests_present",
+            "ok": true,
+            "detail": "3 件"
+          },
+          {
+            "name": "tests_pass",
+            "ok": true,
+            "detail": ".................................................\n----------------------------------------------------------------------\nRan 49 tests in 9.017s\n\nOK\n"
+          }
+        ],
+        "scope": {
+          "mode": "git-diff",
+          "count": 23,
+          "files": [
+            "README.md",
+            "app/__init__.py",
+            "app/logic.py",
+            "app/server.py",
+            "app/storage.py",
+            "app/views.py",
+            "docs/00-overview/effort-log.csv",
+            "docs/00-overview/learnings.md",
+            "docs/00-overview/progress.md",
+            "docs/01-requirements/environment.md",
+            "docs/01-requirements/glossary.md",
+            "docs/01-requirements/nfr.md",
+            "docs/01-requirements/requirements.md",
+            "docs/02-design/architecture.md",
+            "docs/03-implementation/tasks.md",
+            "docs/04-test/test-plan.md",
+            "docs/04-test/test-report.md",
+            "docs/05-release/CHANGELOG.md",
+            "docs/05-release/release-checklist.md",
+            "tests/__init__.py",
+            "tests/test_logic.py",
+            "tests/test_server.py",
+            "tests/test_storage.py"
+          ]
+        },
+        "tests": {
+          "files": [
+            "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8\\tests\\test_logic.py",
+            "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8\\tests\\test_server.py",
+            "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8\\tests\\test_storage.py"
+          ],
+          "runner": "unittest",
+          "ok": true,
+          "output_tail": ".................................................\n----------------------------------------------------------------------\nRan 49 tests in 9.017s\n\nOK\n"
+        },
+        "server_probe": {
+          "attempted": true,
+          "entry": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8\\app\\server.py",
+          "port": 8000,
+          "started": true,
+          "responded": true,
+          "detail": "HTTP 200"
+        },
+        "pass": true,
+        "exit_code": 0
+      }
+    }
+  },
+  "check": {
+    "task": "expense-webapp",
+    "stage": 2,
+    "target": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8",
+    "checks": [
+      {
+        "name": "artifact_present",
+        "ok": true,
+        "detail": "生成物スコープ(git-diff)の .py: 9 件"
+      },
+      {
+        "name": "crud_capability",
+        "ok": true,
+        "detail": "申請の作成+一覧の痕跡"
+      },
+      {
+        "name": "approval_capability",
+        "ok": true,
+        "detail": "承認遷移の痕跡"
+      },
+      {
+        "name": "aggregation_capability",
+        "ok": true,
+        "detail": "月次集計の痕跡"
+      },
+      {
+        "name": "contradiction_resolved",
+        "ok": true,
+        "detail": "docs/00-overview/progress.md"
+      },
+      {
+        "name": "tests_present",
+        "ok": true,
+        "detail": "3 件"
+      },
+      {
+        "name": "tests_pass",
+        "ok": true,
+        "detail": ".................................................\n----------------------------------------------------------------------\nRan 49 tests in 9.004s\n\nOK\n"
+      },
+      {
+        "name": "edit_history_feature",
+        "ok": false,
+        "detail": "修正履歴つき編集の痕跡"
+      },
+      {
+        "name": "tests_updated",
+        "ok": false,
+        "detail": "履歴・編集に言及するテスト"
+      }
+    ],
+    "scope": {
+      "mode": "git-diff",
+      "count": 23,
+      "files": [
+        "README.md",
+        "app/__init__.py",
+        "app/logic.py",
+        "app/server.py",
+        "app/storage.py",
+        "app/views.py",
+        "docs/00-overview/effort-log.csv",
+        "docs/00-overview/learnings.md",
+        "docs/00-overview/progress.md",
+        "docs/01-requirements/environment.md",
+        "docs/01-requirements/glossary.md",
+        "docs/01-requirements/nfr.md",
+        "docs/01-requirements/requirements.md",
+        "docs/02-design/architecture.md",
+        "docs/03-implementation/tasks.md",
+        "docs/04-test/test-plan.md",
+        "docs/04-test/test-report.md",
+        "docs/05-release/CHANGELOG.md",
+        "docs/05-release/release-checklist.md",
+        "tests/__init__.py",
+        "tests/test_logic.py",
+        "tests/test_server.py",
+        "tests/test_storage.py"
+      ]
+    },
+    "tests": {
+      "files": [
+        "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8\\tests\\test_logic.py",
+        "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8\\tests\\test_server.py",
+        "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8\\tests\\test_storage.py"
+      ],
+      "runner": "unittest",
+      "ok": true,
+      "output_tail": ".................................................\n----------------------------------------------------------------------\nRan 49 tests in 9.004s\n\nOK\n"
+    },
+    "server_probe": {
+      "attempted": true,
+      "entry": "C:\\Users\\nimao\\AppData\\Local\\Temp\\e2e-expense-webapp-harness-kcr0hvy8\\app\\server.py",
+      "port": 8000,
+      "started": true,
+      "responded": true,
+      "detail": "HTTP 200"
+    },
+    "pass": false,
+    "exit_code": 1
+  },
+  "artifact_stats": {
+    "files": 216,
+    "python_files": 22,
+    "test_files": 3,
+    "test_functions": 49
+  },
+  "verdict": "DNF_QUOTA",
+  "valid_for_comparison": false,
+  "invalid_reasons": [
+    "cli<2.1.217",
+    "cli<2.1.251",
+    "user_scope_unisolated",
+    "budget_enforcement=main-only",
+    "workdir_lost(temp auto-cleanup 2026-09-04/06; check.py cannot be re-run)",
+    "model_unrecorded(recovered from transcript)",
+    "budget_asymmetric_across_arms(this 10/60 vs other arm 8/40)",
+    "verdict=DNF_QUOTA",
+    "n_truncated_calls=1(inferred)"
+  ],
+  "trajectory": {
+    "zip": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-kcr0hvy8.zip",
+    "sha256": "a07da1d05d88a6e9e9776a9eb3e7fc8ff9efb96c258d638cc6875b1fb60b45b4",
+    "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-kcr0hvy8",
+    "files": 15,
+    "bytes": 2511641,
+    "zip_bytes": 798327,
+    "latest_mtime": "2026-08-22T23:12:59",
+    "manifest": "evaluation/results/trajectories/MANIFEST.json"
+  },
+  "recovered_models_observed": {
+    "claude-fable-5": 312,
+    "<synthetic>": 15,
+    "claude-opus-4-8": 7
+  },
+  "recovered_model": "claude-fable-5",
+  "recovered_model_source": "transcript zip C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-kcr0hvy8.zip (count of \"model\" values; via --scan-trajectories)",
+  "conditions": {
+    "model_requested": null,
+    "effort_requested": null,
+    "claude_version": "2.1.201",
+    "min_cli_ok": false,
+    "budget_enforcement": "main-only",
+    "subagent_model_forced": false,
+    "setting_sources": "user,project,local (CLI default; user scope unisolated)",
+    "config_dir_isolated": false,
+    "permission_mode": "acceptEdits",
+    "allowed_tools": [
+      "Bash(git:*)",
+      "Bash(py:*)",
+      "Bash(python:*)"
+    ],
+    "max_turns_per_call": 60,
+    "call_budget_usd": 10.0,
+    "total_budget_usd": 60.0,
+    "fresh_policy": "continue",
+    "auth_mode": "oauth(inferred: usage-credits quota text in same batch)",
+    "task_md_sha256": null,
+    "check_py_sha256": null
+  },
+  "experiment": {
+    "kind": "legacy",
+    "series_id": "legacy-v1-2026-08",
+    "run_index": null,
+    "condition_hash": "d5822b218304",
+    "plan_path": null,
+    "plan_sha256": null
+  },
+  "schema_version": 1,
+  "backfill": {
+    "first_applied_on": "2026-09-10",
+    "rule_version": 1,
+    "tool": "tools/eval-report.py --backfill",
+    "basis": "audits/external-reaudit-2026-09-09.md §6 (EV-1/EV-2/EV-3/RG-9); verdict by cost > total_budget (abort-flag independent); truncation inferred from call cost"
+  }
+}

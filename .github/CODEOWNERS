@@ -1,0 +1,54 @@
+# ハーネス自体の運用ルールへの変更は、GitHub上のブランチ保護ルールで
+# 人間のレビュー承認を必須にすることを推奨する（CODEOWNERSはその設定と組み合わせて使う）。
+# 下記のユーザー名/チーム名は実際のプロジェクトに合わせて書き換えること。
+#
+# 推奨の保護範囲は2段構成:
+# (1) フック層のガード対象（guard-harness-config-edit / permissions.deny）と同じ範囲。
+#     フック層とこのリストがずれると、片方だけ守られている錯覚が生まれる。
+# (2) フック層のガード対象ではないが、人間のレビューを課したい追加領域（tools/ 等。
+#     skills は中核2スキルを除きフック層のガード対象外）。
+#
+# --- (1) フック層のガード対象 ---
+# .github/agents/            @your-team
+# .github/hooks/             @your-team
+# .github/workflows/         @your-team
+# .github/prompts/           @your-team
+# .github/instructions/      @your-team
+# .github/harness/PLATFORM.md @your-team
+# .github/harness/model-policy.yml @your-team
+# .github/copilot/           @your-team
+# .github/skills/request-routing/ @your-team
+# .github/skills/gate-check/ @your-team
+# .claude/settings.json      @your-team
+# .claude/settings.local.json @your-team
+# .claude/commands/          @your-team
+# .claude/agents/            @your-team
+# .claude/skills/request-routing/ @your-team
+# .claude/skills/gate-check/ @your-team
+# .agents/workflows/         @your-team
+# AGENTS.md                  @your-team
+# CLAUDE.md                  @your-team
+# plugin.json                @your-team
+# .vscode/settings.json      @your-team
+# docs/**/*_template.md      @your-team
+# --- 第5回(2026-09-09 再監査 SC-1/SC-6/MP-3)で追加した保護対象(deny / guard sh・ps1 / validate CROSS_ITEMS と同じ集合) ---
+# .claude/rules/             @your-team
+# .github/copilot-instructions.md @your-team
+# CLAUDE.local.md            @your-team
+# GEMINI.md                  @your-team
+# --- 第6回(2026-09-10 A6-23)で追加: Claude Code plugin マニフェスト(plugin.json からの生成物) ---
+# .claude-plugin/            @your-team
+#
+# --- (2) レビューを課したい追加領域（中核2スキルを除きフック層のガード対象外。
+#         ただし skills 配下の hooks/hooks.json と権限系 frontmatter の書込はフックが ask=SC-2）---
+# .github/skills/            @your-team
+# .claude/skills/            @your-team
+# tools/                     @your-team
+# --- 第7波(2026-09-17 IA-20260831-11)で追加: 外部 Skill / MCP のロック(guard sh・ps1 の保護対象。deny は統合時) ---
+# .github/harness/external-lock.json @your-team
+
+# 例(コメントアウトを外して使う):
+# /.github/agents/ @your-org/maintainers
+# /.github/hooks/  @your-org/maintainers
+# /AGENTS.md       @your-org/maintainers
+# /plugin.json     @your-org/maintainers

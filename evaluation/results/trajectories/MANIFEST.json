@@ -1,0 +1,219 @@
+{
+ "archived_on": "2026-09-10",
+ "note": "~/.claude/projects の e2e-* transcript(サブエージェント含む)を退避。zip は gitignore、本 manifest のみ追跡。",
+ "entries": [
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-claude-D--projects-doc-3007e3e7-e644-458d-90a5-a8650b9f1a69-scratchpad-e2e-probe",
+   "zip": "C--Users-nimao-AppData-Local-Temp-claude-D--projects-doc-3007e3e7-e644-458d-90a5-a8650b9f1a69-scratchpad-e2e-probe.zip",
+   "files": 1,
+   "bytes": 287639,
+   "zip_bytes": 70163,
+   "sha256": "9900b716e57a0da318e4d1a45814a2544773f102b5b9a95503466208f8181dd5",
+   "latest_mtime": "2026-08-20T07:22:45",
+   "models_observed": {
+    "claude-fable-5": 42
+   },
+   "sessions": [
+    "3509a5e7-760b-4314-aef1-736c0e657159"
+   ],
+   "result_json": null
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-claude-D--projects-doc-3007e3e7-e644-458d-90a5-a8650b9f1a69-scratchpad-e2e-todo",
+   "zip": "C--Users-nimao-AppData-Local-Temp-claude-D--projects-doc-3007e3e7-e644-458d-90a5-a8650b9f1a69-scratchpad-e2e-todo.zip",
+   "files": 29,
+   "bytes": 6827612,
+   "zip_bytes": 1683066,
+   "sha256": "be3236b5ac1f03db58a04ee1427881007088e5764fa2716a2645a02d8de1a61f",
+   "latest_mtime": "2026-08-20T07:23:53",
+   "models_observed": {
+    "claude-fable-5": 772,
+    "<synthetic>": 2
+   },
+   "sessions": [
+    "187b9ecb-7757-45fb-9ed8-6d32a46b8ebb",
+    "1cc1eabb-6997-4137-90e1-b3ed71b11a14",
+    "2ecd6227-58be-4f0b-bb36-27ce752a15ef",
+    "b44af1f7-cb08-4586-885a-b251d16f355a",
+    "bc1dd26f-c922-4394-ab7c-15691d9d1e48",
+    "bd759273-0512-4047-b8e2-693a67628a3c",
+    "efc13245-6319-4bf4-8056-3faba44cda4c"
+   ],
+   "result_json": null
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-bare-5w-qw6j9",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-bare-5w-qw6j9.zip",
+   "files": 1,
+   "bytes": 797295,
+   "zip_bytes": 192820,
+   "sha256": "4a5c1477ea090715ef52e6310814bfe6d31b41a92037d99fec45ffce0206256c",
+   "latest_mtime": "2026-08-29T11:29:43",
+   "models_observed": {
+    "claude-fable-5": 109
+   },
+   "sessions": [
+    "dc51c5b5-06e9-4ccf-8041-5d26ee6e5c67"
+   ],
+   "result_json": "expense-webapp-bare-20260829-113009.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-bare-zyuwx4g4",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-bare-zyuwx4g4.zip",
+   "files": 1,
+   "bytes": 737560,
+   "zip_bytes": 165117,
+   "sha256": "f586e35ea25318a11db6737467621e088133589acb0c792ea5363a1fd13c23ec",
+   "latest_mtime": "2026-08-22T22:19:27",
+   "models_observed": {
+    "claude-fable-5": 120
+   },
+   "sessions": [
+    "ab45554e-eacb-4a1c-8470-57e768a458bd"
+   ],
+   "result_json": "expense-webapp-bare-20260822-221946.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-42c7je4t",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-42c7je4t.zip",
+   "files": 23,
+   "bytes": 4167063,
+   "zip_bytes": 1241991,
+   "sha256": "10d9742be7719b1e7c4bc455b30f625831d2356cfca193778c2d84ce7ea897c6",
+   "latest_mtime": "2026-08-27T23:53:19",
+   "models_observed": {
+    "claude-fable-5": 550,
+    "<synthetic>": 1
+   },
+   "sessions": [
+    "5e96d694-d284-4313-8bb5-68714e6e9fe9"
+   ],
+   "result_json": "expense-webapp-harness-20260827-235348.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-gzdohl2l",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-gzdohl2l.zip",
+   "files": 18,
+   "bytes": 4133048,
+   "zip_bytes": 1128453,
+   "sha256": "385cb41f1b355a70f9e65ea420d578343b51cef6ef2ec9cb1b00bdf39474dc9c",
+   "latest_mtime": "2026-08-29T12:35:22",
+   "models_observed": {
+    "claude-fable-5": 503
+   },
+   "sessions": [
+    "12dad3fd-39a2-4c6d-80f9-eb06f6bbfa73",
+    "2a5fd895-26b9-42f7-95d7-269e789e4edb",
+    "6293bad2-19e3-49c4-8817-6343db7918a7",
+    "64554622-707c-4152-95b7-b2532ab5d31d"
+   ],
+   "result_json": "expense-webapp-harness-20260829-123538.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-kcr0hvy8",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-expense-webapp-harness-kcr0hvy8.zip",
+   "files": 15,
+   "bytes": 2511641,
+   "zip_bytes": 798327,
+   "sha256": "a07da1d05d88a6e9e9776a9eb3e7fc8ff9efb96c258d638cc6875b1fb60b45b4",
+   "latest_mtime": "2026-08-22T23:12:59",
+   "models_observed": {
+    "claude-fable-5": 312,
+    "<synthetic>": 15,
+    "claude-opus-4-8": 7
+   },
+   "sessions": [
+    "10cf1bc0-a728-48a3-83b2-f05587da4148"
+   ],
+   "result_json": "expense-webapp-harness-20260822-231312.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-bare-ippnl2fk",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-bare-ippnl2fk.zip",
+   "files": 1,
+   "bytes": 224138,
+   "zip_bytes": 49655,
+   "sha256": "ed4f041eb7ca90369f7184a91a23e84327e92c77a28fdc4146128ff56d5891e6",
+   "latest_mtime": "2026-08-22T18:21:58",
+   "models_observed": {
+    "claude-fable-5": 55
+   },
+   "sessions": [
+    "c5954b5d-2133-4471-81c3-5dae27c56902"
+   ],
+   "result_json": "todo-cli-bare-20260822-182203.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-9wm6lczb",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-9wm6lczb.zip",
+   "files": 9,
+   "bytes": 1670506,
+   "zip_bytes": 434436,
+   "sha256": "cfb4887f7dfa68719002d585336e843e6e789fdea89b644e6a28f88c1858fbe0",
+   "latest_mtime": "2026-08-30T20:12:08",
+   "models_observed": {
+    "claude-fable-5": 232,
+    "<synthetic>": 2
+   },
+   "sessions": [
+    "f5efe69c-d95c-4c08-b7de-0003055b86bc"
+   ],
+   "result_json": "todo-cli-harness-20260830-194235.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-tm5mcoje",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-tm5mcoje.zip",
+   "files": 7,
+   "bytes": 1582386,
+   "zip_bytes": 413344,
+   "sha256": "dd5396ea4ff17a8d2227109ec776d6fd973ebb397fcba0493b8460f95cdd34de",
+   "latest_mtime": "2026-08-22T22:01:00",
+   "models_observed": {
+    "claude-fable-5": 231
+   },
+   "sessions": [
+    "38e06a66-cc2c-4e80-bb8e-353c82e15aad"
+   ],
+   "result_json": "todo-cli-harness-20260822-220104.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-uvj6tc0p",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-uvj6tc0p.zip",
+   "files": 5,
+   "bytes": 1213535,
+   "zip_bytes": 333124,
+   "sha256": "093a2b6446e69c25971cb88902ece2505a72f63157de76a3960206e0261c0984",
+   "latest_mtime": "2026-08-22T18:17:01",
+   "models_observed": {
+    "claude-fable-5": 127,
+    "claude-haiku-4-5-20251001": 18,
+    "haiku": 1
+   },
+   "sessions": [
+    "50abbe61-3caa-4452-8f65-5d5b132cf6b9"
+   ],
+   "result_json": "todo-cli-harness-20260822-181702.json"
+  },
+  {
+   "source_dir": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-x3w-jas-",
+   "zip": "C--Users-nimao-AppData-Local-Temp-e2e-todo-cli-harness-x3w-jas-.zip",
+   "files": 13,
+   "bytes": 2958948,
+   "zip_bytes": 721500,
+   "sha256": "5cffa0c24f18b982b5e4f4208912e62f8aad0ab7f9b6c6c7bc2c0e4e96a7b628",
+   "latest_mtime": "2026-08-22T19:12:06",
+   "models_observed": {
+    "claude-fable-5": 402
+   },
+   "sessions": [
+    "b2db3d41-c544-43d0-aa91-fc1e2b3accfe"
+   ],
+   "result_json": "todo-cli-harness-20260822-191211.json"
+  }
+ ],
+ "scan": {
+  "tool": "tools/eval-report.py --scan-trajectories",
+  "rule": "count of \"model\" values in *.jsonl (main + subagents)",
+  "scanned_entries": 12
+ }
+}
