@@ -1,0 +1,8 @@
+@{
+    // Antiforgery の検証失敗（E-CSRF・400。DD-12）。CsrfFailureFilter から表示する
+    Layout = "_Layout";
+    ViewData["Title"] = "エラー";
+}
+<h1>エラー</h1>
+<p class="error-message">@ErrorIds.Messages[ErrorIds.Csrf] <small class="error-id">（@ErrorIds.Csrf）</small></p>
+<p><a href="/">一覧へ戻る</a></p>

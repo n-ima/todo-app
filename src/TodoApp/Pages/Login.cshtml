@@ -1,0 +1,25 @@
+@page "/login"
+@model LoginModel
+@{
+    ViewData["Title"] = "ログイン";
+    ViewData["HideNav"] = true;
+}
+<h1>ログイン</h1>
+@if (Model.ErrorId is not null)
+{
+    <div class="error-summary" role="alert">
+        <p class="error-message">@ErrorIds.Messages[Model.ErrorId] <small class="error-id">（@Model.ErrorId）</small></p>
+    </div>
+}
+<form method="post" class="login-form">
+    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl">
+    <p>
+        <label for="loginId">ログイン ID</label><br>
+        <input id="loginId" name="loginId" value="@Model.LoginId" maxlength="50" autocomplete="username" required autofocus>
+    </p>
+    <p>
+        <label for="password">パスワード</label><br>
+        <input id="password" name="password" type="password" maxlength="128" autocomplete="current-password" required>
+    </p>
+    <p><button type="submit" class="btn primary">ログイン</button></p>
+</form>

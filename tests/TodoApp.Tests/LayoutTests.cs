@@ -21,7 +21,8 @@ public sealed partial class LayoutTests
 
     private static async Task<string> GetErrorPageAsync(TestWebApp app, string path)
     {
-        using var client = app.CreateClient();
+        // 想定外例外の経路は要ログイン（既定の認可）のため、ログインしてから開く
+        using var client = await app.CreateLoggedInClientAsync();
         using var response = await client.GetAsync(U(path), Ct);
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         return await response.Content.ReadAsStringAsync(Ct);
@@ -70,7 +71,7 @@ public sealed partial class LayoutTests
     public async Task エラー画面_POSTの想定外例外でも500のエラー画面()
     {
         await using var app = await TestWebApp.CreateAsync();
-        using var client = app.CreateClient();
+        using var client = await app.CreateLoggedInClientAsync();
         using var content = new FormUrlEncodedContent([]);
         using var response = await client.PostAsync(U(TestWebApp.ThrowPath), content, Ct);
         var body = await response.Content.ReadAsStringAsync(Ct);

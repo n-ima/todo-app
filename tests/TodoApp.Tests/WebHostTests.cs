@@ -94,7 +94,7 @@ public sealed class WebHostTests
     public async Task 想定外例外_画面_500で相関IDを出しスタックトレースを出さない()
     {
         await using var app = await TestWebApp.CreateAsync();
-        using var client = app.CreateClient();
+        using var client = await app.CreateLoggedInClientAsync();
         using var response = await client.GetAsync(U(TestWebApp.ThrowPath), Ct);
         var body = await response.Content.ReadAsStringAsync(Ct);
 
@@ -113,7 +113,7 @@ public sealed class WebHostTests
     public async Task 想定外例外_API_JSONのエラー形で500()
     {
         await using var app = await TestWebApp.CreateAsync();
-        using var client = app.CreateClient();
+        using var client = await app.CreateLoggedInClientAsync();
         using var response = await client.GetAsync(U("/api" + TestWebApp.ThrowPath), Ct);
         var body = await response.Content.ReadAsStringAsync(Ct);
 
@@ -130,7 +130,7 @@ public sealed class WebHostTests
     {
         await using var app = await TestWebApp.CreateAsync();
         string correlationId;
-        using (var client = app.CreateClient())
+        using (var client = await app.CreateLoggedInClientAsync())
         using (var response = await client.GetAsync(U(TestWebApp.ThrowPath), Ct))
         {
             var body = await response.Content.ReadAsStringAsync(Ct);

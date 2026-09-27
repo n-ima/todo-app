@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,6 +11,7 @@ namespace TodoApp.Pages;
 /// 想定外の例外の画面（DD-11 §2・DD-01 §5）。例外ハンドラが元の要求メソッドのまま再実行するため GET/POST の両方で応答する。
 /// </summary>
 [IgnoreAntiforgeryToken]
+[AllowAnonymous]
 public sealed partial class ErrorModel(ILoggerFactory loggerFactory) : PageModel
 {
     public string ErrorId { get; private set; } = ErrorIds.SysUnexpected;
