@@ -142,7 +142,7 @@ TodoApp-<版>-win-x64.zip.sha256   … Release に別ファイルとして添付
 
 | ジョブ | 契機 | ランナー | 内容 |
 |---|---|---|---|
-| build-test | push・pull_request | ubuntu-latest | `dotnet build -warnaserror` → `dotnet test tests/TodoApp.Tests`（E2E は除外） |
+| build-test | push・pull_request | windows-latest（2026-09-27 変更。Windows 前提のテスト（他プロセスの todo.db オープン検出・DPAPI）が ubuntu では動かないため。A-024 の消費最小化は secrets を ubuntu に残すことで図る） | `dotnet build -warnaserror` → `dotnet test tests/TodoApp.Tests`（E2E は除外） |
 | secrets | push・pull_request | ubuntu-latest | gitleaks（版を固定した Action。A-017 の代替） |
 | package | タグ `v*` | windows-latest | `dotnet publish -c Release -r win-x64 --self-contained true` → Pester（`tests/scripts`）→ ZIP と SHA-256 → Release に添付 |
 
