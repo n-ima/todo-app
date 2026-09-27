@@ -1,0 +1,39 @@
+@page "/projects/{projectId:long}/tasks/new"
+@model TodoApp.Pages.Tasks.NewModel
+@{
+    ViewData["Title"] = "タスクの作成";
+    var described = Model.ErrorId is null ? null : "form-error";
+}
+<h1>タスクの作成</h1>
+<p>作成先: @Model.Context.ProjectName@(Model.Context.ParentTitle is null ? "" : " > " + Model.Context.ParentTitle)</p>
+@if (Model.ErrorId is not null)
+{
+    <div class="error-summary" role="alert">
+        <p class="error-message" id="form-error">@Model.ErrorMessage <small class="error-id">（@Model.ErrorId）</small></p>
+    </div>
+}
+<form method="post" action="@Model.PostPath" asp-antiforgery="true" class="login-form">
+    <p><label for="title">タイトル（必須）</label><br><input id="title" name="Title" value="@Model.Title" maxlength="200" required aria-describedby="@described"></p>
+    <p>
+        <label for="assignee">担当者</label><br>
+        <select id="assignee" name="AssigneeId">
+            <option value="">（未設定）</option>
+            @foreach (var user in Model.Context.Assignees)
+            {
+                var value = user.Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                <option value="@value" selected="@(Model.AssigneeId == value)">@user.DisplayName</option>
+            }
+        </select>
+    </p>
+    <p><label for="startDate">開始日</label><br><input id="startDate" name="StartDate" type="date" value="@Model.StartDate"></p>
+    <p><label for="dueDate">期限</label><br><input id="dueDate" name="DueDate" type="date" value="@Model.DueDate"></p>
+    <p>
+        <label for="priority">優先度</label><br>
+        <select id="priority" name="Priority">
+            <option value="1" selected="@(Model.Priority == "1")">高</option>
+            <option value="2" selected="@(Model.Priority is null or "" or "2")">中</option>
+            <option value="3" selected="@(Model.Priority == "3")">低</option>
+        </select>
+    </p>
+    <p><button type="submit" class="btn primary">作成する</button> <a href="/" class="btn">キャンセル</a></p>
+</form>

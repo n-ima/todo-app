@@ -26,7 +26,14 @@ public static class WebHostSetup
     public static void ConfigureServices(WebApplicationBuilder builder)
     {
         builder.Services.AddWindowsService(o => o.ServiceName = "TodoApp");
-        builder.Services.AddRazorPages(o => o.Conventions.AuthorizeFolder("/Admin", AuthSetup.AdminPolicy))
+        builder.Services.AddRazorPages(o =>
+            {
+                o.Conventions.AuthorizeFolder("/Admin", AuthSetup.AdminPolicy);
+                // 新規作成画面は 2 つの親（プロジェクト直下・親タスクの下）で共通。POST 先は DD-04 §3 のパス
+                o.Conventions.AddPageRoute("/Tasks/New", "projects/{projectId:long}/tasks");
+                o.Conventions.AddPageRoute("/Tasks/New", "tasks/{parentId:long}/children/new");
+                o.Conventions.AddPageRoute("/Tasks/New", "tasks/{parentId:long}/children");
+            })
             .AddMvcOptions(o => o.Filters.Add<CsrfFailureFilter>());
         builder.Services.AddSingleton(services =>
         {
@@ -38,6 +45,8 @@ public static class WebHostSetup
         builder.Services.AddScoped<UserAdminService>();
         builder.Services.AddScoped<WorkflowService>();
         builder.Services.AddScoped<ProjectService>();
+        builder.Services.AddScoped<TaskService>();
+        builder.Services.AddSingleton<TaskPermission>();
         AuthSetup.ConfigureServices(builder.Services);
         // Paths:Data はテスト等で Build 時に差し替わるため、構成の確定後に読む
         builder.Services.AddSerilog((services, lc) =>
