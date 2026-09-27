@@ -1,0 +1,62 @@
+@page "/admin/workflow"
+@model TodoApp.Pages.Admin.WorkflowModel
+@{
+    ViewData["Title"] = "状態の定義";
+}
+<h1>状態の定義</h1>
+<p><a href="/admin/users">利用者管理</a> | 状態の定義</p>
+@if (Model.ErrorId is not null)
+{
+    <div class="error-summary" role="alert">
+        <p class="error-message">@Model.ErrorMessage <small class="error-id">（@Model.ErrorId）</small></p>
+    </div>
+}
+<p>使っているタスクの件数にはゴミ箱のタスクも含みます。</p>
+<table class="statuses">
+    <thead>
+        <tr><th>名前</th><th>完了扱い</th><th>並び順</th><th>削除</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var status in Model.Statuses)
+        {
+            <tr>
+                <td>
+                    <form method="post" asp-page-handler="Rename">
+                        <input type="hidden" name="id" value="@status.Id">
+                        <input name="name" value="@status.Name" maxlength="20" required aria-label="状態名">
+                        <button type="submit" class="btn small">変更</button>
+                    </form>
+                </td>
+                <td>
+                    @(status.IsDone ? "完了扱い" : "―")
+                    <form method="post" asp-page-handler="Done">
+                        <input type="hidden" name="id" value="@status.Id">
+                        <input type="hidden" name="isDone" value="@(status.IsDone ? "false" : "true")">
+                        <button type="submit" class="btn small">@(status.IsDone ? "完了扱いを外す" : "完了扱いにする")</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" asp-page-handler="Up" style="display:inline">
+                        <input type="hidden" name="id" value="@status.Id">
+                        <button type="submit" class="btn small">上へ</button>
+                    </form>
+                    <form method="post" asp-page-handler="Down" style="display:inline">
+                        <input type="hidden" name="id" value="@status.Id">
+                        <button type="submit" class="btn small">下へ</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="id" value="@status.Id">
+                        <button type="submit" class="btn small">削除</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<h2>状態の追加</h2>
+<form method="post" asp-page-handler="Add" class="login-form">
+    <p><label for="name">状態名（1〜20 文字）</label><br><input id="name" name="name" maxlength="20" required></p>
+    <p><button type="submit" class="btn primary">追加する</button></p>
+</form>

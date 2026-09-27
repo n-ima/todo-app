@@ -86,7 +86,7 @@ public sealed class UserAdminService(Db db, IClock clock, IOptions<AuthOptions> 
         });
     }
 
-    private static async Task RequireAdminAsync(IDbConnection connection, IDbTransaction transaction, long actorId)
+    internal static async Task RequireAdminAsync(IDbConnection connection, IDbTransaction transaction, long actorId)
     {
         var actor = await UserRepository.FindByIdAsync(connection, transaction, actorId).ConfigureAwait(false);
         if (actor is not { IsActive: true, Role: RoleAdmin })
