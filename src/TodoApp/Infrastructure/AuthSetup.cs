@@ -24,6 +24,7 @@ public static class AuthSetup
     public const string ClaimRole = "role";
     public const string ClaimStamp = "stamp";
     public const string ClaimMustChange = "mcp";
+    public const string AdminPolicy = "Admin";
 
     // 操作に数えない要求（セッションを延長しない）。静的ファイルは認証より前で返るため含めない
     private static readonly string[] NoRenewPaths = [WebHostSetup.HealthPath, "/api/markdown/preview"];
@@ -45,6 +46,8 @@ public static class AuthSetup
                 o.TimeProvider = new ClockTimeProvider(clock);
                 o.Events.OnValidatePrincipal = ValidatePrincipalAsync;
                 o.Events.OnRedirectToLogin = RedirectToLoginAsync;
+                // 権限不足は例外ハンドラ（/error）で 403 E-PERM-ADMIN-ONLY の画面 / JSON にする（DD-03 §4）
+                o.Events.OnRedirectToAccessDenied = _ => throw new AppErrorException(ErrorIds.PermAdminOnly);
                 o.Events.OnCheckSlidingExpiration = c =>
                 {
                     // 標準のスライディング（残り半分で更新）も、操作に数えない要求では行わない
@@ -53,7 +56,9 @@ public static class AuthSetup
                 };
             });
         // 全ページ・全 API を要ログインにする。例外は [AllowAnonymous] を付けた /login・/error・/healthz
-        services.AddAuthorizationBuilder().SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+        services.AddAuthorizationBuilder()
+            .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
+            .AddPolicy(AdminPolicy, p => p.RequireRole("admin"));
     }
 
     public static ClaimsPrincipal CreatePrincipal(UserRecord user)

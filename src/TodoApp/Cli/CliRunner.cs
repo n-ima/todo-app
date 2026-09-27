@@ -255,7 +255,7 @@ public static class CliRunner
     }
 
     /// <summary>ログイン ID の形式（DD-03 §4）。</summary>
-    private static readonly Regex LoginIdPattern = new("^[A-Za-z0-9._-]{1,50}$", RegexOptions.CultureInvariant);
+    internal static readonly Regex LoginIdPattern = new("^[A-Za-z0-9._-]{1,50}$", RegexOptions.CultureInvariant);
 
     private static async Task WriteErrorAsync(TextWriter error, string errorId) =>
         await error.WriteLineAsync($"{errorId}: {ErrorIds.Messages[errorId]}").ConfigureAwait(false);

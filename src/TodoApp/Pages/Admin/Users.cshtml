@@ -1,0 +1,62 @@
+@page "/admin/users"
+@model TodoApp.Pages.Admin.UsersModel
+@using TodoApp.Services
+@{
+    ViewData["Title"] = "利用者管理";
+}
+<h1>利用者管理</h1>
+@if (Model.ErrorId is not null)
+{
+    <div class="error-summary" role="alert">
+        <p class="error-message">@Model.ErrorMessage <small class="error-id">（@Model.ErrorId）</small></p>
+    </div>
+}
+<table class="users">
+    <thead>
+        <tr><th>ログイン ID</th><th>表示名・ロール</th><th>状態</th><th>パスワード再設定</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.LoginId</td>
+                <td>
+                    <form method="post" asp-page-handler="Update">
+                        <input type="hidden" name="id" value="@user.Id">
+                        <input name="displayName" value="@user.DisplayName" maxlength="50" required aria-label="表示名">
+                        <select name="role" aria-label="ロール">
+                            <option value="member" selected="@(user.Role == UserAdminService.RoleMember)">一般</option>
+                            <option value="admin" selected="@(user.Role == UserAdminService.RoleAdmin)">管理者</option>
+                        </select>
+                        <button type="submit" class="btn small">変更</button>
+                    </form>
+                </td>
+                <td>
+                    @(user.IsActive ? "有効" : "無効")
+                    <form method="post" asp-page-handler="@(user.IsActive ? "Deactivate" : "Activate")">
+                        <input type="hidden" name="id" value="@user.Id">
+                        <button type="submit" class="btn small">@(user.IsActive ? "無効化" : "有効化")</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" asp-page-handler="ResetPassword">
+                        <input type="hidden" name="id" value="@user.Id">
+                        <input name="password" type="password" maxlength="128" autocomplete="new-password" required aria-label="新しい初期パスワード">
+                        <button type="submit" class="btn small">設定</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<h2>利用者の登録</h2>
+<form method="post" asp-page-handler="Create" class="login-form">
+    <p><label for="loginId">ログイン ID（半角英数字と . _ -、50 文字以内）</label><br><input id="loginId" name="loginId" maxlength="50" required></p>
+    <p><label for="displayName">表示名</label><br><input id="displayName" name="displayName" maxlength="50" required></p>
+    <p>
+        <label for="role">ロール</label><br>
+        <select id="role" name="role"><option value="member">一般</option><option value="admin">管理者</option></select>
+    </p>
+    <p><label for="password">初期パスワード（8〜128 文字）</label><br><input id="password" name="password" type="password" maxlength="128" autocomplete="new-password" required></p>
+    <p><button type="submit" class="btn primary">登録する</button></p>
+</form>

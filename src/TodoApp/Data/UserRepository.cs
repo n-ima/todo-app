@@ -80,6 +80,35 @@ public sealed class UserRepository(Db db)
             new { loginId, displayName, role, passwordHash, stamp = Guid.NewGuid().ToString("N"), now },
             transaction);
 
+    public static async Task<IReadOnlyList<UserRecord>> ListAsync(IDbConnection connection, IDbTransaction transaction) =>
+        (await connection.QueryAsync<UserRecord>(SelectColumns + "ORDER BY login_id", transaction: transaction).ConfigureAwait(false)).AsList();
+
+    /// <summary>対象以外の有効な管理者の数（最後の管理者の保護。DD-03 §4）。</summary>
+    public static Task<long> CountOtherActiveAdminsAsync(IDbConnection connection, IDbTransaction transaction, long targetId) =>
+        connection.ExecuteScalarAsync<long>(
+            "SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = 1 AND id <> @targetId", new { targetId }, transaction);
+
+    public static Task UpdateProfileAsync(
+        IDbConnection connection, IDbTransaction transaction, long id, string displayName, string role, string securityStamp, string now) =>
+        connection.ExecuteAsync(
+            "UPDATE users SET display_name = @displayName, role = @role, security_stamp = @securityStamp, updated_at = @now WHERE id = @id",
+            new { id, displayName, role, securityStamp, now },
+            transaction);
+
+    public static Task SetActiveAsync(IDbConnection connection, IDbTransaction transaction, long id, bool isActive, string securityStamp, string now) =>
+        connection.ExecuteAsync(
+            "UPDATE users SET is_active = @active, security_stamp = @securityStamp, updated_at = @now WHERE id = @id",
+            new { id, active = isActive ? 1 : 0, securityStamp, now },
+            transaction);
+
+    /// <summary>管理者によるパスワード再設定（初回変更を求め、ロックを解き、既存セッションを失効させる。DD-03 §4）。</summary>
+    public static Task ResetPasswordAsync(IDbConnection connection, IDbTransaction transaction, long id, string passwordHash, string securityStamp, string now) =>
+        connection.ExecuteAsync(
+            "UPDATE users SET password_hash = @passwordHash, must_change_password = 1, failed_count = 0, locked_until = NULL, " +
+            "security_stamp = @securityStamp, updated_at = @now WHERE id = @id",
+            new { id, passwordHash, securityStamp, now },
+            transaction);
+
     public async Task<long> CountActiveAdminsAsync()
     {
         await using var connection = await db.OpenAsync().ConfigureAwait(false);

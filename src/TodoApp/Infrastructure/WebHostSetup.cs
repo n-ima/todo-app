@@ -26,7 +26,8 @@ public static class WebHostSetup
     public static void ConfigureServices(WebApplicationBuilder builder)
     {
         builder.Services.AddWindowsService(o => o.ServiceName = "TodoApp");
-        builder.Services.AddRazorPages().AddMvcOptions(o => o.Filters.Add<CsrfFailureFilter>());
+        builder.Services.AddRazorPages(o => o.Conventions.AuthorizeFolder("/Admin", AuthSetup.AdminPolicy))
+            .AddMvcOptions(o => o.Filters.Add<CsrfFailureFilter>());
         builder.Services.AddSingleton(services =>
         {
             var dataDirectory = services.GetRequiredService<IConfiguration>()[$"{PathsOptions.Section}:Data"] ?? CliRunner.DefaultDataDirectory;
@@ -34,6 +35,7 @@ public static class WebHostSetup
         });
         builder.Services.AddSingleton<UserRepository>();
         builder.Services.AddScoped<AuthService>();
+        builder.Services.AddScoped<UserAdminService>();
         AuthSetup.ConfigureServices(builder.Services);
         // Paths:Data はテスト等で Build 時に差し替わるため、構成の確定後に読む
         builder.Services.AddSerilog((services, lc) =>
@@ -70,8 +72,9 @@ public static class WebHostSetup
         app.UseStaticFiles();
         app.Use(NoStore);
         app.UseAuthentication();
-        app.UseAuthorization();
+        // 認可（管理画面の 403）より先に初回パスワード変更へ転送する（DD-03 §3）
         app.Use(AuthSetup.ForcePasswordChange);
+        app.UseAuthorization();
         app.Use(AuthSetup.ApiAntiforgery);
         app.MapGet(HealthPath, HealthAsync).AllowAnonymous();
         app.MapRazorPages();
