@@ -8,9 +8,10 @@ if (args.Length > 0 && CliRunner.IsSubcommand(args[0]))
     return await CliRunner.RunAsync(args, Console.Out, Console.Error);
 }
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(WebHostSetup.CreateOptions(args));
 AppConfiguration.AddLocalSettings(builder.Configuration);
 AppConfiguration.AddAppServices(builder.Services, builder.Configuration);
+WebHostSetup.ConfigureServices(builder);
 // 起動失敗はイベントログ（ソース TodoApp）にも書く（DD-01 §8）
 if (OperatingSystem.IsWindows())
 {
@@ -32,6 +33,7 @@ if (mismatch is not null)
     return 1;
 }
 
+WebHostSetup.ConfigurePipeline(app);
 app.Run();
 return 0;
 
