@@ -23,6 +23,7 @@ public sealed class TestWebApp : IAsyncDisposable
     public const string RemoteIpHeader = "X-Test-Remote-IP";
     public const string ThrowPath = "/test/throw";
     public const string ThrowMarker = "SECRET-STACK-MARKER";
+    public const string ApiDbWritePath = "/api/test/db-write";
 
     private readonly WebApplicationFactory<Program> _factory;
     private bool _stopped;
@@ -171,6 +172,19 @@ public sealed class TestWebApp : IAsyncDisposable
                 context.Request.Path.Value?.EndsWith(ThrowPath, StringComparison.Ordinal) == true
                     ? throw new InvalidOperationException("テスト用の想定外例外 " + ThrowMarker)
                     : nextMiddleware(context));
+            // /api 配下で書き込みトランザクションを張るテスト用の口（本体に /api の書き込みエンドポイントがまだ無いため）
+            app.Use(async (HttpContext context, RequestDelegate nextMiddleware) =>
+            {
+                if (context.Request.Path.Equals(ApiDbWritePath, StringComparison.Ordinal))
+                {
+                    var db = context.RequestServices.GetRequiredService<Db>();
+                    await db.WriteAsync((_, _) => Task.FromResult(0));
+                    await context.Response.WriteAsync("OK");
+                    return;
+                }
+
+                await nextMiddleware(context);
+            });
         };
     }
 }

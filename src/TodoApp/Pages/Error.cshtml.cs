@@ -36,11 +36,24 @@ public sealed partial class ErrorModel(ILoggerFactory loggerFactory) : PageModel
         var feature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
         if (feature is not null)
         {
-            LogUnexpected(loggerFactory.CreateLogger("TodoApp.UnhandledException"), feature.Error, ErrorIds.SysUnexpected, CorrelationId);
+            var statusCode = StatusCodes.Status500InternalServerError;
+            if (feature.Error is AppErrorException appError)
+            {
+                // 業務エラーは DD-12 の ID・文言・ステータスで返す（相関 ID 付きの想定外エラーにしない）
+                ErrorId = appError.ErrorId;
+                Message = appError.Message;
+                statusCode = ErrorIds.HttpStatuses.GetValueOrDefault(appError.ErrorId, StatusCodes.Status500InternalServerError);
+                Response.StatusCode = statusCode;
+            }
+            else
+            {
+                LogUnexpected(loggerFactory.CreateLogger("TodoApp.UnhandledException"), feature.Error, ErrorIds.SysUnexpected, CorrelationId);
+            }
+
             if (feature.Path.StartsWith("/api", StringComparison.OrdinalIgnoreCase)
                 && (feature.Path.Length == 4 || feature.Path[4] == '/'))
             {
-                await ErrorResponse.WriteJsonAsync(HttpContext, StatusCodes.Status500InternalServerError, ErrorIds.SysUnexpected, Message).ConfigureAwait(false);
+                await ErrorResponse.WriteJsonAsync(HttpContext, statusCode, ErrorId, Message).ConfigureAwait(false);
                 return new EmptyResult();
             }
         }

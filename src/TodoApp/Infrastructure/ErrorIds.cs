@@ -101,4 +101,37 @@ public static class ErrorIds
         [RestoreNewerSchema] = "このバックアップは新しい版で作られています",
         [CliServiceRunning] = "サービス TodoApp が動いています。停止してから実行してください",
     }.ToFrozenDictionary();
+
+    /// <summary>DD-12 の HTTP ステータス（4xx/5xx のもの）。/error が AppErrorException を応答へ変換するときに使う。無いものは 500。</summary>
+    public static readonly FrozenDictionary<string, int> HttpStatuses = new Dictionary<string, int>
+    {
+        [AuthRequired] = 401,
+        [AuthMustChange] = 403,
+        [PermDenied] = 403,
+        [PermSubtree] = 403,
+        [PermAdminOnly] = 403,
+        [TaskNotFound] = 404,
+        [TaskTitleRequired] = 400,
+        [TaskTitleLength] = 400,
+        [TaskDateOrder] = 400,
+        [TaskAssigneeInactive] = 400,
+        [TaskChildrenOpen] = 409,
+        [TaskCycle] = 400,
+        [TaskParentGone] = 409,
+        [MemoTooLong] = 400,
+        [Validation] = 400,
+        [ProjectName] = 400,
+        [LockHeld] = 409,
+        [LockHeldSubtree] = 409,
+        [LockLost] = 409,
+        [TrashNotFound] = 404,
+        [TrashParentMissing] = 409,
+        [WfNameDuplicate] = 400,
+        [WfInUse] = 409,
+        [WfNeedDone] = 409,
+        [WfLastStatus] = 409,
+        [Csrf] = 400,
+        [DbBusy] = 503,
+        [SysUnexpected] = 500,
+    }.ToFrozenDictionary();
 }
