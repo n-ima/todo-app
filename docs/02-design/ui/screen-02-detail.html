@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>モックアップ: タスク詳細 - TODO アプリ</title>
+<style>
+:root{--bg:#fff;--surface:#f6f7f9;--border:#d0d5dd;--text:#1f2937;--text-muted:#4b5563;--text-dim:#6b7280;--primary:#1d4ed8;--selected:#eef4ff;--danger:#b42318;--danger-bar:#d92d20;--danger-bg:#fef3f2;--warn:#8a4b00;--warn-mark:#b45309;--warn-bg:#fffaeb;--badge-bg:#e8ecf2;--badge-done-bg:#eef0f3;--font:"Segoe UI","Yu Gothic UI","Meiryo",system-ui,sans-serif;--mono:Consolas,"BIZ UDGothic",monospace;--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--radius:4px}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.6 var(--font);color:var(--text);background:var(--bg)}
+a{color:var(--primary)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.mockbar{background:#111827;color:#fff;padding:6px 12px;font-size:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.mockbar button{font-size:12px;padding:2px 8px}
+header{display:flex;align-items:center;gap:var(--sp-4);padding:0 var(--sp-4);height:48px;background:var(--surface);border-bottom:1px solid var(--border)}
+header .app{font-weight:700;font-size:16px}
+header nav a{margin-right:var(--sp-3);text-decoration:none;color:var(--text)}
+header .right{margin-left:auto}
+main{padding:var(--sp-4) var(--sp-6);max-width:1400px}
+.crumb{font-size:12px;color:var(--text-muted)}
+h1{font-size:20px;margin:4px 0 var(--sp-2);display:flex;gap:var(--sp-2);align-items:baseline;flex-wrap:wrap}
+h1 .id{font-size:12px;color:var(--text-muted);font-weight:400}
+.btn{border:1px solid var(--border);background:#fff;border-radius:var(--radius);padding:5px 12px;font:inherit;color:var(--text);cursor:pointer}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn:disabled{color:var(--text-dim);background:var(--surface);cursor:not-allowed}
+.actions{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center;margin-bottom:var(--sp-3)}
+.perm-note{font-size:12px;color:var(--text-muted)}
+.banner{border-radius:var(--radius);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3);display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap}
+.banner.lock{background:var(--warn-bg);border:1px solid var(--warn-mark);color:var(--text)}
+.banner.lost{background:var(--danger-bg);border:1px solid var(--danger-bar);color:var(--danger)}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:var(--sp-6)}
+dl{margin:0;display:grid;grid-template-columns:96px 1fr;gap:6px var(--sp-3)}
+dt{color:var(--text-muted);font-size:12px;padding-top:2px}
+dd{margin:0}
+.badge{background:var(--badge-bg);border-radius:var(--radius);padding:1px 8px;font-size:12px}
+.due-over{color:var(--danger);font-weight:700}
+.mark-over::before{content:"! "}
+input,select,textarea{font:inherit;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);color:var(--text);width:100%}
+textarea{font-family:var(--mono);min-height:340px;resize:vertical}
+.req{font-size:12px;color:var(--danger)}
+section{border-top:1px solid var(--border);padding-top:var(--sp-3);margin-top:var(--sp-4)}
+h2{font-size:15px;margin:0 0 var(--sp-2)}
+.memo{border:1px solid var(--border);border-radius:var(--radius);padding:var(--sp-3) var(--sp-4);min-height:200px}
+.memo h3{font-size:15px;margin:.4em 0}
+.memo code,.memo pre{font-family:var(--mono);background:var(--surface)}
+.memo pre{padding:8px;overflow:auto}
+.memo ul.tl{list-style:none;padding-left:4px}
+.task-link-deleted{color:var(--text-dim)}
+.tabs{display:flex;gap:4px;margin-bottom:6px}
+.tabs button{border:1px solid var(--border);background:var(--surface);padding:3px 12px;border-radius:var(--radius) var(--radius) 0 0;cursor:pointer;font:inherit}
+.tabs button[aria-selected=true]{background:#fff;font-weight:700}
+.edit-split{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.autosave{font-size:12px;color:var(--text-muted)}
+.children li{margin:2px 0}
+.hist{font-size:13px}
+.hist td{padding:3px 8px;border-bottom:1px solid #eaecf0}
+dialog{border:1px solid var(--border);border-radius:6px;padding:var(--sp-4) var(--sp-6);max-width:520px}
+dialog::backdrop{background:rgba(17,24,39,.4)}
+dialog h2{font-size:16px}
+dialog .row{display:flex;gap:var(--sp-2);justify-content:flex-end;margin-top:var(--sp-4);flex-wrap:wrap}
+.tree-pick{border:1px solid var(--border);border-radius:var(--radius);max-height:240px;overflow:auto;padding:6px}
+.tree-pick label{display:block;padding:2px 0}
+.tree-pick .no{color:var(--text-dim)}
+.err{color:var(--danger);font-size:13px}
+.hidden{display:none!important}
+.edit-only{display:none}
+body.editing .edit-only{display:revert}
+body.editing .view-only{display:none}
+@media (max-width:1199px){.edit-split{grid-template-columns:1fr}.edit-split .pv-side{display:none}}
+@media (max-width:767px){main{padding:var(--sp-3)}.grid{grid-template-columns:1fr}.actions,.hide-sp{display:none}}
+</style>
+</head>
+<body>
+<div class="mockbar">
+  <strong>モック状態:</strong>
+  <button data-state="owner">担当者本人（未ロック）</button>
+  <button data-state="other">一般利用者・権限なし</button>
+  <button data-state="locked">他人がロック中（一般）</button>
+  <button data-state="locked-admin">他人がロック中（管理者）</button>
+  <button data-state="draft">下書きあり（「編集する」で復元ダイアログ）</button>
+  <button data-state="lost">ロック喪失後に保存</button>
+  <span>「編集する」「保存（状態=完了）」「移動」「削除」は実際に押して確認できます</span>
+</div>
+<header><span class="app">TODO アプリ</span><nav><a href="screen-01-list.html">一覧</a><a href="screen-03-calendar.html">カレンダー</a><a href="#">ゴミ箱</a></nav><span class="right">🔔 <span id="me">鈴木 美穂</span> ▾</span></header>
+<main>
+  <div class="crumb"><a href="screen-01-list.html">新人研修 2026</a> ＞ <a href="#">研修カリキュラムの確定</a></div>
+  <h1><span class="view-only">講師の日程調整</span><span class="id">#1284</span><button class="btn hide-sp" style="font-size:12px;padding:1px 8px" title="[講師の日程調整](task:1284) をコピー">リンクをコピー</button></h1>
+
+  <div class="banner lock hidden" id="b-lock">⚠ 山田 花子さんが編集中（10:42 から）
+    <button class="btn danger" id="force" hidden>ロックを強制解除</button></div>
+  <div class="banner lost hidden" id="b-lost">ロックが解除されています。入力内容は下書きとして残しました。もう一度「編集する」を押してください（E-LOCK-LOST）</div>
+
+  <div class="actions view-only">
+    <button class="btn primary" id="edit">編集する</button>
+    <button class="btn" id="move">移動</button>
+    <button class="btn" id="del">削除</button>
+    <span class="perm-note hidden" id="perm">このタスクを編集できるのは担当者と管理者だけです</span>
+  </div>
+  <div class="actions edit-only">
+    <button class="btn primary" id="save">保存</button>
+    <button class="btn" id="cancel">キャンセル</button>
+    <span class="autosave" id="autosave">自動保存 10:43（未保存の変更は 60 秒ごとに下書きとして送られます）</span>
+  </div>
+
+  <div class="grid">
+    <div>
+      <dl class="view-only">
+        <dt>状態</dt><dd><span class="badge">進行中</span></dd>
+        <dt>担当者</dt><dd>鈴木 美穂</dd>
+        <dt>開始日</dt><dd>2026/10/01</dd>
+        <dt>期限</dt><dd><span style="color:var(--warn);font-weight:700">2026/10/08 <span>◷ 期限間近</span></span></dd>
+        <dt>優先度</dt><dd>中</dd>
+        <dt>作成</dt><dd class="perm-note">山田 花子・2026/09/28 09:12</dd>
+        <dt>最終更新</dt><dd class="perm-note">鈴木 美穂・2026/10/06 17:40</dd>
+      </dl>
+      <div class="edit-only">
+        <p><label for="t">タイトル <span class="req">（必須）</span></label><input id="t" value="講師の日程調整" maxlength="200"></p>
+        <p><label for="st">状態</label><select id="st"><option>未着手</option><option selected>進行中</option><option>レビュー待ち</option><option value="done">完了</option></select></p>
+        <p><label for="as">担当者</label><select id="as"><option value="">（なし）</option><option>山田 花子</option><option selected>鈴木 美穂</option><option>佐藤 健</option><option>高橋 翔</option></select></p>
+        <p><label for="sd">開始日</label><input id="sd" type="date" value="2026-10-01"></p>
+        <p><label for="dd">期限</label><input id="dd" type="date" value="2026-10-08"></p>
+        <p><label for="pr">優先度</label><select id="pr"><option>高</option><option selected>中</option><option>低</option></select></p>
+      </div>
+      <section>
+        <h2>子タスク（2）</h2>
+        <ul class="children"><li><a href="#">外部講師への打診</a> <span class="badge">未着手</span></li><li><a href="#">会議室の予約</a> <span class="badge">進行中</span></li></ul>
+        <button class="btn hide-sp view-only">＋子タスク</button>
+      </section>
+    </div>
+    <div>
+      <h2>メモ</h2>
+      <div class="memo view-only" id="memo-view">
+        <h3>候補日</h3>
+        <ul class="tl"><li><input type="checkbox" checked disabled aria-label="完了"> 10/21（水）午前 … 山本講師 OK</li><li><input type="checkbox" disabled aria-label="未完了"> 10/22（木）午後 … 返事待ち</li></ul>
+        <p><strong>決め手:</strong> 会議室の空き状況（<a href="#">会議室の予約</a>）と合わせて決める。<br>
+        前回の資料: <span class="task-link-deleted">（削除されたタスク）</span></p>
+        <p>&lt;script&gt;alert(1)&lt;/script&gt; ← HTML は文字として表示される例</p>
+      </div>
+      <div class="edit-only">
+        <div class="tabs" role="tablist"><button role="tab" aria-selected="true" id="tab-e">編集</button><button role="tab" aria-selected="false" id="tab-p">プレビュー</button><span class="autosave" style="margin-left:auto">Markdown で記入（表は非対応）</span></div>
+        <div class="edit-split">
+          <textarea id="memo-edit" aria-label="メモ（Markdown）" maxlength="100000">### 候補日
+- [x] 10/21（水）午前 … 山本講師 OK
+- [ ] 10/22（木）午後 … 返事待ち
+
+**決め手:** 会議室の空き状況（[会議室の予約](task:1290)）と合わせて決める。
+前回の資料: [2025 年度の日程表](task:311)</textarea>
+          <div class="memo pv-side" aria-label="プレビュー"><h3>候補日</h3><ul class="tl"><li><input type="checkbox" checked disabled> 10/21（水）午前 … 山本講師 OK</li><li><input type="checkbox" disabled> 10/22（木）午後 … 返事待ち</li></ul><p><strong>決め手:</strong> 会議室の空き状況（<a href="#">会議室の予約</a>）と合わせて決める。<br>前回の資料: <span class="task-link-deleted">（削除されたタスク）</span></p></div>
+        </div>
+      </div>
+      <section class="view-only">
+        <details><summary><h2 style="display:inline">変更履歴</h2></summary>
+          <table class="hist"><tr><td>2026/10/06 17:40</td><td>鈴木 美穂</td><td>状態: 未着手 → 進行中</td></tr>
+          <tr><td>2026/10/02 11:05</td><td>山田 花子</td><td>ロックを強制解除（編集中だった人: 佐藤 健）</td></tr>
+          <tr><td>2026/09/28 09:15</td><td>山田 花子</td><td>担当者: （なし） → 鈴木 美穂</td></tr></table>
+        </details>
+      </section>
+    </div>
+  </div>
+</main>
+
+<dialog id="dlg-draft"><h2>保存されていない下書きがあります</h2>
+  <p>2026/10/06 18:02 に自動保存された下書きがあります。</p>
+  <p class="err">下書き作成後に 山田 花子さんが更新しています（2026/10/07 09:31）。</p>
+  <div class="row"><button class="btn" data-close>最新の内容で編集（下書きを破棄）</button><button class="btn primary" data-close data-edit>下書きの内容で編集を続ける</button></div></dialog>
+<dialog id="dlg-children"><h2>確認</h2><p>未完了の子タスクが 2 件あります。完了にしますか。</p>
+  <div class="row"><button class="btn" data-close>戻る</button><button class="btn primary" data-close data-view>完了にする</button></div></dialog>
+<dialog id="dlg-del"><h2>削除の確認</h2><p>『講師の日程調整』と子タスク 2 件をゴミ箱へ移します。30 日以内なら元に戻せます。</p>
+  <div class="row"><button class="btn" data-close>キャンセル</button><button class="btn danger" data-close>ゴミ箱へ移す</button></div></dialog>
+<dialog id="dlg-force"><h2>ロックの強制解除</h2><p>山田 花子さんの編集中の内容は、本人の下書きとして残ります。解除した記録が変更履歴に残ります。</p>
+  <div class="row"><button class="btn" data-close>キャンセル</button><button class="btn danger" data-close>強制解除する</button></div></dialog>
+<dialog id="dlg-move"><h2>移動先を選ぶ</h2>
+  <div class="tree-pick">
+    <label><input type="radio" name="d"> 新人研修 2026（プロジェクト直下）</label>
+    <label style="padding-left:20px"><input type="radio" name="d" checked> 研修カリキュラムの確定</label>
+    <label style="padding-left:40px" class="no"><input type="radio" disabled> 講師の日程調整（このタスク）</label>
+    <label style="padding-left:60px" class="no"><input type="radio" disabled> 外部講師への打診（配下）</label>
+    <label style="padding-left:20px"><input type="radio" name="d"> 配属先アンケートの回収</label>
+    <label><input type="radio" name="d"> 社内ポータル改修（プロジェクト直下）</label>
+  </div>
+  <p class="err">（エラー例）配下に、あなたが編集できないタスクがあるため操作できません: 候補者リストの作成</p>
+  <div class="row"><button class="btn" data-close>キャンセル</button><button class="btn primary" data-close>ここへ移動</button></div></dialog>
+
+<script>
+const $=id=>document.getElementById(id);
+const state=location.hash.slice(1)||'owner';
+document.querySelectorAll('.mockbar button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.state;location.reload();});
+function noPerm(){['edit','move','del'].forEach(i=>{$(i).disabled=true;$(i).title='このタスクを編集できるのは担当者と管理者だけです';});$('perm').classList.remove('hidden');}
+if(state==='other'){ $('me').textContent='佐藤 健'; noPerm(); }
+if(state==='locked'||state==='locked-admin'){ $('b-lock').classList.remove('hidden'); $('edit').disabled=true; if(state==='locked-admin'){ $('force').hidden=false; $('me').textContent='山田 花子（管理者）'; } }
+function startEdit(){ document.body.classList.add('editing'); $('t').focus(); }
+$('edit').onclick=()=>{ if(state==='draft') $('dlg-draft').showModal(); else startEdit(); };
+$('cancel').onclick=()=>document.body.classList.remove('editing');
+$('save').onclick=()=>{
+  if(state==='lost'){ document.body.classList.remove('editing'); $('b-lost').classList.remove('hidden'); return; }
+  if($('st').value==='done'){ $('dlg-children').showModal(); return; }
+  document.body.classList.remove('editing');
+};
+$('move').onclick=()=>$('dlg-move').showModal();
+$('del').onclick=()=>$('dlg-del').showModal();
+$('force').onclick=()=>$('dlg-force').showModal();
+document.querySelectorAll('dialog [data-close]').forEach(b=>b.onclick=()=>{ b.closest('dialog').close(); if(b.hasAttribute('data-edit')) startEdit(); if(b.hasAttribute('data-view')) document.body.classList.remove('editing'); });
+$('dlg-draft').querySelector('button').onclick=function(){ this.closest('dialog').close(); startEdit(); };
+$('tab-p').onclick=()=>{ $('tab-p').setAttribute('aria-selected',true);$('tab-e').setAttribute('aria-selected',false);$('memo-edit').classList.add('hidden');document.querySelector('.pv-side').style.display='block'; };
+$('tab-e').onclick=()=>{ $('tab-e').setAttribute('aria-selected',true);$('tab-p').setAttribute('aria-selected',false);$('memo-edit').classList.remove('hidden');document.querySelector('.pv-side').style.display=''; };
+</script>
+</body>
+</html>

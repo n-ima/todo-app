@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>モックアップ: タスク一覧 - TODO アプリ</title>
+<style>
+:root{--bg:#fff;--surface:#f6f7f9;--border:#d0d5dd;--text:#1f2937;--text-muted:#4b5563;--text-dim:#6b7280;--primary:#1d4ed8;--selected:#eef4ff;--danger:#b42318;--danger-bar:#d92d20;--danger-bg:#fef3f2;--warn:#8a4b00;--warn-mark:#b45309;--warn-bg:#fffaeb;--badge-bg:#e8ecf2;--badge-done-bg:#eef0f3;--font:"Segoe UI","Yu Gothic UI","Meiryo",system-ui,sans-serif;--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--radius:4px;--indent:20px}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.6 var(--font);color:var(--text);background:var(--bg)}
+a{color:var(--primary)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.mockbar{background:#111827;color:#fff;padding:6px 12px;font-size:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.mockbar button{font-size:12px;padding:2px 8px}
+header{display:flex;align-items:center;gap:var(--sp-4);padding:0 var(--sp-4);height:48px;background:var(--surface);border-bottom:1px solid var(--border)}
+header .app{font-weight:700;font-size:16px}
+header nav a{margin-right:var(--sp-3);text-decoration:none;color:var(--text)}
+header nav a.cur{font-weight:700;border-bottom:2px solid var(--primary)}
+header .right{margin-left:auto;display:flex;gap:var(--sp-4);align-items:center}
+.bell{position:relative;text-decoration:none;color:var(--text)}
+.bell .cnt{position:absolute;top:-6px;right:-10px;background:var(--danger);color:#fff;border-radius:9px;font-size:11px;padding:0 5px}
+main{padding:var(--sp-4) var(--sp-6)}
+h1{font-size:20px;margin:0 0 var(--sp-3)}
+.toprow{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap;margin-bottom:var(--sp-3)}
+.btn{border:1px solid var(--border);background:#fff;border-radius:var(--radius);padding:5px 12px;font:inherit;color:var(--text);cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.small{padding:1px 8px;font-size:12px}
+.btn:disabled{color:var(--text-dim);cursor:not-allowed;background:var(--surface)}
+.overdue-btn{background:var(--danger-bg);border:1px solid var(--danger-bar);color:var(--danger);font-weight:700}
+.filters{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:var(--sp-3);display:flex;flex-wrap:wrap;gap:var(--sp-3) var(--sp-4);align-items:flex-end;margin-bottom:var(--sp-3)}
+.filters label{display:flex;flex-direction:column;font-size:12px;color:var(--text-muted)}
+.filters input,.filters select{font:inherit;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);color:var(--text)}
+.filters .chk{flex-direction:row;align-items:center;gap:4px;font-size:14px;color:var(--text)}
+.spacer{flex:1}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border);padding:6px 8px;font-weight:600}
+td{border-bottom:1px solid #eaecf0;padding:6px 8px;height:36px;vertical-align:middle}
+tr:hover td{background:var(--selected)}
+tr.project td{background:var(--surface);font-weight:700}
+tr.overdue td{background:var(--danger-bg)}
+tr.overdue td:first-child{box-shadow:inset 4px 0 0 var(--danger-bar)}
+tr.soon td:first-child{box-shadow:inset 4px 0 0 var(--warn-mark)}
+tr.dim td,tr.dim td a{color:var(--text-dim)}
+.tt{display:flex;align-items:center;gap:6px}
+.tog{width:22px;height:22px;border:none;background:none;cursor:pointer;color:var(--text-muted);padding:0}
+.tog.none{visibility:hidden}
+.kids{font-size:12px;color:var(--text-muted)}
+.badge{background:var(--badge-bg);border-radius:var(--radius);padding:1px 8px;font-size:12px;white-space:nowrap}
+.badge.done{background:var(--badge-done-bg);color:#344054}
+.due-over{color:var(--danger);font-weight:700;white-space:nowrap}
+.due-soon{color:var(--warn);font-weight:700;white-space:nowrap}
+.mark{font-size:12px;margin-left:4px}
+.mark.over::before{content:"! ";}
+.mark.soon::before{content:"◷ ";color:var(--warn-mark)}
+.pri-high{color:var(--danger);font-weight:700}
+.note{font-size:12px;color:var(--text-dim)}
+.empty{padding:48px;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:var(--radius)}
+.ops{white-space:nowrap}
+.hidden{display:none}
+@media (max-width:767px){
+ main{padding:var(--sp-3)}
+ header nav a{margin-right:6px}
+ .hide-sp,.ops,th.ops-h,.filters .adv{display:none}
+ thead{display:none}
+ table,tbody,tr,td{display:block;width:100%}
+ td{border:none;height:auto;padding:2px 8px}
+ tr{border-bottom:1px solid #eaecf0;padding:6px 0}
+ td.c-status,td.c-assignee,td.c-due,td.c-pri{display:inline-block;width:auto}
+ :root{--indent:12px}
+}
+</style>
+</head>
+<body>
+<div class="mockbar" role="region" aria-label="モックアップの状態切替">
+  <strong>モック状態:</strong>
+  <button data-state="normal">通常（管理者）</button>
+  <button data-state="member">一般利用者</button>
+  <button data-state="filtered">絞り込み中（担当: 鈴木）</button>
+  <button data-state="manual">並び順: 手動順</button>
+  <button data-state="nomatch">条件に合う 0 件</button>
+  <button data-state="empty">タスク 0 件</button>
+  <span>／スマホ表示はウィンドウ幅を 768px 未満に。基準日 2026/10/07（水）</span>
+</div>
+<header>
+  <span class="app">TODO アプリ</span>
+  <nav><a href="#" class="cur">一覧</a><a href="screen-03-calendar.html">カレンダー</a><a href="#">ゴミ箱</a><a href="#" class="admin-only">管理</a></nav>
+  <div class="right">
+    <a href="#" class="bell" aria-label="通知 未読 3 件">🔔<span class="cnt">3</span></a>
+    <span class="hide-sp"><span id="me">山田 花子</span> ▾</span>
+  </div>
+</header>
+<main>
+  <h1>タスク一覧</h1>
+  <div class="toprow">
+    <button class="btn overdue-btn" title="絞り込みに関係なく全タスクで数えています">! 期限超過 4 件</button>
+    <span class="spacer"></span>
+    <a class="btn" href="screen-03-calendar.html">カレンダーで見る</a>
+    <button class="btn hide-sp">CSV 書き出し</button>
+    <button class="btn primary hide-sp admin-only">＋プロジェクト</button>
+  </div>
+
+  <form class="filters" onsubmit="return false">
+    <label>担当者<select id="f-assignee"><option value="">すべて</option><option value="none">未設定</option><option>山田 花子</option><option value="suzuki">鈴木 美穂</option><option>佐藤 健</option><option>高橋 翔</option><option>（無効）田中 由紀</option></select></label>
+    <label class="adv">状態<select multiple size="1" title="Ctrl で複数選択"><option>未着手</option><option>進行中</option><option>完了</option></select></label>
+    <label class="adv">期限（から）<input type="date"></label>
+    <label class="adv">期限（まで）<input type="date"></label>
+    <label>キーワード<input type="search" placeholder="タイトルを検索" size="16"></label>
+    <label class="chk"><input type="checkbox" id="f-mine"> 自分の担当だけ</label>
+    <label class="chk"><input type="checkbox"> 完了も表示</label>
+    <label>並び順<select id="f-sort"><option value="due">期限の昇順</option><option value="manual">手動順</option></select></label>
+    <button class="btn">絞り込む</button>
+    <button class="btn" type="reset">解除</button>
+  </form>
+
+  <p class="note hidden" id="filter-note">担当者: 鈴木 美穂 で絞り込み中。薄い行は条件に合うタスクの親（構造を保つため表示）です。</p>
+
+  <table id="tree" aria-label="タスクの階層">
+    <thead><tr><th>タイトル</th><th>状態</th><th>担当者</th><th>期限</th><th>優先度</th><th class="ops-h">操作</th></tr></thead>
+    <tbody>
+      <tr class="project" data-lv="0"><td colspan="5"><div class="tt"><button class="tog" aria-expanded="true">▾</button>新人研修 2026</div></td><td class="ops"><button class="btn small">＋タスク</button></td></tr>
+      <tr data-lv="1" class="overdue"><td><div class="tt" style="padding-left:calc(var(--indent)*1)"><button class="tog" aria-expanded="true">▾</button><a href="screen-02-detail.html">研修カリキュラムの確定</a></div></td><td class="c-status"><span class="badge">進行中</span></td><td class="c-assignee">山田 花子</td><td class="c-due"><span class="due-over">2026/10/02</span><span class="mark over due-over">期限超過</span></td><td class="c-pri pri-high">高</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+      <tr data-lv="2" class="soon"><td><div class="tt" style="padding-left:calc(var(--indent)*2)"><button class="tog" aria-expanded="true">▾</button><a href="screen-02-detail.html">講師の日程調整</a></div></td><td class="c-status"><span class="badge">進行中</span></td><td class="c-assignee" data-a="suzuki">鈴木 美穂</td><td class="c-due"><span class="due-soon">2026/10/08</span><span class="mark soon due-soon">期限間近</span></td><td class="c-pri">中</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+      <tr data-lv="3"><td><div class="tt" style="padding-left:calc(var(--indent)*3)"><button class="tog" aria-expanded="false" data-lazy="1">▸</button><a href="screen-02-detail.html">外部講師への打診</a><span class="kids">（子 2 件）</span></div></td><td class="c-status"><span class="badge">未着手</span></td><td class="c-assignee" data-a="suzuki">鈴木 美穂</td><td class="c-due">2026/10/16</td><td class="c-pri">中</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+      <tr data-lv="4" class="lazy hidden"><td><div class="tt" style="padding-left:calc(var(--indent)*4)"><button class="tog none">▸</button><a href="screen-02-detail.html">候補者リストの作成</a></div></td><td class="c-status"><span class="badge">未着手</span></td><td class="c-assignee">佐藤 健</td><td class="c-due">2026/10/12</td><td class="c-pri">低</td><td class="ops"><button class="btn small" title="子タスクの作成は誰でもできます（A-002）">＋子タスク</button></td></tr>
+      <tr data-lv="4" class="lazy hidden"><td><div class="tt" style="padding-left:calc(var(--indent)*4)"><button class="tog none">▸</button><a href="screen-02-detail.html">依頼メール文面の用意</a></div></td><td class="c-status"><span class="badge">未着手</span></td><td class="c-assignee">―</td><td class="c-due">―</td><td class="c-pri">中</td><td class="ops"><button class="btn small">＋子タスク</button></td></tr>
+      <tr data-lv="3"><td><div class="tt" style="padding-left:calc(var(--indent)*3)"><button class="tog none">▸</button><a href="screen-02-detail.html">会議室の予約</a></div></td><td class="c-status"><span class="badge">進行中</span></td><td class="c-assignee">高橋 翔</td><td class="c-due">2026/10/20</td><td class="c-pri">中</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+      <tr data-lv="1" class="dim"><td><div class="tt" style="padding-left:calc(var(--indent)*1)"><button class="tog" aria-expanded="true">▾</button><a href="screen-02-detail.html">配属先アンケートの回収</a><span class="note">（完了）</span></div></td><td class="c-status"><span class="badge done">完了</span></td><td class="c-assignee">佐藤 健</td><td class="c-due">2026/09/30</td><td class="c-pri">中</td><td class="ops"><button class="btn small">＋子タスク</button></td></tr>
+      <tr data-lv="2" class="overdue"><td><div class="tt" style="padding-left:calc(var(--indent)*2)"><button class="tog none">▸</button><a href="screen-02-detail.html">未回答者へのリマインド</a></div></td><td class="c-status"><span class="badge">未着手</span></td><td class="c-assignee" data-a="suzuki">鈴木 美穂</td><td class="c-due"><span class="due-over">2026/10/01</span><span class="mark over due-over">期限超過</span></td><td class="c-pri">中</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+
+      <tr class="project" data-lv="0"><td colspan="5"><div class="tt"><button class="tog" aria-expanded="true">▾</button>社内ポータル改修</div></td><td class="ops"><button class="btn small">＋タスク</button></td></tr>
+      <tr data-lv="1" class="overdue"><td><div class="tt" style="padding-left:calc(var(--indent)*1)"><button class="tog none">▸</button><a href="screen-02-detail.html">お知らせ欄のデザイン案</a></div></td><td class="c-status"><span class="badge">レビュー待ち</span></td><td class="c-assignee">（無効）田中 由紀</td><td class="c-due"><span class="due-over">2026/09/25</span><span class="mark over due-over">期限超過</span></td><td class="c-pri pri-high">高</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+      <tr data-lv="1" class="soon"><td><div class="tt" style="padding-left:calc(var(--indent)*1)"><button class="tog none">▸</button><a href="screen-02-detail.html">リンク切れの一括確認</a></div></td><td class="c-status"><span class="badge">進行中</span></td><td class="c-assignee" data-a="suzuki">鈴木 美穂</td><td class="c-due"><span class="due-soon">2026/10/07</span><span class="mark soon due-soon">期限間近</span></td><td class="c-pri">中</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+      <tr data-lv="1"><td><div class="tt" style="padding-left:calc(var(--indent)*1)"><button class="tog none">▸</button><a href="screen-02-detail.html">アクセス解析の要否を検討</a></div></td><td class="c-status"><span class="badge">未着手</span></td><td class="c-assignee">―</td><td class="c-due">―</td><td class="c-pri">低</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+
+      <tr class="project" data-lv="0"><td colspan="5"><div class="tt"><button class="tog" aria-expanded="true">▾</button>総務・定例業務</div></td><td class="ops"><button class="btn small">＋タスク</button></td></tr>
+      <tr data-lv="1" class="overdue"><td><div class="tt" style="padding-left:calc(var(--indent)*1)"><button class="tog none">▸</button><a href="screen-02-detail.html">備品棚卸し（10 月）</a></div></td><td class="c-status"><span class="badge">未着手</span></td><td class="c-assignee">高橋 翔</td><td class="c-due"><span class="due-over">2026/10/06</span><span class="mark over due-over">期限超過</span></td><td class="c-pri">中</td><td class="ops"><span class="manual-only hidden"><button class="btn small">上へ</button> <button class="btn small">下へ</button></span> <button class="btn small">＋子タスク</button></td></tr>
+    </tbody>
+  </table>
+  <div class="empty hidden" id="empty-nomatch">条件に合うタスクがありません</div>
+  <div class="empty hidden" id="empty-all">タスクがありません<br><span class="note admin-only">「＋プロジェクト」から最初のプロジェクトを作成してください</span></div>
+</main>
+<script>
+const tbody=document.querySelector('#tree tbody');
+// 展開ボタン: 描画済みの子は表示切替、data-lazy は遅延取得（モックでは hidden を外す）
+tbody.addEventListener('click',e=>{
+  const b=e.target.closest('.tog'); if(!b||b.classList.contains('none')) return;
+  const tr=b.closest('tr'); const lv=+tr.dataset.lv; const open=b.getAttribute('aria-expanded')!=='true';
+  b.setAttribute('aria-expanded',open); b.textContent=open?'▾':'▸';
+  let n=tr.nextElementSibling;
+  while(n&&+n.dataset.lv>lv){ if(open){ if(+n.dataset.lv===lv+1) n.classList.remove('hidden'); } else n.classList.add('hidden'); n=n.nextElementSibling; }
+});
+function reset(){
+  document.querySelectorAll('.admin-only').forEach(x=>x.classList.remove('hidden'));
+  document.querySelectorAll('.manual-only').forEach(x=>x.classList.add('hidden'));
+  document.getElementById('tree').classList.remove('hidden');
+  ['empty-nomatch','empty-all','filter-note'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  tbody.querySelectorAll('tr').forEach(r=>{r.style.display='';r.classList.remove('fdim');});
+  document.getElementById('me').textContent='山田 花子';
+  document.getElementById('f-sort').value='due'; document.getElementById('f-assignee').value='';
+}
+const states={
+  normal(){},
+  member(){ document.querySelectorAll('.admin-only').forEach(x=>x.classList.add('hidden')); document.getElementById('me').textContent='鈴木 美穂'; },
+  manual(){ document.querySelectorAll('.manual-only').forEach(x=>x.classList.remove('hidden')); document.getElementById('f-sort').value='manual'; },
+  filtered(){
+    document.getElementById('f-assignee').value='suzuki'; document.getElementById('filter-note').classList.remove('hidden');
+    // 一致行と祖先だけ残し、祖先は薄く
+    const rows=[...tbody.querySelectorAll('tr')]; const keep=new Set();
+    rows.forEach((r,i)=>{ if(r.querySelector('[data-a="suzuki"]')){ keep.add(r); r.classList.remove('hidden'); let lv=+r.dataset.lv; for(let j=i-1;j>=0&&lv>0;j--){ if(+rows[j].dataset.lv<lv){ keep.add(rows[j]); rows[j].dataset.anc=1; lv=+rows[j].dataset.lv; } } } });
+    rows.forEach(r=>{ if(!keep.has(r)) r.style.display='none'; else if(r.dataset.anc && !r.querySelector('[data-a="suzuki"]') && !r.classList.contains('project')) r.classList.add('dim'); delete r.dataset.anc; });
+  },
+  nomatch(){ document.getElementById('tree').classList.add('hidden'); document.getElementById('empty-nomatch').classList.remove('hidden'); },
+  empty(){ document.getElementById('tree').classList.add('hidden'); document.getElementById('empty-all').classList.remove('hidden'); }
+};
+document.querySelectorAll('.mockbar button').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.state; location.reload(); });
+const s=location.hash.slice(1)||'normal'; reset(); (states[s]||states.normal)();
+</script>
+</body>
+</html>

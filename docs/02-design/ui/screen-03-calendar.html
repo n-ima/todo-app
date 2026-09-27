@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>モックアップ: カレンダー - TODO アプリ</title>
+<style>
+:root{--bg:#fff;--surface:#f6f7f9;--border:#d0d5dd;--text:#1f2937;--text-muted:#4b5563;--text-dim:#6b7280;--primary:#1d4ed8;--selected:#eef4ff;--danger:#b42318;--danger-bar:#d92d20;--danger-bg:#fef3f2;--warn:#8a4b00;--warn-mark:#b45309;--warn-bg:#fffaeb;--badge-bg:#e8ecf2;--font:"Segoe UI","Yu Gothic UI","Meiryo",system-ui,sans-serif;--radius:4px}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.6 var(--font);color:var(--text)}
+a{color:var(--primary)}
+.mockbar{background:#111827;color:#fff;padding:6px 12px;font-size:12px}
+header{display:flex;align-items:center;gap:16px;padding:0 16px;height:48px;background:var(--surface);border-bottom:1px solid var(--border)}
+header .app{font-weight:700;font-size:16px}
+header nav a{margin-right:12px;text-decoration:none;color:var(--text)}
+header nav a.cur{font-weight:700;border-bottom:2px solid var(--primary)}
+main{padding:16px 24px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.bar h1{font-size:20px;margin:0 12px 0 0}
+.btn{border:1px solid var(--border);background:#fff;border-radius:var(--radius);padding:4px 12px;font:inherit;cursor:pointer;color:var(--text)}
+.btn[aria-pressed=true]{background:var(--primary);color:#fff;border-color:var(--primary)}
+.cond{font-size:12px;color:var(--text-muted);margin-bottom:8px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--border);border-top:1px solid var(--border)}
+.dow{background:var(--surface);text-align:center;font-size:12px;color:var(--text-muted);border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:2px}
+.day{min-height:112px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:2px 3px;position:relative}
+.day .n{font-size:12px;color:var(--text-muted)}
+.day.other .n{color:#98a2b3}
+.day.today{background:var(--selected)}
+.day.today .n{font-weight:700;color:var(--primary)}
+.ev{display:block;font-size:12px;line-height:20px;height:20px;margin:2px 0;padding:0 4px;border-radius:3px;background:var(--badge-bg);color:var(--text);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.over{background:var(--danger-bg);color:var(--danger);box-shadow:inset 3px 0 0 var(--danger-bar);font-weight:600}
+.ev.soon{background:var(--warn-bg);color:var(--warn);box-shadow:inset 3px 0 0 var(--warn-mark);font-weight:600}
+.ev.cont{border-top-left-radius:0;border-bottom-left-radius:0}
+.ev.dot::before{content:"● "}
+.more{font-size:12px;border:none;background:none;color:var(--primary);cursor:pointer;padding:0;text-decoration:underline}
+.span2{width:calc(200% + 7px)}.span3{width:calc(300% + 14px)}
+dialog{border:1px solid var(--border);border-radius:6px;padding:16px 24px}
+dialog::backdrop{background:rgba(17,24,39,.4)}
+dialog ul{padding-left:18px}
+.hidden{display:none}
+.week .day{min-height:320px}
+@media (max-width:767px){main{padding:8px}.day{min-height:80px}.ev{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="mockbar">モック: 基準日 2026/10/07（水）。「月」「週」の切替、10/8 の「他 2 件」、各バーのクリック（詳細へ）を確認できます。閲覧専用（ドラッグ・作成はできない）。</div>
+<header><span class="app">TODO アプリ</span><nav><a href="screen-01-list.html">一覧</a><a href="#" class="cur">カレンダー</a><a href="#">ゴミ箱</a></nav></header>
+<main>
+  <div class="bar">
+    <h1 id="ttl">2026 年 10 月</h1>
+    <button class="btn">＜ 前月</button><button class="btn">今日</button><button class="btn">次月 ＞</button>
+    <span style="flex:1"></span>
+    <button class="btn" aria-pressed="true" id="v-m">月</button><button class="btn" aria-pressed="false" id="v-w">週</button>
+  </div>
+  <p class="cond">一覧の条件を適用中: 条件なし（完了は非表示）　<a href="screen-01-list.html">一覧で条件を変更</a></p>
+
+  <div class="cal" id="month">
+    <div class="dow">日</div><div class="dow">月</div><div class="dow">火</div><div class="dow">水</div><div class="dow">木</div><div class="dow">金</div><div class="dow">土</div>
+    <div class="day other"><span class="n">9/27</span></div><div class="day other"><span class="n">28</span></div><div class="day other"><span class="n">29</span></div><div class="day other"><span class="n">30</span></div>
+    <div class="day"><span class="n">1</span><a class="ev over dot" href="screen-02-detail.html">! 期限超過 未回答者へのリマインド</a></div>
+    <div class="day"><span class="n">2</span><a class="ev over dot" href="screen-02-detail.html">! 期限超過 研修カリキュラムの確定</a></div>
+    <div class="day"><span class="n">3</span></div>
+    <div class="day"><span class="n">4</span></div>
+    <div class="day"><span class="n">5</span></div>
+    <div class="day"><span class="n">6</span><a class="ev over dot" href="screen-02-detail.html">! 期限超過 備品棚卸し（10 月）</a></div>
+    <div class="day today"><span class="n">7 今日</span><a class="ev soon dot" href="screen-02-detail.html">◷ 期限間近 リンク切れの一括確認</a></div>
+    <div class="day"><span class="n">8</span><a class="ev soon dot" href="screen-02-detail.html">◷ 期限間近 講師の日程調整</a><a class="ev dot" href="#">週次定例の議事録</a><a class="ev dot" href="#">名札の発注</a><button class="more" id="more8">他 2 件</button></div>
+    <div class="day"><span class="n">9</span></div>
+    <div class="day"><span class="n">10</span></div>
+    <div class="day"><span class="n">11</span></div>
+    <div class="day"><span class="n">12</span><a class="ev span3" href="screen-02-detail.html" style="position:relative;z-index:1">候補者リストの作成（10/12〜10/14）</a></div>
+    <div class="day"><span class="n">13</span></div><div class="day"><span class="n">14</span></div>
+    <div class="day"><span class="n">15</span></div>
+    <div class="day"><span class="n">16</span><a class="ev span2" href="screen-02-detail.html" style="position:relative;z-index:1">外部講師への打診（10/16〜10/19）</a></div>
+    <div class="day"><span class="n">17</span></div>
+    <div class="day"><span class="n">18</span><a class="ev cont span2" href="screen-02-detail.html" style="position:relative;z-index:1">外部講師への打診（続き）</a></div>
+    <div class="day"><span class="n">19</span></div><div class="day"><span class="n">20</span><a class="ev dot" href="screen-02-detail.html">会議室の予約</a></div><div class="day"><span class="n">21</span></div><div class="day"><span class="n">22</span></div><div class="day"><span class="n">23</span></div><div class="day"><span class="n">24</span></div>
+    <div class="day"><span class="n">25</span></div><div class="day"><span class="n">26</span></div><div class="day"><span class="n">27</span></div><div class="day"><span class="n">28</span></div><div class="day"><span class="n">29</span></div><div class="day"><span class="n">30</span></div><div class="day"><span class="n">31</span></div>
+    <div class="day other"><span class="n">11/1</span></div><div class="day other"><span class="n">2</span></div><div class="day other"><span class="n">3</span></div><div class="day other"><span class="n">4</span></div><div class="day other"><span class="n">5</span></div><div class="day other"><span class="n">6</span></div><div class="day other"><span class="n">7</span></div>
+  </div>
+
+  <div class="cal week hidden" id="week">
+    <div class="dow">日 10/4</div><div class="dow">月 10/5</div><div class="dow">火 10/6</div><div class="dow">水 10/7</div><div class="dow">木 10/8</div><div class="dow">金 10/9</div><div class="dow">土 10/10</div>
+    <div class="day"></div><div class="day"></div>
+    <div class="day"><a class="ev over dot" href="screen-02-detail.html">! 期限超過 備品棚卸し（10 月）</a></div>
+    <div class="day today"><a class="ev soon dot" href="screen-02-detail.html">◷ 期限間近 リンク切れの一括確認</a></div>
+    <div class="day"><a class="ev soon dot" href="screen-02-detail.html">◷ 期限間近 講師の日程調整</a><a class="ev dot" href="#">週次定例の議事録</a><a class="ev dot" href="#">名札の発注</a><a class="ev dot" href="#">研修アンケートの作成</a><a class="ev dot" href="#">PC の貸出申請</a></div>
+    <div class="day"></div><div class="day"></div>
+  </div>
+</main>
+<dialog id="dlg"><h2 style="font-size:16px;margin-top:0">2026/10/08 のタスク（5 件）</h2>
+<ul><li><a href="screen-02-detail.html">講師の日程調整</a>（◷ 期限間近）</li><li><a href="#">週次定例の議事録</a></li><li><a href="#">名札の発注</a></li><li><a href="#">研修アンケートの作成</a></li><li><a href="#">PC の貸出申請</a></li></ul>
+<button class="btn" onclick="this.closest('dialog').close()">閉じる</button></dialog>
+<script>
+const m=document.getElementById('month'),w=document.getElementById('week'),vm=document.getElementById('v-m'),vw=document.getElementById('v-w'),t=document.getElementById('ttl');
+vm.onclick=()=>{m.classList.remove('hidden');w.classList.add('hidden');vm.setAttribute('aria-pressed',true);vw.setAttribute('aria-pressed',false);t.textContent='2026 年 10 月';};
+vw.onclick=()=>{w.classList.remove('hidden');m.classList.add('hidden');vw.setAttribute('aria-pressed',true);vm.setAttribute('aria-pressed',false);t.textContent='2026/10/04 〜 10/10';};
+document.getElementById('more8').onclick=()=>document.getElementById('dlg').showModal();
+</script>
+</body>
+</html>

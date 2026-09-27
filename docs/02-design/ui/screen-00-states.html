@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>状態リファレンス - TODO アプリ</title>
+<style>
+:root{--bg:#fff;--surface:#f6f7f9;--border:#d0d5dd;--text:#1f2937;--text-muted:#4b5563;--text-dim:#6b7280;--primary:#1d4ed8;--danger:#b42318;--danger-bar:#d92d20;--danger-bg:#fef3f2;--warn:#8a4b00;--warn-mark:#b45309;--warn-bg:#fffaeb;--badge-bg:#e8ecf2;--badge-done-bg:#eef0f3;--font:"Segoe UI","Yu Gothic UI","Meiryo",system-ui,sans-serif;--radius:4px}
+body{margin:0;padding:16px 24px;font:14px/1.6 var(--font);color:var(--text)}
+h1{font-size:20px}h2{font-size:15px;margin-top:24px}
+table{border-collapse:collapse;min-width:720px}
+th,td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:middle}
+th{background:var(--surface);font-size:12px;color:var(--text-muted)}
+.badge{background:var(--badge-bg);border-radius:var(--radius);padding:1px 8px;font-size:12px}
+.badge.done{background:var(--badge-done-bg);color:#344054}
+.over{color:var(--danger);font-weight:700}.soon{color:var(--warn);font-weight:700}
+.row-over{background:var(--danger-bg);box-shadow:inset 4px 0 0 var(--danger-bar)}
+.row-soon{box-shadow:inset 4px 0 0 var(--warn-mark)}
+.dim{color:var(--text-dim)}
+.ev{display:inline-block;font-size:12px;padding:0 6px;border-radius:3px;background:var(--badge-bg)}
+.ev.o{background:var(--danger-bg);color:var(--danger);box-shadow:inset 3px 0 0 var(--danger-bar);font-weight:600}
+.ev.s{background:var(--warn-bg);color:var(--warn);box-shadow:inset 3px 0 0 var(--warn-mark);font-weight:600}
+.warnband{background:var(--warn-bg);border:1px solid var(--warn-mark);padding:6px 12px;border-radius:var(--radius)}
+.btn{border:1px solid var(--border);background:#fff;border-radius:var(--radius);padding:3px 10px;font:inherit}
+.btn:disabled{color:var(--text-dim);background:var(--surface)}
+</style>
+</head>
+<body>
+<h1>状態リファレンス（複数画面に現れる表示の正）</h1>
+<p>基準日 2026/10/07。判定の正は detailed-design/DD-06 §6。実装とテストの見た目の比較はこの 1 枚を正とする。</p>
+
+<h2>1. 期限の強調 × 表示箇所（境界値を含む）</h2>
+<table>
+<tr><th>期限</th><th>状態</th><th>区分</th><th>一覧の行</th><th>詳細</th><th>カレンダー</th></tr>
+<tr><td>2026/10/06（昨日）</td><td>進行中</td><td>期限超過</td><td class="row-over"><span class="over">2026/10/06 ! 期限超過</span></td><td><span class="over">2026/10/06 ! 期限超過</span></td><td><span class="ev o">! 期限超過 タスク名</span></td></tr>
+<tr><td>2026/10/07（今日）</td><td>未着手</td><td>期限間近</td><td class="row-soon"><span class="soon">2026/10/07 ◷ 期限間近</span></td><td><span class="soon">2026/10/07 ◷ 期限間近</span></td><td><span class="ev s">◷ 期限間近 タスク名</span></td></tr>
+<tr><td>2026/10/08（明日）</td><td>未着手</td><td>期限間近</td><td class="row-soon"><span class="soon">2026/10/08 ◷ 期限間近</span></td><td><span class="soon">2026/10/08 ◷ 期限間近</span></td><td><span class="ev s">◷ 期限間近 タスク名</span></td></tr>
+<tr><td>2026/10/09（明後日）</td><td>未着手</td><td>なし（境界）</td><td>2026/10/09</td><td>2026/10/09</td><td><span class="ev">タスク名</span></td></tr>
+<tr><td>2026/10/01（過去）</td><td>完了（完了扱い）</td><td>なし（完了は強調しない）</td><td class="dim">2026/10/01</td><td>2026/10/01</td><td>「完了も表示」時のみ <span class="ev">タスク名</span></td></tr>
+<tr><td>なし</td><td>進行中</td><td>なし</td><td>―</td><td>―</td><td>表示しない</td></tr>
+</table>
+
+<h2>2. 状態バッジ</h2>
+<p><span class="badge">未着手</span> <span class="badge">進行中</span> <span class="badge">レビュー待ち（管理者が追加した例）</span> <span class="badge done">完了（完了扱い）</span>　— 状態ごとに色を変えない（管理者が増やせるため）。</p>
+
+<h2>3. 行の表示区分</h2>
+<table>
+<tr><th>区分</th><th>見た目</th><th>条件</th></tr>
+<tr><td>通常</td><td>講師の日程調整</td><td>一致した行</td></tr>
+<tr><td>薄い（完了の親）</td><td class="dim">配属先アンケートの回収（完了）</td><td>完了扱いで、未完了の子を持ち「完了も表示」がオフ</td></tr>
+<tr><td>薄い（絞り込みの祖先）</td><td class="dim">研修カリキュラムの確定（条件外）</td><td>条件に合う子孫の祖先</td></tr>
+<tr><td>担当者が無効</td><td>（無効）田中 由紀</td><td>担当者が無効化された利用者</td></tr>
+<tr><td>担当者未設定</td><td>―</td><td>担当者が NULL</td></tr>
+</table>
+
+<h2>4. 操作ボタンの状態</h2>
+<p><button class="btn">編集する</button> 権限あり　<button class="btn" disabled title="このタスクを編集できるのは担当者と管理者だけです">編集する</button> 権限なし（注記「このタスクを編集できるのは担当者と管理者だけです」を横に出す）</p>
+
+<h2>5. 帯・空状態</h2>
+<p class="warnband">⚠ 山田 花子さんが編集中（10:42 から）</p>
+<p class="warnband">⚠ バックアップが 3 日失敗しています。管理画面で状況を確認してください（管理者のみ）</p>
+<p style="border:1px dashed var(--border);padding:12px;text-align:center;color:var(--text-muted)">タスクがありません ／ 条件に合うタスクがありません ／ 変更履歴はありません</p>
+</body>
+</html>
