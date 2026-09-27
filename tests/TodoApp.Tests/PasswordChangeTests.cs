@@ -2,6 +2,9 @@ using System.Net;
 using System.Text.Json;
 using Dapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.Sqlite;
 using TodoApp.Data;
 using TodoApp.Infrastructure;
@@ -57,7 +60,7 @@ public sealed class PasswordChangeTests
         await app.CreateUserAsync("newbie", Initial, mustChangePassword: true);
         using var client = await LoginAsync(app, "newbie", Initial);
 
-        foreach (var path in new[] { "/", "/tasks/1", "/admin/users", "/error" })
+        foreach (var path in new[] { "/", "/tasks/1", "/admin/users" })
         {
             using var page = await client.GetAsync(U(path), Ct);
             Assert.Equal(HttpStatusCode.Redirect, page.StatusCode);
@@ -128,6 +131,50 @@ public sealed class PasswordChangeTests
 
         await AssertErrorAsync(response, errorId);
         Assert.Equal(before, await ReadUserAsync(app, id));
+    }
+
+    [Fact]
+    [Trait("TC", "US-002")]
+    public async Task 初期パスワードのまま_想定外例外_変更画面へ転送せず500と相関ID()
+    {
+        await using var app = await TestWebApp.CreateAsync(s =>
+            s.Configure<MvcOptions>(o => o.Filters.Add(new ThrowOnHeaderFilter())));
+        await app.CreateUserAsync("newbie", Initial, mustChangePassword: true);
+        using var client = await LoginAsync(app, "newbie", Initial);
+
+        // 転送対象外の /account/password で例外を起こし、例外ハンドラの /error 再実行を通す
+        using var request = new HttpRequestMessage(HttpMethod.Get, U(PasswordPath));
+        request.Headers.Add(ThrowOnHeaderFilter.Header, "1");
+        using var response = await client.SendAsync(request, Ct);
+        var body = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(Ct));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Contains($"（{ErrorIds.SysUnexpected}）", body, StringComparison.Ordinal);
+        Assert.Matches(@"相関 ID: <code>[^<\s]+</code>", body);
+        Assert.DoesNotContain(TestWebApp.ThrowMarker, body, StringComparison.Ordinal);
+    }
+
+    private sealed class ThrowOnHeaderFilter : IPageFilter
+    {
+        public const string Header = "X-Test-Throw";
+
+        public void OnPageHandlerSelected(PageHandlerSelectedContext context)
+        {
+        }
+
+        public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
+        {
+            // 再実行された /error 自体は通す（ヘッダーは再実行でも残るため）
+            if (context.HttpContext.Request.Headers.ContainsKey(Header)
+                && !context.HttpContext.Request.Path.Equals("/error", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("テスト用の想定外例外 " + TestWebApp.ThrowMarker);
+            }
+        }
+
+        public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
+        {
+        }
     }
 
     [Fact]

@@ -120,7 +120,7 @@ public static class AuthSetup
     public const string LogoutPath = "/logout";
 
     /// <summary>
-    /// 初期パスワードのままの利用者は /account/password・/logout 以外を変更画面へ 302、API は 403 E-AUTH-MUST-CHANGE（DD-03 §3）。
+    /// 初期パスワードのままの利用者は /account/password・/logout・/error 以外を変更画面へ 302、API は 403 E-AUTH-MUST-CHANGE（DD-03 §3）。
     /// 静的ファイルはこのミドルウェアより前で返る。クレームは ValidatePrincipalAsync が毎要求 DB の値に置き換える。
     /// </summary>
     public static Task ForcePasswordChange(HttpContext context, RequestDelegate next)
@@ -130,7 +130,9 @@ public static class AuthSetup
         var path = context.Request.Path;
         if (context.User.FindFirst(ClaimMustChange)?.Value != "1"
             || path.Equals(PasswordPath, StringComparison.OrdinalIgnoreCase)
-            || path.Equals(LogoutPath, StringComparison.OrdinalIgnoreCase))
+            || path.Equals(LogoutPath, StringComparison.OrdinalIgnoreCase)
+            // 例外ハンドラの再実行先。転送すると想定外例外が 500 画面にならない
+            || path.Equals(WebHostSetup.ErrorPath, StringComparison.OrdinalIgnoreCase))
         {
             return next(context);
         }
