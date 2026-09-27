@@ -37,3 +37,11 @@ evaluation/results/trajectories/*.zip
 evaluation/runs/
 # Copilot CLI のローカル上書き(公式: settings.local.json は .gitignore へ。生成物は settings.json)
 .github/copilot/settings.local.json
+
+# .NET（todo-app）
+bin/
+obj/
+.local/
+TestResults/
+*.user
+.vs/
