@@ -13,6 +13,7 @@ public sealed record TaskListItem(
     string? AssigneeName,
     bool AssigneeInactive,
     DateOnly? DueDate,
+    DueState Due,
     int Priority,
     string? DimNote,
     int ChildCount,
@@ -20,15 +21,23 @@ public sealed record TaskListItem(
 
 public sealed record TaskListProject(long Id, string Name, IReadOnlyList<TaskListItem> Rows);
 
-/// <summary>一覧画面の表示内容。EmptyMessage があれば表の代わりに出す。</summary>
-public sealed record TaskListView(IReadOnlyList<TaskListProject> Projects, string? Notice, string? EmptyMessage);
+/// <summary>一覧画面の表示内容。EmptyMessage があれば表の代わりに出す。OverdueCount は絞り込みに依存しない全体の期限超過件数（DD-06 §6）。
+/// Statuses・Users は絞り込みバーの選択肢。</summary>
+public sealed record TaskListView(
+    IReadOnlyList<TaskListProject> Projects,
+    string? Notice,
+    string? EmptyMessage,
+    int OverdueCount,
+    IReadOnlyList<StatusRecord> Statuses,
+    IReadOnlyList<UserNameRecord> Users);
 
 /// <summary>一覧の組み立てに使う読み込み結果（DD-06 §2 手順 1）。</summary>
 public sealed record TaskListData(
     IReadOnlyList<ProjectRecord> Projects,
     IReadOnlyList<StatusRecord> Statuses,
     IReadOnlyList<UserNameRecord> Users,
-    IReadOnlyList<TaskListRecord> Tasks);
+    IReadOnlyList<TaskListRecord> Tasks,
+    IReadOnlySet<long>? MemoHits = null);
 
 /// <summary>一覧（ツリー）の組み立て（DD-06 §2〜§4・US-005・NFR-001）。</summary>
 public sealed class TaskListService(Db db, IClock clock)
@@ -38,20 +47,26 @@ public sealed class TaskListService(Db db, IClock clock)
     public const int RenderMax = 3000;
 
     public async Task<TaskListView> BuildAsync(TaskFilter filter, CurrentUser user) =>
-        Build(await LoadAsync().ConfigureAwait(false), filter, user, clock.Today).Render();
+        Build(await LoadAsync(filter).ConfigureAwait(false), filter, user, clock.Today).Render();
 
     /// <summary>折りたたまれた行の直下の子（V に含まれるもの）。有効なタスクでなければ E-TASK-NOT-FOUND。</summary>
     public async Task<IReadOnlyList<TaskListItem>> ChildrenAsync(long taskId, TaskFilter filter, CurrentUser user) =>
-        Build(await LoadAsync().ConfigureAwait(false), filter, user, clock.Today).Children(taskId);
+        Build(await LoadAsync(filter).ConfigureAwait(false), filter, user, clock.Today).Children(taskId);
 
     public static TaskTree Build(TaskListData data, TaskFilter filter, CurrentUser user, DateOnly today) => new(data, filter, user, today);
 
-    private Task<TaskListData> LoadAsync() =>
+    private Task<TaskListData> LoadAsync(TaskFilter filter) =>
         db.WriteAsync(async (connection, transaction) => new TaskListData(
             await ProjectRepository.ListActiveAsync(connection, transaction).ConfigureAwait(false),
             await StatusRepository.ListAsync(connection, transaction).ConfigureAwait(false),
             await TaskRepository.ListUserNamesAsync(connection, transaction).ConfigureAwait(false),
-            await TaskRepository.ListActiveForListAsync(connection, transaction).ConfigureAwait(false)));
+            await TaskRepository.ListActiveForListAsync(connection, transaction).ConfigureAwait(false),
+            filter.Memo && filter.SearchTerm is { } q
+                ? (await TaskRepository.ListActiveMemosAsync(connection, transaction).ConfigureAwait(false))
+                    .Where(m => TaskService.NormalizeForSearch(m.Memo).Contains(q, StringComparison.Ordinal))
+                    .Select(m => m.Id)
+                    .ToHashSet()
+                : null));
 }
 
 /// <summary>メモリ上のツリー（一致 M・表示 V・薄い行 D = V \ M）。</summary>
@@ -67,10 +82,13 @@ public sealed class TaskTree
     private readonly Dictionary<long, List<TaskListRecord>> _taskChildren = [];
     private readonly Dictionary<long, List<TaskListRecord>> _projectRoots = [];
     private readonly Dictionary<long, int> _levels = [];
+    private readonly DateOnly _today;
+    private readonly int _overdueCount;
 
     internal TaskTree(TaskListData data, TaskFilter filter, CurrentUser user, DateOnly today)
     {
         _data = data;
+        _today = today;
         _hasConditions = filter.HasConditions;
         _byId = data.Tasks.ToDictionary(t => t.Id);
         _statuses = data.Statuses.ToDictionary(s => s.Id);
@@ -79,9 +97,15 @@ public sealed class TaskTree
 
         foreach (var t in data.Tasks)
         {
-            if (filter.Match(t, _statuses[t.StatusId].IsDone, showDone, user.Id, today))
+            var isDone = _statuses[t.StatusId].IsDone;
+            if (filter.Match(t, isDone, showDone, user.Id, today, data.MemoHits))
             {
                 _matched.Add(t.Id);
+            }
+
+            if (DueBadge.Classify(TaskFilter.ParseDate(t.DueDate), isDone, today) == DueState.Overdue)
+            {
+                _overdueCount++;
             }
         }
 
@@ -117,16 +141,18 @@ public sealed class TaskTree
 
     public IReadOnlyCollection<long> Visible => _visible;
 
+    public int OverdueCount => _overdueCount;
+
     public TaskListView Render()
     {
         if (_data.Projects.Count == 0)
         {
-            return new([], null, "タスクがありません");
+            return View([], null, "タスクがありません");
         }
 
         if (_hasConditions && _matched.Count == 0)
         {
-            return new([], null, "条件に合うタスクがありません");
+            return View([], null, "条件に合うタスクがありません");
         }
 
         string? notice = null;
@@ -162,8 +188,11 @@ public sealed class TaskTree
             projects.Add(new(p.Id, p.Name, rows));
         }
 
-        return new(projects, notice, null);
+        return View(projects, notice, null);
     }
+
+    private TaskListView View(IReadOnlyList<TaskListProject> projects, string? notice, string? empty) =>
+        new(projects, notice, empty, _overdueCount, _data.Statuses, _data.Users);
 
     public IReadOnlyList<TaskListItem> Children(long taskId)
     {
@@ -199,6 +228,7 @@ public sealed class TaskTree
         var status = _statuses[t.StatusId];
         var assignee = t.AssigneeId is { } a ? _users[a] : null;
         var dimNote = _matched.Contains(t.Id) ? null : status.IsDone ? "（完了）" : "（条件外）";
+        var due = TaskFilter.ParseDate(t.DueDate);
         return new(
             t.Id,
             t.Title,
@@ -207,7 +237,8 @@ public sealed class TaskTree
             status.IsDone,
             assignee?.DisplayName,
             assignee is { IsActive: false },
-            TaskFilter.ParseDate(t.DueDate),
+            due,
+            DueBadge.Classify(due, status.IsDone, _today),
             t.Priority,
             dimNote,
             _taskChildren.GetValueOrDefault(t.Id)?.Count ?? 0,

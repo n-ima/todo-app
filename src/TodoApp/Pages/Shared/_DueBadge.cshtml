@@ -1,0 +1,17 @@
+@model (DateOnly? Date, TodoApp.Services.DueState State)
+@* 期限の表示と強調（DD-06 §6・NFR-014: 色＋アイコン＋文字）。一覧・詳細・カレンダーで共通 *@
+@{
+    var text = Model.Date?.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.InvariantCulture) ?? "―";
+}
+@switch (Model.State)
+{
+    case TodoApp.Services.DueState.Overdue:
+        <span class="due-over">@text</span><span class="mark due-over"><span aria-hidden="true">!</span>期限超過</span>
+        break;
+    case TodoApp.Services.DueState.Soon:
+        <span class="due-soon">@text</span><span class="mark due-soon"><span aria-hidden="true">◷</span>期限間近</span>
+        break;
+    default:
+        @text
+        break;
+}

@@ -74,6 +74,12 @@ public static class TaskRepository
             """,
             transaction: transaction).ConfigureAwait(false)).AsList();
 
+    /// <summary>（Could）メモ本文検索用に有効なタスクのメモを読む（DD-06 §5。一覧 SQL とは別に読む）。</summary>
+    public static async Task<IReadOnlyList<(long Id, string Memo)>> ListActiveMemosAsync(IDbConnection connection, IDbTransaction transaction) =>
+        (await connection.QueryAsync<(long, string)>(
+            "SELECT id, memo FROM tasks WHERE deleted_at IS NULL",
+            transaction: transaction).ConfigureAwait(false)).AsList();
+
     public static async Task<IReadOnlyList<UserNameRecord>> ListUserNamesAsync(IDbConnection connection, IDbTransaction transaction) =>
         (await connection.QueryAsync<UserNameRecord>(
             "SELECT id AS Id, display_name AS DisplayName, is_active AS IsActive FROM users",

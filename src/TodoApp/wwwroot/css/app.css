@@ -103,7 +103,7 @@ dialog .row { display: flex; gap: var(--sp-2); justify-content: flex-end; margin
   .flash { padding: var(--sp-2) var(--sp-3); }
   .site-header { flex-wrap: wrap; }
   .site-header nav a { margin-right: 6px; }
-  .hide-sp, .ops { display: none; }
+  .hide-sp, .ops, .filters .adv { display: none; }
 }
 
 /* タスク一覧（screen-01-list.html・DD-06 §4）。字下げは CSP で style 属性を使えないため段ごとのクラス */
@@ -127,6 +127,14 @@ dialog .row { display: flex; gap: var(--sp-2); justify-content: flex-end; margin
 .tog.none { visibility: hidden; }
 .kids { font-size: var(--fs-small); color: var(--text-muted); }
 .pri-high { color: var(--danger); font-weight: 700; }
+.overdue-btn { background: var(--danger-bg); border: 1px solid var(--danger-bar); color: var(--danger); font-weight: 700; }
+.filters { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-3); display: flex; flex-wrap: wrap; gap: var(--sp-3) var(--sp-4); align-items: flex-end; margin-bottom: var(--sp-3); }
+.filters label { display: flex; flex-direction: column; font-size: 12px; color: var(--text-muted); }
+.filters .chk { flex-direction: row; align-items: center; gap: 4px; font-size: 14px; color: var(--text); }
+.tree tr.overdue td { background: var(--danger-bg); }
+.tree tr.overdue td:first-child { box-shadow: inset 4px 0 0 var(--danger-bar); }
+.tree tr.soon td:first-child { box-shadow: inset 4px 0 0 var(--warn-mark); }
+.mark { margin-left: 6px; font-size: var(--fs-small); }
 .ops { white-space: nowrap; }
 @media (max-width: 767px) {
   .tree thead { display: none; }
