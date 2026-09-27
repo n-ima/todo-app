@@ -71,6 +71,7 @@ public static class WebHostSetup
         app.Use(NoStore);
         app.UseAuthentication();
         app.UseAuthorization();
+        app.Use(AuthSetup.ForcePasswordChange);
         app.Use(AuthSetup.ApiAntiforgery);
         app.MapGet(HealthPath, HealthAsync).AllowAnonymous();
         app.MapRazorPages();

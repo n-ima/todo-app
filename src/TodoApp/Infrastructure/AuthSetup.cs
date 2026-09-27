@@ -116,6 +116,35 @@ public static class AuthSetup
         return Task.CompletedTask;
     }
 
+    public const string PasswordPath = "/account/password";
+    public const string LogoutPath = "/logout";
+
+    /// <summary>
+    /// 初期パスワードのままの利用者は /account/password・/logout 以外を変更画面へ 302、API は 403 E-AUTH-MUST-CHANGE（DD-03 §3）。
+    /// 静的ファイルはこのミドルウェアより前で返る。クレームは ValidatePrincipalAsync が毎要求 DB の値に置き換える。
+    /// </summary>
+    public static Task ForcePasswordChange(HttpContext context, RequestDelegate next)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
+        var path = context.Request.Path;
+        if (context.User.FindFirst(ClaimMustChange)?.Value != "1"
+            || path.Equals(PasswordPath, StringComparison.OrdinalIgnoreCase)
+            || path.Equals(LogoutPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return next(context);
+        }
+
+        if (IsApiPath(path))
+        {
+            return ErrorResponse.WriteJsonAsync(
+                context, StatusCodes.Status403Forbidden, ErrorIds.AuthMustChange, ErrorIds.Messages[ErrorIds.AuthMustChange]);
+        }
+
+        context.Response.Redirect(PasswordPath);
+        return Task.CompletedTask;
+    }
+
     /// <summary>API（/api/*）の状態変更要求は RequestVerificationToken ヘッダーを必須にする。失敗は 400 E-CSRF の JSON。</summary>
     public static async Task ApiAntiforgery(HttpContext context, RequestDelegate next)
     {

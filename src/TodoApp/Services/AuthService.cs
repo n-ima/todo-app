@@ -83,4 +83,39 @@ public sealed partial class AuthService(Db db, IClock clock, IOptions<AuthOption
 
         return result;
     }
+    /// <summary>
+    /// パスワード変更（DD-03 §3）。検証は現在→長さ→確認→同一の順で最初の違反を AppErrorException で返す。
+    /// 成功時は stamp を新しくした利用者を返す（呼び出し側が Cookie を再発行し、他端末のセッションを失効させる）。
+    /// </summary>
+    public Task<UserRecord> ChangePasswordAsync(long userId, string currentPassword, string newPassword, string newPasswordConfirm) =>
+        db.WriteAsync(async (connection, transaction) =>
+        {
+            var user = await UserRepository.FindByIdAsync(connection, transaction, userId).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("ログイン中の利用者が見つかりません");
+            if (Hasher.VerifyHashedPassword(user, user.PasswordHash, currentPassword) == PasswordVerificationResult.Failed)
+            {
+                throw new AppErrorException(ErrorIds.PwdCurrent);
+            }
+
+            if (newPassword.Length is < 8 or > 128)
+            {
+                throw new AppErrorException(ErrorIds.PwdLength);
+            }
+
+            if (!string.Equals(newPassword, newPasswordConfirm, StringComparison.Ordinal))
+            {
+                throw new AppErrorException(ErrorIds.PwdConfirm);
+            }
+
+            if (string.Equals(newPassword, currentPassword, StringComparison.Ordinal))
+            {
+                throw new AppErrorException(ErrorIds.PwdSame);
+            }
+
+            var stamp = Guid.NewGuid().ToString("N");
+            await UserRepository.ChangePasswordAsync(
+                connection, transaction, user.Id, Hasher.HashPassword(user, newPassword), stamp, UserRepository.FormatUtc(clock.UtcNow)).ConfigureAwait(false);
+            return await UserRepository.FindByIdAsync(connection, transaction, userId).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("更新した利用者が見つかりません");
+        });
 }

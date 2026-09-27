@@ -10,8 +10,6 @@ namespace TodoApp.Pages;
 [AllowAnonymous]
 public sealed class LoginModel(AuthService authService) : PageModel
 {
-    public const string PasswordPath = "/account/password";
-
     [BindProperty(SupportsGet = true)]
     public string? ReturnUrl { get; set; }
 
@@ -49,7 +47,7 @@ public sealed class LoginModel(AuthService authService) : PageModel
         await AuthSetup.SignInAsync(HttpContext, result.User!).ConfigureAwait(false);
         if (result.User!.MustChangePassword)
         {
-            return LocalRedirect(PasswordPath);
+            return LocalRedirect(AuthSetup.PasswordPath);
         }
 
         // 外部 URL へは転送しない（オープンリダイレクト対策）

@@ -39,6 +39,16 @@ public sealed class UserRepository(Db db)
         return await connection.QuerySingleOrDefaultAsync<UserRecord>(SelectColumns + "WHERE id = @id", new { id }).ConfigureAwait(false);
     }
 
+    public static Task<UserRecord?> FindByIdAsync(IDbConnection connection, IDbTransaction transaction, long id) =>
+        connection.QuerySingleOrDefaultAsync<UserRecord>(SelectColumns + "WHERE id = @id", new { id }, transaction);
+
+    /// <summary>パスワード変更の確定（初回変更フラグを落とし、stamp を替えて他端末のセッションを失効させる。DD-03 §3）。</summary>
+    public static Task ChangePasswordAsync(IDbConnection connection, IDbTransaction transaction, long id, string passwordHash, string securityStamp, string now) =>
+        connection.ExecuteAsync(
+            "UPDATE users SET password_hash = @passwordHash, must_change_password = 0, security_stamp = @securityStamp, updated_at = @now WHERE id = @id",
+            new { id, passwordHash, securityStamp, now },
+            transaction);
+
     /// <summary>login_id は列の COLLATE NOCASE で大文字小文字を区別せずに一致させる。</summary>
     public static Task<UserRecord?> FindByLoginIdAsync(IDbConnection connection, IDbTransaction transaction, string loginId) =>
         connection.QuerySingleOrDefaultAsync<UserRecord>(SelectColumns + "WHERE login_id = @loginId", new { loginId }, transaction);
