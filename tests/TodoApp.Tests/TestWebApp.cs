@@ -38,7 +38,7 @@ public sealed class TestWebApp : IAsyncDisposable
     public static async Task<TestWebApp> CreateAsync(Action<IServiceCollection>? configureServices = null)
     {
         var dir = Path.Combine(Path.GetTempPath(), "todoapp-web-" + Guid.NewGuid().ToString("N"));
-        Assert.Equal(0, await CliRunner.RunAsync(["migrate", "--init", "--data", dir], TextWriter.Null, TextWriter.Null));
+        Assert.Equal(0, await CliRunner.RunAsync(["migrate", "--init", "--data", dir], TextReader.Null, TextWriter.Null, TextWriter.Null));
         var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b =>
         {
             b.UseSetting("Paths:Data", dir);

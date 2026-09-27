@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using TodoApp.Cli;
 using TodoApp.Data;
+using TodoApp.Services;
 using Xunit;
 
 namespace TodoApp.Tests;
@@ -8,6 +10,7 @@ namespace TodoApp.Tests;
 public sealed class CliTests : IDisposable
 {
     private readonly string _dir = Path.Combine(Path.GetTempPath(), "todoapp-cli-" + Guid.NewGuid().ToString("N"));
+    private TextReader _in = TextReader.Null;
     private readonly StringWriter _out = new();
     private readonly StringWriter _err = new();
 
@@ -24,7 +27,7 @@ public sealed class CliTests : IDisposable
     private string DataDir => Path.Combine(_dir, "data");
 
     private Task<int> RunWith(string migrations, params string[] args) =>
-        CliRunner.RunAsync([.. args, "--data", DataDir], _out, _err, migrations, () => false);
+        CliRunner.RunAsync([.. args, "--data", DataDir], _in, _out, _err, migrations, () => false);
 
     private Task<int> Run(params string[] args) => RunWith(Migrator.DefaultMigrationsDirectory, args);
 
@@ -107,7 +110,7 @@ public sealed class CliTests : IDisposable
     public async Task Apply_サービス稼働中_40()
     {
         await Run("migrate", "--init");
-        var code = await CliRunner.RunAsync(["migrate", "--apply", "--data", DataDir], _out, _err, Migrator.DefaultMigrationsDirectory, () => true);
+        var code = await CliRunner.RunAsync(["migrate", "--apply", "--data", DataDir], TextReader.Null, _out, _err, Migrator.DefaultMigrationsDirectory, () => true);
         Assert.Equal(40, code);
         Assert.Contains("E-CLI-SERVICE-RUNNING", _err.ToString(), StringComparison.Ordinal);
     }
@@ -149,5 +152,105 @@ public sealed class CliTests : IDisposable
 
         await Run("migrate", "--init");
         Assert.Null(await StartupSchemaCheck.GetMismatchMessageAsync(DataDir, Migrator.DefaultMigrationsDirectory));
+    }
+
+    private Task<int> CreateAdmin(string loginId, string stdin, string displayName = "管理者")
+    {
+        _in = new StringReader(stdin);
+        return Run("create-admin", "--login-id", loginId, "--display-name", displayName);
+    }
+
+    private async Task<T> QueryAsync<T>(string sql)
+    {
+        await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = Path.Combine(DataDir, "todo.db") }.ToString());
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        return (T)(await command.ExecuteScalarAsync(TestContext.Current.CancellationToken))!;
+    }
+
+    [Fact]
+    public async Task HasAdmin_いない14_CreateAdminで0になり_いる0()
+    {
+        await Run("migrate", "--init");
+        Assert.Equal(14, await Run("has-admin"));
+
+        Assert.Equal(0, await CreateAdmin("admin", "password-1\nsecond-line\n"));
+        Assert.Equal(0, await Run("has-admin"));
+    }
+
+    [Fact]
+    public async Task CreateAdmin_標準入力1行目がパスワードでmust_change_password_1の管理者()
+    {
+        await Run("migrate", "--init");
+        Assert.Equal(0, await CreateAdmin("admin", "password-1\nignored\n", "管理 太郎"));
+
+        Assert.Equal("admin|管理 太郎|1|1", await QueryAsync<string>(
+            "SELECT role || '|' || display_name || '|' || must_change_password || '|' || is_active FROM users WHERE login_id = 'admin'"));
+        var hash = await QueryAsync<string>("SELECT password_hash FROM users WHERE login_id = 'admin'");
+        Assert.NotEqual(PasswordVerificationResult.Failed, AuthService.PasswordHasher.VerifyHashedPassword(new UserRecord(), hash, "password-1"));
+        Assert.Equal(PasswordVerificationResult.Failed, AuthService.PasswordHasher.VerifyHashedPassword(new UserRecord(), hash, "ignored"));
+    }
+
+    [Fact]
+    public async Task CreateAdmin_重複_大文字小文字違いも11()
+    {
+        await Run("migrate", "--init");
+        Assert.Equal(0, await CreateAdmin("admin", "password-1\n"));
+        Assert.Equal(11, await CreateAdmin("ADMIN", "password-2\n"));
+        Assert.Contains("E-USER-DUPLICATE", _err.ToString(), StringComparison.Ordinal);
+        Assert.Equal(1L, await QueryAsync<long>("SELECT COUNT(*) FROM users"));
+    }
+
+    [Theory]
+    [InlineData("1234567\n")]
+    [InlineData("")]
+    public async Task CreateAdmin_パスワード短い_空_12で作成しない(string stdin)
+    {
+        await Run("migrate", "--init");
+        Assert.Equal(12, await CreateAdmin("admin", stdin));
+        Assert.Contains("E-PWD-LENGTH", _err.ToString(), StringComparison.Ordinal);
+        Assert.Equal(14, await Run("has-admin"));
+    }
+
+    [Fact]
+    public async Task CreateAdmin_パスワード8文字ちょうどと128文字は可_129文字は12()
+    {
+        await Run("migrate", "--init");
+        Assert.Equal(0, await CreateAdmin("a8", "12345678\n"));
+        Assert.Equal(0, await CreateAdmin("a128", new string('x', 128) + "\n"));
+        Assert.Equal(12, await CreateAdmin("a129", new string('x', 129) + "\n"));
+    }
+
+    [Fact]
+    public async Task CreateAdmin_ログインID形式違反_1()
+    {
+        await Run("migrate", "--init");
+        Assert.Equal(1, await CreateAdmin("bad id", "password-1\n"));
+        Assert.Contains("E-USER-LOGINID-FORMAT", _err.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CreateAdmin_引数不足_1()
+    {
+        await Run("migrate", "--init");
+        Assert.Equal(1, await Run("create-admin", "--login-id", "admin"));
+    }
+
+    [Fact]
+    public async Task HasAdmin_無効な管理者と一般利用者だけなら14()
+    {
+        await Run("migrate", "--init");
+        await CreateAdmin("admin", "password-1\n");
+        await CreateAdmin("member1", "password-1\n");
+        await using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = Path.Combine(DataDir, "todo.db") }.ToString()))
+        {
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "UPDATE users SET is_active = 0 WHERE login_id = 'admin'; UPDATE users SET role = 'member' WHERE login_id = 'member1'";
+            await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+        }
+
+        Assert.Equal(14, await Run("has-admin"));
     }
 }

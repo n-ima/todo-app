@@ -5,7 +5,7 @@ using TodoApp.Infrastructure;
 
 if (args.Length > 0 && CliRunner.IsSubcommand(args[0]))
 {
-    return await CliRunner.RunAsync(args, Console.Out, Console.Error);
+    return await CliRunner.RunAsync(args, Console.In, Console.Out, Console.Error);
 }
 
 var builder = WebApplication.CreateBuilder(WebHostSetup.CreateOptions(args));

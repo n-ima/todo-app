@@ -60,4 +60,19 @@ public sealed class UserRepository(Db db)
             "UPDATE users SET password_hash = @passwordHash, updated_at = @now WHERE id = @id",
             new { id, passwordHash, now },
             transaction);
+
+    /// <summary>利用者を追加する（must_change_password=1・security_stamp は新しい GUID。DD-03 §4）。戻り値は users.id。</summary>
+    public static Task<long> InsertAsync(
+        IDbConnection connection, IDbTransaction transaction, string loginId, string displayName, string role, string passwordHash, string now) =>
+        connection.ExecuteScalarAsync<long>(
+            "INSERT INTO users (login_id, display_name, role, password_hash, must_change_password, is_active, security_stamp, created_at, updated_at) " +
+            "VALUES (@loginId, @displayName, @role, @passwordHash, 1, 1, @stamp, @now, @now) RETURNING id",
+            new { loginId, displayName, role, passwordHash, stamp = Guid.NewGuid().ToString("N"), now },
+            transaction);
+
+    public async Task<long> CountActiveAdminsAsync()
+    {
+        await using var connection = await db.OpenAsync().ConfigureAwait(false);
+        return await connection.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = 1").ConfigureAwait(false);
+    }
 }

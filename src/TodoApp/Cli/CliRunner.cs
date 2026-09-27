@@ -1,4 +1,5 @@
 using System.ServiceProcess;
+using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using TodoApp.Data;
 using TodoApp.Infrastructure;
@@ -15,6 +16,9 @@ public static class ExitCodes
     public const int ApplyFailedPartial = 5;
     public const int SchemaMismatch = 6;
     public const int AlreadyExists = 10;
+    public const int DuplicateLoginId = 11;
+    public const int PasswordRuleViolation = 12;
+    public const int NoAdmin = 14;
     public const int ServiceRunning = 40;
 }
 
@@ -25,29 +29,34 @@ public static class CliRunner
     public const string DatabaseFileName = "todo.db";
     private const string ServiceName = "TodoApp";
 
-    private static readonly string[] Subcommands = ["migrate", "check-schema"];
+    private static readonly string[] Subcommands = ["migrate", "check-schema", "create-admin", "has-admin"];
 
     public static bool IsSubcommand(string arg) => Subcommands.Contains(arg, StringComparer.Ordinal);
 
-    public static Task<int> RunAsync(string[] args, TextWriter output, TextWriter error) =>
-        RunAsync(args, output, error, Migrator.DefaultMigrationsDirectory, IsServiceRunning);
+    private const string Usage =
+        "使い方: TodoApp.exe migrate --init|--plan|--apply / check-schema / create-admin --login-id <id> --display-name <名前>（パスワードは標準入力） / has-admin  [--data <dir>]";
+
+    public static Task<int> RunAsync(string[] args, TextReader input, TextWriter output, TextWriter error) =>
+        RunAsync(args, input, output, error, Migrator.DefaultMigrationsDirectory, IsServiceRunning);
 
     public static async Task<int> RunAsync(
-        string[] args, TextWriter output, TextWriter error, string migrationsDirectory, Func<bool> isServiceRunning)
+        string[] args, TextReader input, TextWriter output, TextWriter error, string migrationsDirectory, Func<bool> isServiceRunning)
     {
         ArgumentNullException.ThrowIfNull(args);
+        ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(output);
         ArgumentNullException.ThrowIfNull(error);
         ArgumentNullException.ThrowIfNull(isServiceRunning);
 
-        if (!TryParse(args, out var command, out var flags, out var dataDirectory))
+        if (!TryParse(args, out var command, out var flags, out var options, out var dataDirectory))
         {
-            await error.WriteLineAsync("使い方: TodoApp.exe migrate --init|--plan|--apply [--data <dir>] / check-schema [--data <dir>]").ConfigureAwait(false);
+            await error.WriteLineAsync(Usage).ConfigureAwait(false);
             return ExitCodes.Failure;
         }
 
         var databasePath = Path.Combine(dataDirectory, DatabaseFileName);
-        var migrator = new Migrator(new Db(databasePath), new SystemClock(), migrationsDirectory);
+        var db = new Db(databasePath);
+        var migrator = new Migrator(db, new SystemClock(), migrationsDirectory);
         try
         {
             return (command, flags) switch
@@ -56,6 +65,9 @@ public static class CliRunner
                 ("migrate", "--plan") => await PlanAsync(migrator, databasePath, output, error).ConfigureAwait(false),
                 ("migrate", "--apply") => await ApplyAsync(migrator, databasePath, output, error, isServiceRunning).ConfigureAwait(false),
                 ("check-schema", "") => await CheckSchemaAsync(migrator, databasePath, output, error).ConfigureAwait(false),
+                ("create-admin", "") when options.TryGetValue("--login-id", out var loginId) && options.TryGetValue("--display-name", out var displayName)
+                    => await CreateAdminAsync(db, databasePath, loginId, displayName, input, output, error).ConfigureAwait(false),
+                ("has-admin", "") => await HasAdminAsync(db, databasePath, output, error).ConfigureAwait(false),
                 _ => await UsageAsync(error).ConfigureAwait(false),
             };
         }
@@ -80,22 +92,27 @@ public static class CliRunner
         return File.Exists(databasePath) ? await migrator.GetCurrentVersionAsync().ConfigureAwait(false) : 0;
     }
 
-    private static bool TryParse(string[] args, out string command, out string flags, out string dataDirectory)
+    private static readonly string[] ValueOptions = ["--data", "--login-id", "--display-name"];
+
+    private static bool TryParse(
+        string[] args, out string command, out string flags, out Dictionary<string, string> options, out string dataDirectory)
     {
         command = args.Length > 0 ? args[0] : "";
-        dataDirectory = DefaultDataDirectory;
+        options = new Dictionary<string, string>(StringComparer.Ordinal);
         var rest = new List<string>();
         for (var i = 1; i < args.Length; i++)
         {
-            if (args[i] == "--data")
+            if (ValueOptions.Contains(args[i], StringComparer.Ordinal))
             {
                 if (i + 1 >= args.Length)
                 {
                     flags = "";
+                    dataDirectory = DefaultDataDirectory;
                     return false;
                 }
 
-                dataDirectory = args[++i];
+                options[args[i]] = args[i + 1];
+                i++;
             }
             else
             {
@@ -104,12 +121,13 @@ public static class CliRunner
         }
 
         flags = string.Join(' ', rest);
+        dataDirectory = options.GetValueOrDefault("--data", DefaultDataDirectory);
         return IsSubcommand(command);
     }
 
     private static async Task<int> UsageAsync(TextWriter error)
     {
-        await error.WriteLineAsync("使い方: TodoApp.exe migrate --init|--plan|--apply [--data <dir>] / check-schema [--data <dir>]").ConfigureAwait(false);
+        await error.WriteLineAsync(Usage).ConfigureAwait(false);
         return ExitCodes.Failure;
     }
 
@@ -216,6 +234,75 @@ public static class CliRunner
         var current = await migrator.GetCurrentVersionAsync().ConfigureAwait(false);
         await output.WriteLineAsync($"データベースの版: {current} / アプリの版: {migrator.ExpectedSchemaVersion}").ConfigureAwait(false);
         return current == migrator.ExpectedSchemaVersion ? ExitCodes.Success : ExitCodes.SchemaMismatch;
+    }
+
+    /// <summary>ログイン ID の形式（DD-03 §4）。</summary>
+    private static readonly Regex LoginIdPattern = new("^[A-Za-z0-9._-]{1,50}$", RegexOptions.CultureInvariant);
+
+    private static async Task WriteErrorAsync(TextWriter error, string errorId) =>
+        await error.WriteLineAsync($"{errorId}: {ErrorIds.Messages[errorId]}").ConfigureAwait(false);
+
+    private static async Task<int> CreateAdminAsync(
+        Db db, string databasePath, string loginId, string displayName, TextReader input, TextWriter output, TextWriter error)
+    {
+        if (!await RequireDatabaseAsync(databasePath, error).ConfigureAwait(false))
+        {
+            return ExitCodes.Failure;
+        }
+
+        if (!LoginIdPattern.IsMatch(loginId))
+        {
+            await WriteErrorAsync(error, ErrorIds.UserLoginidFormat).ConfigureAwait(false);
+            return ExitCodes.Failure;
+        }
+
+        if (displayName.Length is < 1 or > 50)
+        {
+            await error.WriteLineAsync("表示名は 1 文字以上 50 文字以下にしてください").ConfigureAwait(false);
+            return ExitCodes.Failure;
+        }
+
+        // 秘密の値はプロセス一覧に残さないため引数ではなく標準入力の 1 行目で受け取る（DD-10 §1）
+        var password = await input.ReadLineAsync().ConfigureAwait(false) ?? "";
+        if (password.Length is < 8 or > 128)
+        {
+            await WriteErrorAsync(error, ErrorIds.PwdLength).ConfigureAwait(false);
+            return ExitCodes.PasswordRuleViolation;
+        }
+
+        var hash = Services.AuthService.PasswordHasher.HashPassword(new UserRecord(), password);
+        var now = UserRepository.FormatUtc(DateTimeOffset.UtcNow);
+        var created = await db.WriteAsync(async (connection, transaction) =>
+        {
+            if (await UserRepository.FindByLoginIdAsync(connection, transaction, loginId).ConfigureAwait(false) is not null)
+            {
+                return false;
+            }
+
+            await UserRepository.InsertAsync(connection, transaction, loginId, displayName, "admin", hash, now).ConfigureAwait(false);
+            return true;
+        }).ConfigureAwait(false);
+
+        if (!created)
+        {
+            await WriteErrorAsync(error, ErrorIds.UserDuplicate).ConfigureAwait(false);
+            return ExitCodes.DuplicateLoginId;
+        }
+
+        await output.WriteLineAsync($"管理者 {loginId} を作成しました（初回ログイン時にパスワード変更が必要です）").ConfigureAwait(false);
+        return ExitCodes.Success;
+    }
+
+    private static async Task<int> HasAdminAsync(Db db, string databasePath, TextWriter output, TextWriter error)
+    {
+        if (!await RequireDatabaseAsync(databasePath, error).ConfigureAwait(false))
+        {
+            return ExitCodes.Failure;
+        }
+
+        var count = await new UserRepository(db).CountActiveAdminsAsync().ConfigureAwait(false);
+        await output.WriteLineAsync(count > 0 ? $"有効な管理者: {count} 人" : "有効な管理者がいません").ConfigureAwait(false);
+        return count > 0 ? ExitCodes.Success : ExitCodes.NoAdmin;
     }
 
     private static bool IsServiceRunning()
