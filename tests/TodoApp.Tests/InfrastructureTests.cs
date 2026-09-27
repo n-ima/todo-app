@@ -85,7 +85,7 @@ public sealed class InfrastructureTests
         Assert.All(keys, k => Assert.NotNull(config[k]));
     }
 
-    private static string FindRepoRoot()
+    internal static string FindRepoRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "TodoApp.sln")))
