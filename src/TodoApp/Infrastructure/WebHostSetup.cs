@@ -1,8 +1,5 @@
 using System.Net;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Diagnostics;
 using Serilog;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Serilog.Events;
 using TodoApp.Cli;
 using TodoApp.Data;
@@ -10,15 +7,13 @@ using TodoApp.Data;
 namespace TodoApp.Infrastructure;
 
 /// <summary>Web ホストの共通設定（DD-01 §5・§6・§8）。</summary>
-public static partial class WebHostSetup
+public static class WebHostSetup
 {
     public const string HealthPath = "/healthz";
+    public const string ErrorPath = "/error";
 
     private const string ContentSecurityPolicy =
         "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "{ErrorId} 相関 ID: {CorrelationId}")]
-    private static partial void LogUnexpected(ILogger logger, Exception exception, string errorId, string correlationId);
 
     public static WebApplicationOptions CreateOptions(string[] args) => new()
     {
@@ -30,6 +25,7 @@ public static partial class WebHostSetup
     public static void ConfigureServices(WebApplicationBuilder builder)
     {
         builder.Services.AddWindowsService(o => o.ServiceName = "TodoApp");
+        builder.Services.AddRazorPages();
         // Paths:Data はテスト等で Build 時に差し替わるため、構成の確定後に読む
         builder.Services.AddSerilog((services, lc) =>
         {
@@ -50,7 +46,8 @@ public static partial class WebHostSetup
     public static void ConfigurePipeline(WebApplication app)
     {
         app.Use(SecurityHeaders);
-        app.UseExceptionHandler(new ExceptionHandlerOptions { ExceptionHandler = HandleUnexpectedAsync });
+        // ログ出力と画面/JSON の出し分けは /error（Pages/Error.cshtml.cs）が行う
+        app.UseExceptionHandler(ErrorPath);
         app.Use(RedirectToHttps);
         app.UseSerilogRequestLogging(o =>
         {
@@ -64,6 +61,7 @@ public static partial class WebHostSetup
         app.UseStaticFiles();
         app.Use(NoStore);
         app.MapGet(HealthPath, HealthAsync);
+        app.MapRazorPages();
     }
 
     private static Task SecurityHeaders(HttpContext context, RequestDelegate next)
@@ -117,30 +115,6 @@ public static partial class WebHostSetup
         var mismatch = await StartupSchemaCheck.GetMismatchMessageAsync(
             configuration[$"{PathsOptions.Section}:Data"] ?? CliRunner.DefaultDataDirectory, Migrator.DefaultMigrationsDirectory).ConfigureAwait(false);
         return mismatch is null ? Results.Text("OK") : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
-    }
-
-    private static async Task HandleUnexpectedAsync(HttpContext context)
-    {
-        var correlationId = context.TraceIdentifier;
-        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-        var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("TodoApp.UnhandledException");
-        LogUnexpected(logger, exception!, ErrorIds.SysUnexpected, correlationId);
-
-        var message = string.Format(System.Globalization.CultureInfo.InvariantCulture, ErrorIds.Messages[ErrorIds.SysUnexpected], correlationId);
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
-        {
-            await ErrorResponse.WriteJsonAsync(context, StatusCodes.Status500InternalServerError, ErrorIds.SysUnexpected, message).ConfigureAwait(false);
-            return;
-        }
-
-        // 例外の詳細（スタックトレース）は画面に出さない（DD-01 §5）
-        context.Response.ContentType = "text/html; charset=utf-8";
-        var encoder = HtmlEncoder.Default;
-        await context.Response.WriteAsync(
-            "<!DOCTYPE html><html lang=\"ja\"><head><meta charset=\"utf-8\"><title>エラー</title></head><body>"
-            + $"<h1>エラー</h1><p>{encoder.Encode(message)} <small>（{ErrorIds.SysUnexpected}）</small></p>"
-            + $"<p>相関 ID: <code>{encoder.Encode(correlationId)}</code></p><p><a href=\"/\">一覧へ戻る</a></p></body></html>").ConfigureAwait(false);
     }
 }
 

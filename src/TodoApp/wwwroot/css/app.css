@@ -1,0 +1,107 @@
+/* 見た目の正は docs/02-design/ui/ のモックアップと design-tokens.md。ここではトークンの変数だけを使う */
+:root {
+  --bg: #ffffff;
+  --surface: #f6f7f9;
+  --border: #d0d5dd;
+  --text: #1f2937;
+  --text-muted: #4b5563;
+  --text-dim: #6b7280;
+  --primary: #1d4ed8;
+  --selected: #eef4ff;
+  --danger: #b42318;
+  --danger-bar: #d92d20;
+  --danger-bg: #fef3f2;
+  --warn: #8a4b00;
+  --warn-mark: #b45309;
+  --warn-bg: #fffaeb;
+  --badge-bg: #e8ecf2;
+  --badge-done-bg: #eef0f3;
+  --font: "Segoe UI", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  --font-mono: Consolas, "BIZ UDGothic", monospace;
+  --fs-base: 14px;
+  --fs-small: 12px;
+  --fs-h1: 20px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --radius: 4px;
+  --indent: 20px;
+  --focus: 2px solid #1d4ed8;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; font: var(--fs-base)/1.6 var(--font); color: var(--text); background: var(--bg); }
+a { color: var(--primary); }
+:focus-visible { outline: var(--focus); outline-offset: 2px; }
+code, textarea.mono { font-family: var(--font-mono); }
+h1 { font-size: var(--fs-h1); margin: 0 0 var(--sp-3); }
+
+/* ヘッダー（DD-11 §1） */
+.site-header { display: flex; align-items: center; gap: var(--sp-4); padding: 0 var(--sp-4); min-height: 48px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.site-header .app { font-weight: 700; font-size: 16px; }
+.site-header nav a { margin-right: var(--sp-3); text-decoration: none; color: var(--text); }
+.site-header nav a.cur { font-weight: 700; border-bottom: 2px solid var(--primary); }
+.site-header .right { margin-left: auto; display: flex; gap: var(--sp-4); align-items: center; }
+.bell { position: relative; text-decoration: none; color: var(--text); }
+.bell .cnt { position: absolute; top: -6px; right: -10px; background: var(--danger); color: #fff; border-radius: 9px; font-size: 11px; padding: 0 5px; }
+.user-menu { position: relative; }
+.user-menu summary { cursor: pointer; }
+.user-menu ul { position: absolute; right: 0; margin: var(--sp-1) 0 0; padding: var(--sp-2); list-style: none; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); min-width: 160px; z-index: 10; }
+.user-menu li { padding: var(--sp-1) 0; }
+.linklike { border: none; background: none; padding: 0; font: inherit; color: var(--primary); text-decoration: underline; cursor: pointer; }
+
+main { padding: var(--sp-4) var(--sp-6); }
+
+/* フラッシュ・エラー要約・帯 */
+.flash { margin: 0; padding: var(--sp-2) var(--sp-6); background: var(--selected); border-bottom: 1px solid var(--border); }
+.error-summary { border: 1px solid var(--danger-bar); background: var(--danger-bg); color: var(--danger); border-radius: var(--radius); padding: var(--sp-2) var(--sp-3); margin-bottom: var(--sp-3); }
+.error-summary ul { margin: 0; padding-left: var(--sp-6); }
+.error-id { font-size: var(--fs-small); color: var(--text-muted); }
+.field-error { color: var(--danger); font-size: var(--fs-small); }
+.warnband { background: var(--warn-bg); border: 1px solid var(--warn-mark); padding: 6px var(--sp-3); border-radius: var(--radius); }
+.empty { padding: 48px; text-align: center; color: var(--text-muted); border: 1px dashed var(--border); border-radius: var(--radius); }
+.note { font-size: var(--fs-small); color: var(--text-dim); }
+.dim { color: var(--text-dim); }
+.hidden { display: none; }
+
+/* ボタン */
+.btn { border: 1px solid var(--border); background: #fff; border-radius: var(--radius); padding: 5px 12px; font: inherit; color: var(--text); cursor: pointer; text-decoration: none; display: inline-block; }
+.btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+.btn.small { padding: 1px 8px; font-size: var(--fs-small); }
+.btn:disabled { color: var(--text-dim); cursor: not-allowed; background: var(--surface); }
+
+/* バッジ・期限の強調（screen-00-states.html） */
+.badge { background: var(--badge-bg); border-radius: var(--radius); padding: 1px 8px; font-size: var(--fs-small); white-space: nowrap; }
+.badge.done { background: var(--badge-done-bg); color: #344054; }
+.due-over { color: var(--danger); font-weight: 700; white-space: nowrap; }
+.due-soon { color: var(--warn); font-weight: 700; white-space: nowrap; }
+.mark { font-size: var(--fs-small); margin-left: var(--sp-1); }
+.mark.over::before { content: "! "; }
+.mark.soon::before { content: "◷ "; color: var(--warn-mark); }
+
+/* 表 */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: var(--fs-small); color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 6px 8px; font-weight: 600; }
+td { border-bottom: 1px solid #eaecf0; padding: 6px 8px; height: 36px; vertical-align: middle; }
+
+/* フォーム */
+input, select, textarea { font: inherit; padding: 4px 6px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); }
+
+/* ダイアログ（confirm.js） */
+dialog { border: 1px solid var(--border); border-radius: 6px; padding: var(--sp-4) var(--sp-6); max-width: 520px; }
+dialog::backdrop { background: rgba(17, 24, 39, .4); }
+dialog h2 { font-size: 16px; }
+dialog .row { display: flex; gap: var(--sp-2); justify-content: flex-end; margin-top: var(--sp-4); flex-wrap: wrap; }
+
+/* 768px 未満は閲覧専用レイアウト（DD-11 §4・NFR-011）。操作ボタンは .ops / .hide-sp で隠す */
+@media (max-width: 767px) {
+  :root { --indent: 12px; }
+  main { padding: var(--sp-3); }
+  .flash { padding: var(--sp-2) var(--sp-3); }
+  .site-header { flex-wrap: wrap; }
+  .site-header nav a { margin-right: 6px; }
+  .hide-sp, .ops { display: none; }
+}

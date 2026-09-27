@@ -1,0 +1,73 @@
+@using Microsoft.AspNetCore.Antiforgery
+@using Microsoft.Extensions.Options
+@inject IAntiforgery Antiforgery
+@inject IOptions<LockOptions> LockOptions
+@{
+    // DD-11 §1: JS は meta からトークンと自動保存間隔を読む（インラインスクリプトは CSP で禁止）
+    var csrfToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+    var hideNav = ViewData["HideNav"] is true;
+    var current = ViewData["Nav"] as string;
+    var navQuery = ViewData["NavQuery"] as string ?? "";
+    var flash = TempData["Flash"] as string;
+    var displayName = User.FindFirst("name")?.Value;
+}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="@csrfToken">
+    <meta name="autosave-seconds" content="@LockOptions.Value.AutosaveSeconds">
+    <title>@(ViewData["Title"] is string title ? title + " - " : "")TODO アプリ</title>
+    <link rel="stylesheet" href="/css/app.css">
+    <script type="module" src="/js/confirm.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</head>
+<body>
+    <header class="site-header">
+        <span class="app">TODO アプリ</span>
+        @if (!hideNav)
+        {
+            <nav aria-label="メイン">
+                <a href="/@navQuery" class="@(current == "list" ? "cur" : null)" aria-current="@(current == "list" ? "page" : null)">一覧</a>
+                <a href="/calendar@(navQuery)" class="@(current == "calendar" ? "cur" : null)" aria-current="@(current == "calendar" ? "page" : null)">カレンダー</a>
+                <a href="/trash" class="@(current == "trash" ? "cur" : null)" aria-current="@(current == "trash" ? "page" : null)">ゴミ箱</a>
+                @if (User.IsInRole("admin"))
+                {
+                    <a href="/admin/users" class="@(current == "admin" ? "cur" : null)" aria-current="@(current == "admin" ? "page" : null)">管理</a>
+                }
+            </nav>
+        }
+        @if (displayName is not null)
+        {
+            <div class="right">
+                <details class="user-menu">
+                    <summary>@displayName</summary>
+                    <ul>
+                        <li><a href="/account/password">パスワード変更</a></li>
+                        <li><form method="post" action="/logout" asp-antiforgery="true"><button type="submit" class="linklike">ログアウト</button></form></li>
+                    </ul>
+                </details>
+            </div>
+        }
+    </header>
+    @if (flash is not null)
+    {
+        <p class="flash" role="status">@flash</p>
+    }
+    <main>
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="error-summary" role="alert">
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+        @RenderBody()
+    </main>
+</body>
+</html>

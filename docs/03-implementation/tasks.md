@@ -52,7 +52,8 @@
   - 証拠: `dotnet run --project src/TodoApp -- migrate --init --data <tmp>/d` → 終了コード 0（0001_init.sql 適用・版 1） (2026-09-27 14:34)
 - [x] TASK-006: Web ホストの共通設定: Kestrel 443/80（証明書は設定から。開発時は開発証明書）・80→443 転送（ループバックの `/healthz` は除外）・セキュリティヘッダー（CSP 等）・`Cache-Control: no-store`・例外ハンドラ（`E-SYS-UNEXPECTED`＋相関 ID）・JSON エラー応答の形・Serilog（日次ファイル・マスク）・`/healthz`・Windows サービス対応（依存: TASK-005 / 対応要件: NFR-006・NFR-007・NFR-008・FR-008 / 対応設計: DD-01 §5・§6・§8 / 完了条件: `TEST` で WebApplicationFactory によるヘッダー・`/healthz` 200・想定外例外の 500 画面に相関 ID・スタックトレースを出さないことの結合テストが通る）
   - 証拠: `dotnet build TodoApp.sln -warnaserror` → 0 個の警告 0 エラー / `dotnet test tests/TodoApp.Tests` → 合計 39 成功 39 失敗 0（WebHostTests: セキュリティヘッダー・no-store・/healthz 200（HTTP ループバックは転送せず）・301 転送・想定外例外 500 画面に相関 ID/スタックトレース無し・API JSON 形・ログに相関 ID） (2026-09-27 14:43)
-- [ ] TASK-007: 共通レイアウトと静的資産: `_Layout.cshtml`（ヘッダー・ナビ・csrf/autosave の meta・フラッシュ・エラー要約）・`wwwroot/css/app.css`（design-tokens.md の CSS 変数・768px のレスポンシブ）・`confirm.js`（`<dialog>` の共通処理）・`/error` 画面（依存: TASK-006 / 対応要件: NFR-011・NFR-014 / 対応設計: DD-11 §1・§4・§5・ui/design-tokens.md / 完了条件: `BUILD`・`TEST` のレンダリング結合テスト（meta の出力・インラインスクリプトが無いこと）が通る）
+- [x] TASK-007: 共通レイアウトと静的資産: `_Layout.cshtml`（ヘッダー・ナビ・csrf/autosave の meta・フラッシュ・エラー要約）・`wwwroot/css/app.css`（design-tokens.md の CSS 変数・768px のレスポンシブ）・`confirm.js`（`<dialog>` の共通処理）・`/error` 画面（依存: TASK-006 / 対応要件: NFR-011・NFR-014 / 対応設計: DD-11 §1・§4・§5・ui/design-tokens.md / 完了条件: `BUILD`・`TEST` のレンダリング結合テスト（meta の出力・インラインスクリプトが無いこと）が通る）
+  - 証拠: `dotnet build TodoApp.sln -warnaserror` → 0 個の警告 0 エラー / `dotnet test tests/TodoApp.Tests` → 合計 46 成功 46 失敗 0（LayoutTests: csrf-token/autosave-seconds の meta 出力・インラインの script/style/on* 無し・/error 画面に文言/エラー ID/相関 ID/一覧へ戻る・POST の例外も 500 画面・app.css のトークンと 767px メディアクエリ・confirm.js 配信。既存 WebHostTests も通過） (2026-09-27 15:07)
 
 ## コア機能
 

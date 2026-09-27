@@ -1,0 +1,9 @@
+@page "/error"
+@model ErrorModel
+@{
+    ViewData["Title"] = "エラー";
+}
+<h1>エラー</h1>
+<p class="error-message">@Model.Message <small class="error-id">（@Model.ErrorId）</small></p>
+<p>相関 ID: <code>@Model.CorrelationId</code></p>
+<p><a href="/">一覧へ戻る</a></p>

@@ -64,9 +64,17 @@ public sealed class TestWebApp : IAsyncDisposable
         // ログファイルを閉じてから一時フォルダを消す
         await StopAsync();
         SqliteConnection.ClearAllPools();
-        if (Directory.Exists(DataDirectory))
+        // 閉じた直後のログファイルを Windows 側（ウイルス対策等）が一瞬掴むことがあるため、少し待って再試行する
+        for (var attempt = 1; Directory.Exists(DataDirectory); attempt++)
         {
-            Directory.Delete(DataDirectory, recursive: true);
+            try
+            {
+                Directory.Delete(DataDirectory, recursive: true);
+            }
+            catch (IOException) when (attempt < 20)
+            {
+                await Task.Delay(100);
+            }
         }
     }
 
@@ -88,4 +96,13 @@ public sealed class TestWebApp : IAsyncDisposable
                     : nextMiddleware(context));
         };
     }
+}
+
+/// <summary>
+/// Web ホストを立てるテストクラスを直列にする（Serilog の静的ロガーはプロセスで 1 つのため、並列に立てるとログファイルが混ざる）。
+/// </summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class WebHostSerial
+{
+    public const string Name = "WebHost";
 }

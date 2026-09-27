@@ -8,6 +8,7 @@ using Xunit;
 
 namespace TodoApp.Tests;
 
+[Collection(WebHostSerial.Name)]
 public sealed class WebHostTests
 {
     private static Uri U(string path) => new(path, UriKind.Relative);

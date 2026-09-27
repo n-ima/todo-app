@@ -2,6 +2,7 @@ using Xunit;
 
 namespace TodoApp.Tests;
 
+[Collection(WebHostSerial.Name)]
 public sealed class SmokeTests
 {
     [Fact]
