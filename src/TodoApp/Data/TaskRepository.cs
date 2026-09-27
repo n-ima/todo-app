@@ -34,9 +34,51 @@ public sealed class UserOption
     public string DisplayName { get; init; } = "";
 }
 
+/// <summary>一覧の 1 行（DD-02 §3 の一覧 SQL。メモは読まない）。</summary>
+public sealed class TaskListRecord
+{
+    public long Id { get; init; }
+    public long ProjectId { get; init; }
+    public long? ParentTaskId { get; init; }
+    public string Title { get; init; } = "";
+    public string TitleNorm { get; init; } = "";
+    public long StatusId { get; init; }
+    public long? AssigneeId { get; init; }
+    public string? StartDate { get; init; }
+    public string? DueDate { get; init; }
+    public int Priority { get; init; }
+    public long SortOrder { get; init; }
+    public string UpdatedAt { get; init; } = "";
+}
+
+/// <summary>担当者の表示に使う利用者（無効も含む）。</summary>
+public sealed class UserNameRecord
+{
+    public long Id { get; init; }
+    public string DisplayName { get; init; } = "";
+    public bool IsActive { get; init; }
+}
+
 /// <summary>tasks と作成時に参照する表の SQL（パラメータ化のみ。DD-01 §4）。</summary>
 public static class TaskRepository
 {
+    /// <summary>有効なタスク全件（DD-02 §3・DD-06 §2）。</summary>
+    public static async Task<IReadOnlyList<TaskListRecord>> ListActiveForListAsync(IDbConnection connection, IDbTransaction transaction) =>
+        (await connection.QueryAsync<TaskListRecord>(
+            """
+            SELECT t.id AS Id, t.project_id AS ProjectId, t.parent_task_id AS ParentTaskId, t.title AS Title, t.title_norm AS TitleNorm,
+                   t.status_id AS StatusId, t.assignee_id AS AssigneeId, t.start_date AS StartDate, t.due_date AS DueDate,
+                   t.priority AS Priority, t.sort_order AS SortOrder, t.updated_at AS UpdatedAt
+            FROM tasks t JOIN projects p ON p.id = t.project_id
+            WHERE t.deleted_at IS NULL AND p.deleted_at IS NULL
+            """,
+            transaction: transaction).ConfigureAwait(false)).AsList();
+
+    public static async Task<IReadOnlyList<UserNameRecord>> ListUserNamesAsync(IDbConnection connection, IDbTransaction transaction) =>
+        (await connection.QueryAsync<UserNameRecord>(
+            "SELECT id AS Id, display_name AS DisplayName, is_active AS IsActive FROM users",
+            transaction: transaction).ConfigureAwait(false)).AsList();
+
     private const string TaskColumns =
         "t.id AS Id, t.project_id AS ProjectId, t.parent_task_id AS ParentTaskId, t.title AS Title, t.assignee_id AS AssigneeId";
 

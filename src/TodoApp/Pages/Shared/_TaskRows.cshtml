@@ -1,0 +1,38 @@
+@model IReadOnlyList<TodoApp.Services.TaskListItem>
+@* 一覧の行（DD-06 §4）。一覧の初回描画と GET /api/tasks/{id}/children（遅延取得）で共通。
+   字下げは CSP で style 属性が使えないため lv-N のクラスで表す（10 段より深い行は 10 段と同じ字下げ） *@
+@foreach (var row in Model)
+{
+    <tr data-id="@row.Id" data-lv="@row.Level" class="@(row.DimNote is null ? null : "dim")">
+        <td>
+            <div class="tt lv-@Math.Min(row.Level, 10)">
+                @if (row.ChildCount == 0)
+                {
+                    <button type="button" class="tog none" tabindex="-1" aria-hidden="true">▸</button>
+                }
+                else if (row.ChildrenRendered)
+                {
+                    <button type="button" class="tog" aria-expanded="true" aria-label="子タスクの開閉">▾</button>
+                }
+                else
+                {
+                    <button type="button" class="tog" aria-expanded="false" aria-label="子タスクの開閉" data-lazy="1">▸</button>
+                }
+                <a href="/tasks/@row.Id">@row.Title</a>
+                @if (row.DimNote is not null)
+                {
+                    <span class="note">@row.DimNote</span>
+                }
+                @if (row.ChildCount > 0 && !row.ChildrenRendered)
+                {
+                    <span class="kids">（子 @row.ChildCount 件）</span>
+                }
+            </div>
+        </td>
+        <td class="c-status"><span class="badge@(row.StatusIsDone ? " done" : "")">@row.StatusName</span></td>
+        <td class="c-assignee">@(row.AssigneeName is null ? "―" : (row.AssigneeInactive ? "（無効）" : "") + row.AssigneeName)</td>
+        <td class="c-due">@(row.DueDate?.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.InvariantCulture) ?? "―")</td>
+        <td class="c-pri@(row.Priority == 1 ? " pri-high" : "")">@(row.Priority switch { 1 => "高", 3 => "低", _ => "中" })</td>
+        <td class="ops"><a class="btn small" href="/tasks/@row.Id/children/new">＋子タスク</a></td>
+    </tr>
+}

@@ -46,6 +46,7 @@ public static class WebHostSetup
         builder.Services.AddScoped<WorkflowService>();
         builder.Services.AddScoped<ProjectService>();
         builder.Services.AddScoped<TaskService>();
+        builder.Services.AddScoped<TaskListService>();
         builder.Services.AddSingleton<TaskPermission>();
         AuthSetup.ConfigureServices(builder.Services);
         // Paths:Data はテスト等で Build 時に差し替わるため、構成の確定後に読む

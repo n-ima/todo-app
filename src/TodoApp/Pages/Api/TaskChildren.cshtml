@@ -1,0 +1,6 @@
+@page "/api/tasks/{id:long}/children"
+@model TodoApp.Pages.Api.TaskChildrenModel
+@{
+    Layout = null;
+}
+<partial name="_TaskRows" model="Model.Rows" />

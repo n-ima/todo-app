@@ -105,3 +105,34 @@ dialog .row { display: flex; gap: var(--sp-2); justify-content: flex-end; margin
   .site-header nav a { margin-right: 6px; }
   .hide-sp, .ops { display: none; }
 }
+
+/* タスク一覧（screen-01-list.html・DD-06 §4）。字下げは CSP で style 属性を使えないため段ごとのクラス */
+.toprow { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; margin-bottom: var(--sp-3); }
+.spacer { flex: 1; }
+.tree tr:hover td { background: var(--selected); }
+.tree tr.project td { background: var(--surface); font-weight: 700; }
+.tree tr.dim td, .tree tr.dim td a { color: var(--text-dim); }
+.tt { display: flex; align-items: center; gap: 6px; }
+.tt.lv-1 { padding-left: calc(var(--indent) * 1); }
+.tt.lv-2 { padding-left: calc(var(--indent) * 2); }
+.tt.lv-3 { padding-left: calc(var(--indent) * 3); }
+.tt.lv-4 { padding-left: calc(var(--indent) * 4); }
+.tt.lv-5 { padding-left: calc(var(--indent) * 5); }
+.tt.lv-6 { padding-left: calc(var(--indent) * 6); }
+.tt.lv-7 { padding-left: calc(var(--indent) * 7); }
+.tt.lv-8 { padding-left: calc(var(--indent) * 8); }
+.tt.lv-9 { padding-left: calc(var(--indent) * 9); }
+.tt.lv-10 { padding-left: calc(var(--indent) * 10); }
+.tog { width: 22px; height: 22px; border: none; background: none; cursor: pointer; color: var(--text-muted); padding: 0; }
+.tog.none { visibility: hidden; }
+.kids { font-size: var(--fs-small); color: var(--text-muted); }
+.pri-high { color: var(--danger); font-weight: 700; }
+.ops { white-space: nowrap; }
+@media (max-width: 767px) {
+  .tree thead { display: none; }
+  .tree, .tree tbody, .tree tr, .tree td { display: block; width: 100%; }
+  .tree td { border: none; height: auto; padding: 2px 8px; }
+  .tree tr { border-bottom: 1px solid #eaecf0; padding: 6px 0; }
+  .tree tr.hidden { display: none; }
+  .tree td.c-status, .tree td.c-assignee, .tree td.c-due, .tree td.c-pri { display: inline-block; width: auto; }
+}

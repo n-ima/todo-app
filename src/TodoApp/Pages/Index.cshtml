@@ -1,0 +1,64 @@
+@page "/"
+@model TodoApp.Pages.IndexModel
+@{
+    ViewData["Title"] = "タスク一覧";
+    var isAdmin = User.IsInRole("admin");
+}
+@section Scripts {
+    <script type="module" src="/js/tree.js"></script>
+}
+<h1>タスク一覧</h1>
+<div class="toprow">
+    <span class="spacer"></span>
+    @if (isAdmin)
+    {
+        <button type="button" class="btn primary hide-sp" data-dialog-open="new-project">＋プロジェクト</button>
+        <dialog id="new-project" aria-labelledby="new-project-title">
+            <h2 id="new-project-title">プロジェクトの作成</h2>
+            <form method="post" asp-page="/Admin/Projects" asp-page-handler="Create">
+                <input type="hidden" name="returnToList" value="true">
+                <p><label for="new-project-name">プロジェクト名（1〜100 文字）</label><br><input id="new-project-name" name="name" maxlength="100" required></p>
+                <div class="row">
+                    <button type="submit" class="btn primary">作成する</button>
+                    <button type="button" class="btn" data-close>キャンセル</button>
+                </div>
+            </form>
+        </dialog>
+    }
+</div>
+@if (Model.View.Notice is not null)
+{
+    <p class="note" role="status">@Model.View.Notice</p>
+}
+@if (Model.View.EmptyMessage is not null)
+{
+    <div class="empty">
+        @Model.View.EmptyMessage
+        @if (isAdmin && Model.View.Projects.Count == 0)
+        {
+            <br><span class="note">「＋プロジェクト」から最初のプロジェクトを作成してください</span>
+        }
+    </div>
+}
+else
+{
+    <table id="tree" class="tree" aria-label="タスクの階層">
+        <thead><tr><th>タイトル</th><th>状態</th><th>担当者</th><th>期限</th><th>優先度</th><th class="ops">操作</th></tr></thead>
+        <tbody>
+            @foreach (var project in Model.View.Projects)
+            {
+                <tr class="project" data-lv="0">
+                    <td colspan="5"><div class="tt"><button type="button" class="tog@(project.Rows.Count == 0 ? " none" : "")" aria-expanded="true" aria-label="開閉">▾</button>@project.Name</div></td>
+                    <td class="ops">
+                        <a class="btn small" href="/projects/@project.Id/tasks/new">＋タスク</a>
+                        @if (isAdmin)
+                        {
+                            <a class="btn small" href="/admin/projects">名前変更・削除</a>
+                        }
+                    </td>
+                </tr>
+                <partial name="_TaskRows" model="project.Rows" />
+            }
+        </tbody>
+    </table>
+}
