@@ -64,6 +64,8 @@
   - 証拠: `dotnet build -warnaserror` → 0 個の警告 0 エラー / `dotnet test` → 合計 95 成功 95 失敗 0（StartupFailureTests: DB 版不一致・appsettings.local.json 不正の両方で WebHostRunner.RunAsync が 1 を返し、data/logs のログファイルとイベントログ書込みに E-SYS-SCHEMA-MISMATCH／例外が残る。ログ・イベントログ書込みを外すと 2 件とも失敗することを確認済み） (2026-09-27 16:24)
 - [x] TASK-011: レビュー M4(a)・LOW: `global.json` に `sdk.version`（10.0.401・rollForward latestFeature）・CLI の Migrator 生成を try 内へ・`migrate --init` 失敗時に作った todo.db を削除・適用途中の IOException を 5 に・`Auth:PasswordMinLength` の使用・CLI の Console 入出力を UTF-8 に・Login の暗黙 Required を日本語の E-AUTH-FAILED に（依存: TASK-010 / 対応要件: US-019・US-001 / 対応設計: DD-10 §1・DD-03 §2 / 完了条件: `TEST` で各点の回帰テストが通る）
   - 証拠: `dotnet build -warnaserror` → 0 個の警告 0 エラー / `dotnet test` → 合計 103 成功 103 失敗 0（CliTests: GlobalJson_SDKの版とrollForwardを固定している・Migrationsフォルダーなし_未処理例外でなく1・Init_適用失敗_todo_dbを残さず再実行できる・Apply_途中でファイルを読めないIOException_5・CreateAdmin_PasswordMinLengthの設定値を使う・実行ファイル_CLIの出力はUTF8 / PasswordChangeTests.長さ検証_Auth_PasswordMinLengthの設定値を使う / AuthTests.ログイン_空入力_英語の必須エラーを出さず日本語のE_AUTH_FAILEDだけ（修正を外すと失敗することを確認済み）） (2026-09-27 17:09)
+- [ ] TASK-012: レビュー M（2026-09-27 18:53）: 読み取り専用の処理を `Db.WriteAsync`（BEGIN IMMEDIATE）から外す。`Db.ReadAsync`（deferred・WAL スナップショット）を追加し、一覧 `/`・`/api/tasks/{id}/children`・管理画面の一覧・作成画面の文脈取得を移す。`memo=1` のメモ正規化と照合はトランザクションの外で行う（依存: TASK-109 / 対応要件: NFR-001 / 対応設計: DD-01 §4・DD-06 §2 / 完了条件: `TEST` で、別接続が BEGIN IMMEDIATE を保持している間も一覧と子の取得が 200 を返す結合テストが通る）
+- [ ] TASK-013: レビュー LOW（2026-09-27 18:53）: CLI `create-admin` の設定読込（壊れた appsettings.local.json で終了コード 1・キー欠落で既定値 8 を使う）・管理画面（users/workflow/projects）の入力エラー時の入力値保持とフィールド横の文言（DD-01 §5）・DD-10 §1 と TASK-208 にログイン ID 形式違反の終了コード 1 を明記（依存: TASK-012 / 対応要件: US-019・US-003 / 対応設計: DD-10 §1・DD-01 §5 / 完了条件: `TEST` で各点の回帰テストが通る）
 
 ## コア機能
 
