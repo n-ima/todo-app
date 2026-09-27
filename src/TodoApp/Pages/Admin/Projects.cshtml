@@ -1,0 +1,49 @@
+@page "/admin/projects"
+@model TodoApp.Pages.Admin.ProjectsModel
+@{
+    ViewData["Title"] = "プロジェクト";
+}
+<h1>プロジェクト</h1>
+<p><a href="/admin/users">利用者管理</a> | <a href="/admin/workflow">状態の定義</a> | プロジェクト</p>
+@if (Model.ErrorId is not null)
+{
+    <div class="error-summary" role="alert">
+        <p class="error-message">@Model.ErrorMessage <small class="error-id">（@Model.ErrorId）</small></p>
+    </div>
+}
+<p>削除したプロジェクトはゴミ箱から復元できます。</p>
+<table class="projects">
+    <thead>
+        <tr><th>名前</th><th>削除</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var project in Model.Projects)
+        {
+            <tr>
+                <td>
+                    <form method="post" asp-page-handler="Rename">
+                        <input type="hidden" name="id" value="@project.Id">
+                        <input name="name" value="@project.Name" maxlength="100" required aria-label="プロジェクト名">
+                        <button type="submit" class="btn small">変更</button>
+                    </form>
+                </td>
+                <td>
+                    <button type="button" class="btn small" data-dialog-open="delete-@project.Id">削除</button>
+                    <dialog id="delete-@project.Id" aria-labelledby="delete-title-@project.Id">
+                        <p id="delete-title-@project.Id">プロジェクト「@project.Name」を削除しますか？</p>
+                        <form method="post" asp-page-handler="Delete">
+                            <input type="hidden" name="id" value="@project.Id">
+                            <button type="submit" class="btn primary">削除する</button>
+                            <button type="button" class="btn" data-close>キャンセル</button>
+                        </form>
+                    </dialog>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<h2>プロジェクトの作成</h2>
+<form method="post" asp-page-handler="Create" class="login-form">
+    <p><label for="name">プロジェクト名（1〜100 文字）</label><br><input id="name" name="name" maxlength="100" required></p>
+    <p><button type="submit" class="btn primary">作成する</button></p>
+</form>

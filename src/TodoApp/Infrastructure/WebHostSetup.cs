@@ -37,6 +37,7 @@ public static class WebHostSetup
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddScoped<UserAdminService>();
         builder.Services.AddScoped<WorkflowService>();
+        builder.Services.AddScoped<ProjectService>();
         AuthSetup.ConfigureServices(builder.Services);
         // Paths:Data はテスト等で Build 時に差し替わるため、構成の確定後に読む
         builder.Services.AddSerilog((services, lc) =>
