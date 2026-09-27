@@ -6,11 +6,8 @@ using TodoApp.Infrastructure;
 namespace TodoApp.Cli;
 
 /// <summary>Web 起動時の DB 版の確認（DD-02 §1）。</summary>
-public static partial class StartupSchemaCheck
+public static class StartupSchemaCheck
 {
-    [LoggerMessage(Level = LogLevel.Critical, Message = "{ErrorId}: {Message}")]
-    public static partial void LogMismatch(ILogger logger, string errorId, string message);
-
     /// <summary>版が一致すれば null、不一致なら E-SYS-SCHEMA-MISMATCH の文言。</summary>
     public static async Task<string?> GetMismatchMessageAsync(string dataDirectory, string migrationsDirectory)
     {
