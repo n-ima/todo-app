@@ -97,7 +97,7 @@ public sealed partial class AuthService(Db db, IClock clock, IOptions<AuthOption
                 throw new AppErrorException(ErrorIds.PwdCurrent);
             }
 
-            if (newPassword.Length is < 8 or > 128)
+            if (newPassword.Length < options.Value.PasswordMinLength || newPassword.Length > 128)
             {
                 throw new AppErrorException(ErrorIds.PwdLength);
             }

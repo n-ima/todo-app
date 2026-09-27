@@ -62,7 +62,8 @@
   - 証拠: `dotnet build -warnaserror` → 0 個の警告 0 エラー / `dotnet test` → 合計 93 成功 93 失敗 0（AppErrorResponseTests.ログイン中のSQLITE_BUSYは画面もAPIも503のE_DB_BUSYになる: 画面 POST /account/password と /api 配下の書込みがともに 503・E-DB-BUSY の ID と DD-12 文言） (2026-09-27 16:18)
 - [x] TASK-010: レビュー M3: 起動失敗の扱い（イベントログへの出力が効くよう Serilog の構成を直す・トップレベルで例外を捕捉してログ＋イベントログ＋終了コード 1）（依存: TASK-009 / 対応要件: NFR-008 / 対応設計: DD-01 §8・DD-02 §1 / 完了条件: `TEST` で起動失敗（版不一致・構成不正）時に終了コード 1 でログが残る結合テストが通る）
   - 証拠: `dotnet build -warnaserror` → 0 個の警告 0 エラー / `dotnet test` → 合計 95 成功 95 失敗 0（StartupFailureTests: DB 版不一致・appsettings.local.json 不正の両方で WebHostRunner.RunAsync が 1 を返し、data/logs のログファイルとイベントログ書込みに E-SYS-SCHEMA-MISMATCH／例外が残る。ログ・イベントログ書込みを外すと 2 件とも失敗することを確認済み） (2026-09-27 16:24)
-- [ ] TASK-011: レビュー M4(a)・LOW: `global.json` に `sdk.version`（10.0.401・rollForward latestFeature）・CLI の Migrator 生成を try 内へ・`migrate --init` 失敗時に作った todo.db を削除・適用途中の IOException を 5 に・`Auth:PasswordMinLength` の使用・CLI の Console 入出力を UTF-8 に・Login の暗黙 Required を日本語の E-AUTH-FAILED に（依存: TASK-010 / 対応要件: US-019・US-001 / 対応設計: DD-10 §1・DD-03 §2 / 完了条件: `TEST` で各点の回帰テストが通る）
+- [x] TASK-011: レビュー M4(a)・LOW: `global.json` に `sdk.version`（10.0.401・rollForward latestFeature）・CLI の Migrator 生成を try 内へ・`migrate --init` 失敗時に作った todo.db を削除・適用途中の IOException を 5 に・`Auth:PasswordMinLength` の使用・CLI の Console 入出力を UTF-8 に・Login の暗黙 Required を日本語の E-AUTH-FAILED に（依存: TASK-010 / 対応要件: US-019・US-001 / 対応設計: DD-10 §1・DD-03 §2 / 完了条件: `TEST` で各点の回帰テストが通る）
+  - 証拠: `dotnet build -warnaserror` → 0 個の警告 0 エラー / `dotnet test` → 合計 103 成功 103 失敗 0（CliTests: GlobalJson_SDKの版とrollForwardを固定している・Migrationsフォルダーなし_未処理例外でなく1・Init_適用失敗_todo_dbを残さず再実行できる・Apply_途中でファイルを読めないIOException_5・CreateAdmin_PasswordMinLengthの設定値を使う・実行ファイル_CLIの出力はUTF8 / PasswordChangeTests.長さ検証_Auth_PasswordMinLengthの設定値を使う / AuthTests.ログイン_空入力_英語の必須エラーを出さず日本語のE_AUTH_FAILEDだけ（修正を外すと失敗することを確認済み）） (2026-09-27 17:09)
 
 ## コア機能
 

@@ -1,4 +1,5 @@
 using System.ServiceProcess;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using TodoApp.Data;
@@ -56,9 +57,10 @@ public static class CliRunner
 
         var databasePath = Path.Combine(dataDirectory, DatabaseFileName);
         var db = new Db(databasePath);
-        var migrator = new Migrator(db, new SystemClock(), migrationsDirectory);
         try
         {
+            // migrations フォルダーが無い等の失敗も終了コード 1 で返すため try の内側で生成する
+            var migrator = new Migrator(db, new SystemClock(), migrationsDirectory);
             return (command, flags) switch
             {
                 ("migrate", "--init") => await InitAsync(migrator, databasePath, dataDirectory, output, error).ConfigureAwait(false),
@@ -66,7 +68,7 @@ public static class CliRunner
                 ("migrate", "--apply") => await ApplyAsync(migrator, databasePath, output, error, isServiceRunning).ConfigureAwait(false),
                 ("check-schema", "") => await CheckSchemaAsync(migrator, databasePath, output, error).ConfigureAwait(false),
                 ("create-admin", "") when options.TryGetValue("--login-id", out var loginId) && options.TryGetValue("--display-name", out var displayName)
-                    => await CreateAdminAsync(db, databasePath, loginId, displayName, input, output, error).ConfigureAwait(false),
+                    => await CreateAdminAsync(db, databasePath, dataDirectory, loginId, displayName, input, output, error).ConfigureAwait(false),
                 ("has-admin", "") => await HasAdminAsync(db, databasePath, output, error).ConfigureAwait(false),
                 _ => await UsageAsync(error).ConfigureAwait(false),
             };
@@ -151,7 +153,23 @@ public static class CliRunner
         }
 
         Directory.CreateDirectory(dataDirectory);
-        var applied = await migrator.ApplyAsync().ConfigureAwait(false);
+        IReadOnlyList<MigrationFile> applied;
+        try
+        {
+            applied = await migrator.ApplyAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            // 作りかけの todo.db を残すと再実行が 10（既に存在）になるため消してから失敗を返す
+            SqliteConnection.ClearAllPools();
+            foreach (var suffix in new[] { "", "-wal", "-shm" })
+            {
+                File.Delete(databasePath + suffix);
+            }
+
+            throw;
+        }
+
         foreach (var file in applied)
         {
             await output.WriteLineAsync($"適用: {file.Name}").ConfigureAwait(false);
@@ -209,7 +227,7 @@ public static class CliRunner
 
             return ExitCodes.Success;
         }
-        catch (Exception ex) when (ex is SqliteException or InvalidOperationException)
+        catch (Exception ex) when (ex is SqliteException or InvalidOperationException or IOException)
         {
             var after = await migrator.GetCurrentVersionAsync().ConfigureAwait(false);
             await error.WriteLineAsync(ex.Message).ConfigureAwait(false);
@@ -243,7 +261,7 @@ public static class CliRunner
         await error.WriteLineAsync($"{errorId}: {ErrorIds.Messages[errorId]}").ConfigureAwait(false);
 
     private static async Task<int> CreateAdminAsync(
-        Db db, string databasePath, string loginId, string displayName, TextReader input, TextWriter output, TextWriter error)
+        Db db, string databasePath, string dataDirectory, string loginId, string displayName, TextReader input, TextWriter output, TextWriter error)
     {
         if (!await RequireDatabaseAsync(databasePath, error).ConfigureAwait(false))
         {
@@ -264,7 +282,7 @@ public static class CliRunner
 
         // 秘密の値はプロセス一覧に残さないため引数ではなく標準入力の 1 行目で受け取る（DD-10 §1）
         var password = await input.ReadLineAsync().ConfigureAwait(false) ?? "";
-        if (password.Length is < 8 or > 128)
+        if (password.Length < ReadPasswordMinLength(dataDirectory) || password.Length > 128)
         {
             await WriteErrorAsync(error, ErrorIds.PwdLength).ConfigureAwait(false);
             return ExitCodes.PasswordRuleViolation;
@@ -303,6 +321,25 @@ public static class CliRunner
         var count = await new UserRepository(db).CountActiveAdminsAsync().ConfigureAwait(false);
         await output.WriteLineAsync(count > 0 ? $"有効な管理者: {count} 人" : "有効な管理者がいません").ConfigureAwait(false);
         return count > 0 ? ExitCodes.Success : ExitCodes.NoAdmin;
+    }
+
+    /// <summary>Auth:PasswordMinLength（DD-01 §7）。Web と同じく appsettings.json に data の appsettings.local.json を重ねて読む。</summary>
+    private static int ReadPasswordMinLength(string dataDirectory)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), optional: false)
+            .AddJsonFile(Path.Combine(Path.GetFullPath(dataDirectory), AppConfiguration.LocalSettingsFileName), optional: true)
+            .Build();
+        return configuration.GetValue<int>($"{AuthOptions.Section}:{nameof(AuthOptions.PasswordMinLength)}");
+    }
+
+    /// <summary>コンソールの入出力を UTF-8 にしてから CLI を実行する（DD-10 §1「出力は UTF-8」）。</summary>
+    public static Task<int> RunConsoleAsync(string[] args)
+    {
+        var utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        Console.InputEncoding = utf8;
+        Console.OutputEncoding = utf8;
+        return RunAsync(args, Console.In, Console.Out, Console.Error);
     }
 
     private static bool IsServiceRunning()

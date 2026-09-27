@@ -253,4 +253,82 @@ public sealed class CliTests : IDisposable
 
         Assert.Equal(14, await Run("has-admin"));
     }
+
+    [Fact]
+    public async Task Migrationsフォルダーなし_未処理例外でなく1()
+    {
+        Assert.Equal(1, await RunWith(Path.Combine(_dir, "no-such-migrations"), "migrate", "--init"));
+        Assert.False(File.Exists(Path.Combine(DataDir, "todo.db")));
+    }
+
+    [Fact]
+    public async Task Init_適用失敗_todo_dbを残さず再実行できる()
+    {
+        var bad = MigrationsWith(("0002_bad.sql", "INSERT INTO no_such_table VALUES (1);\n"));
+
+        Assert.Equal(1, await RunWith(bad, "migrate", "--init"));
+        Assert.False(File.Exists(Path.Combine(DataDir, "todo.db")));
+        Assert.Equal(0, await Run("migrate", "--init"));
+    }
+
+    [Fact]
+    public async Task Apply_途中でファイルを読めないIOException_5()
+    {
+        await Run("migrate", "--init");
+        var dir = MigrationsWith(
+            ("0002_ok.sql", "CREATE TABLE extra (id INTEGER PRIMARY KEY);\n"),
+            ("0003_locked.sql", "CREATE TABLE extra2 (id INTEGER PRIMARY KEY);\n"));
+        using (new FileStream(Path.Combine(dir, "0003_locked.sql"), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            Assert.Equal(5, await RunWith(dir, "migrate", "--apply"));
+        }
+
+        await RunWith(dir, "check-schema");
+        Assert.Contains("データベースの版: 2", _out.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CreateAdmin_PasswordMinLengthの設定値を使う()
+    {
+        await Run("migrate", "--init");
+        await File.WriteAllTextAsync(Path.Combine(DataDir, "appsettings.local.json"), """{ "Auth": { "PasswordMinLength": 10 } }""", TestContext.Current.CancellationToken);
+
+        Assert.Equal(12, await CreateAdmin("a9", "123456789\n"));
+        Assert.Equal(0, await CreateAdmin("a10", "1234567890\n"));
+    }
+
+    [Fact]
+    public async Task 実行ファイル_CLIの出力はUTF8()
+    {
+        using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("dotnet")
+        {
+            ArgumentList = { Path.Combine(AppContext.BaseDirectory, "TodoApp.dll"), "check-schema", "--data", DataDir },
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            StandardOutputEncoding = System.Text.Encoding.UTF8,
+            StandardErrorEncoding = System.Text.Encoding.UTF8,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        })!;
+        var stderr = await process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
+        await process.WaitForExitAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, process.ExitCode);
+        Assert.Contains("がありません。先に migrate --init を実行してください", stderr, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GlobalJson_SDKの版とrollForwardを固定している()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!File.Exists(Path.Combine(dir!.FullName, "global.json")))
+        {
+            dir = dir.Parent;
+        }
+
+        using var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(dir.FullName, "global.json")));
+        var sdk = json.RootElement.GetProperty("sdk");
+        Assert.Equal("10.0.401", sdk.GetProperty("version").GetString());
+        Assert.Equal("latestFeature", sdk.GetProperty("rollForward").GetString());
+    }
 }

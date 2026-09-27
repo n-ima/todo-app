@@ -211,4 +211,18 @@ public sealed class PasswordChangeTests
         using var otherNext = await otherDevice.GetAsync(U("/error"), Ct);
         Assert.DoesNotContain("yamada さん", WebUtility.HtmlDecode(await otherNext.Content.ReadAsStringAsync(Ct)), StringComparison.Ordinal);
     }
+
+    [Fact]
+    [Trait("TC", "US-002")]
+    public async Task 長さ検証_Auth_PasswordMinLengthの設定値を使う()
+    {
+        await using var app = await TestWebApp.CreateAsync(s => s.Configure<AuthOptions>(o => o.PasswordMinLength = 10));
+        await app.CreateUserAsync("newbie", Initial, mustChangePassword: true);
+        using var client = await LoginAsync(app, "newbie", Initial);
+
+        using var nine = await ChangeAsync(client, Initial, "123456789", "123456789");
+        await AssertErrorAsync(nine, ErrorIds.PwdLength);
+        using var ten = await ChangeAsync(client, Initial, "1234567890", "1234567890");
+        Assert.Equal(HttpStatusCode.Redirect, ten.StatusCode);
+    }
 }

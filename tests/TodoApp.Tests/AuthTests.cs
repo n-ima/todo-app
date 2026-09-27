@@ -393,4 +393,21 @@ public sealed class AuthTests
         using var withToken = await client.SendAsync(request, Ct);
         Assert.Equal(HttpStatusCode.NotFound, withToken.StatusCode);
     }
+
+    [Fact]
+    [Trait("TC", "US-001")]
+    public async Task ログイン_空入力_英語の必須エラーを出さず日本語のE_AUTH_FAILEDだけ()
+    {
+        await using var app = await TestWebApp.CreateAsync();
+        using var client = app.CreateClient();
+
+        using var response = await TestWebApp.LoginAsync(client, "", "");
+
+        await AssertLoginErrorAsync(response, ErrorIds.AuthFailed);
+        var body = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(Ct));
+        Assert.Contains(ErrorIds.Messages[ErrorIds.AuthFailed], body, StringComparison.Ordinal);
+        // レイアウトの ModelState 要約が出ると 2 つ目の error-summary になる
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(body, "error-summary"));
+        Assert.DoesNotContain("field is required", body, StringComparison.Ordinal);
+    }
 }

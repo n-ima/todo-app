@@ -13,11 +13,12 @@ public sealed class LoginModel(AuthService authService) : PageModel
     [BindProperty(SupportsGet = true)]
     public string? ReturnUrl { get; set; }
 
+    // null 許容にして暗黙の Required（英語の検証文言）を付けない。空入力は E-AUTH-FAILED で扱う（DD-03 §2）
     [BindProperty]
-    public string LoginId { get; set; } = "";
+    public string? LoginId { get; set; }
 
     [BindProperty]
-    public string Password { get; set; } = "";
+    public string? Password { get; set; }
 
     public string? ErrorId { get; private set; }
 
